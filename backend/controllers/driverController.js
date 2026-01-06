@@ -9,6 +9,15 @@ export const getDriverProfile = async (req, res) => {
 
 /* SIGN IN */
 export const driverSignIn = async (req, res) => {
+  const activeLog = await DailyLog.findOne({
+    driverId: req.user.id,
+    signOutTime: null
+  });
+
+  if (activeLog) {
+    return res.status(400).json({ msg: "Already signed in" });
+  }
+
   await DailyLog.create({
     driverId: req.user.id,
     signInTime: new Date(),
@@ -18,6 +27,7 @@ export const driverSignIn = async (req, res) => {
   res.json({ msg: "Signed in successfully" });
 };
 
+
 /* SIGN OUT */
 export const driverSignOut = async (req, res) => {
   const { hours, km, mileage, station } = req.body;
@@ -26,16 +36,22 @@ export const driverSignOut = async (req, res) => {
     return res.status(400).json({ msg: "Hours, KM, Mileage required" });
   }
 
-  await DailyLog.findOneAndUpdate(
-    { driverId: req.user.id, signOutTime: null },
-    {
-      signOutTime: new Date(),
-      signOutStation: station,
-      hours,
-      km,
-      mileage
-    }
-  );
+  const log = await DailyLog.findOne({
+    driverId: req.user.id,
+    signOutTime: null
+  });
+
+  if (!log) {
+    return res.status(400).json({ msg: "No active sign-in found" });
+  }
+
+  log.signOutTime = new Date();
+  log.signOutStation = station;
+  log.hours = hours;
+  log.km = km;
+  log.mileage = mileage;
+
+  await log.save();
 
   res.json({ msg: "Logout successful" });
 };

@@ -1,4 +1,6 @@
+import User from "../models/User.js";
 import DailyLog from "../models/DailyLog.js";
+
 
 export const getAdminReport = async (req, res) => {
   const { from, to, depot } = req.query;
@@ -10,13 +12,20 @@ export const getAdminReport = async (req, res) => {
   const report = [];
 
   for (let driver of drivers) {
-    const logs = await DailyLog.find({
-      driverId: driver._id,
-      logDate: {
-        $gte: new Date(from),
-        $lte: new Date(to)
-      }
-    });
+    const start = new Date(from);
+start.setHours(0, 0, 0, 0);
+
+const end = new Date(to);
+end.setHours(23, 59, 59, 999);
+
+const logs = await DailyLog.find({
+  driverId: driver._id,
+  logDate: {
+    $gte: start,
+    $lte: end
+  }
+});
+
 
     report.push({
       driverName: driver.name,

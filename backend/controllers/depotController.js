@@ -50,13 +50,20 @@ export const getDepotReport = async (req, res) => {
     const report = [];
 
     for (let driver of drivers) {
-      const logs = await DailyLog.find({
-        driverId: driver._id,
-        logDate: {
-          $gte: new Date(from),
-          $lte: new Date(to)
-        }
-      });
+      const start = new Date(from);
+start.setHours(0, 0, 0, 0);
+
+const end = new Date(to);
+end.setHours(23, 59, 59, 999);
+
+const logs = await DailyLog.find({
+  driverId: driver._id,
+  logDate: {
+    $gte: start,
+    $lte: end
+  }
+});
+
 
       const totalHours = logs.reduce((sum, l) => sum + (l.hours || 0), 0);
       const totalKm = logs.reduce((sum, l) => sum + (l.km || 0), 0);

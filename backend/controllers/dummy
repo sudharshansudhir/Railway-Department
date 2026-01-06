@@ -1,0 +1,569 @@
+controllers/adminController.js
+
+import DailyLog from "../models/DailyLog.js";
+
+export const getAdminReport = async (req, res) => {
+  const { from, to, depot } = req.query;
+
+  const filter = depot ? { depotName: depot } : {};
+
+  const drivers = await User.find({ role: "DRIVER", ...filter });
+
+  const report = [];
+
+  for (let driver of drivers) {
+    const logs = await DailyLog.find({
+      driverId: driver._id,
+      logDate: {
+        $gte: new Date(from),
+        $lte: new Date(to)
+      }
+    });
+
+    report.push({
+      driverName: driver.name,
+      depot: driver.depotName,
+      totalKm: logs.reduce((s, l) => s + (l.km || 0), 0),
+      totalHours: logs.reduce((s, l) => s + (l.hours || 0), 0),
+      logs
+    });
+  }
+
+  res.json({ from, to, report });
+};
+
+
+//controllers/authcontroller.js
+
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import DriverProfile from "../models/DriverProfile.js";
+
+export const registerDriver = async (req, res) => {
+  try {
+    const { name, pfNo, password, depotName, profile } = req.body;
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      pfNo,
+      password: hashed,
+      role: "DRIVER",
+      depotName
+    });
+
+    await DriverProfile.create({
+      userId: user._id,
+      ...profile
+    });
+
+    res.status(201).json({ message: "Driver registered successfully" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+export const login = async (req, res) => {
+  const { pfNo, password } = req.body;
+
+  const user = await User.findOne({ pfNo });
+  if (!user) return res.status(404).json({ msg: "User not found" });
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) return res.status(401).json({ msg: "Invalid credentials" });
+
+  const token = jwt.sign(
+    { id: user._id, role: user.role, depot: user.depotName },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+
+  res.json({ token, role: user.role });
+};
+
+
+//controllers/circularcontrollers.js
+
+import Circular from "../models/Circular.js";
+
+export const uploadCircular = async (req, res) => {
+  try {
+    const { title } = req.body;
+    if (!req.file) return res.status(400).json({ msg: "PDF file is required" });
+
+    const circular = await Circular.create({
+      title,
+      pdfUrl: req.file.path, // Multer + Cloudinary stores URL in path
+      postedBy: req.user.id
+    });
+
+    res.status(201).json({ msg: "Circular uploaded successfully", circular });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+// Optional: Get all circulars (for frontend notifications)
+export const getCirculars = async (req, res) => {
+  try {
+    const circulars = await Circular.find().sort({ createdAt: -1 });
+    res.json(circulars);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+
+controllers/depotcontroller.js
+
+import User from "../models/User.js";
+import DailyLog from "../models/DailyLog.js";
+
+// Current function to get only drivers (keep it if needed)
+export const getDepotDrivers = async (req, res) => {
+  const drivers = await User.find({
+    role: "DRIVER",
+    depotName: req.user.depot
+  }).select("name pfNo depotName"); // only return necessary fields
+
+  res.json(drivers);
+};
+
+// NEW: Get depot drivers + their daily logs
+export const getDepotDailyLogs = async (req, res) => {
+  try {
+    const depot = req.user.depot;
+
+    // Get all drivers in this depot
+    const drivers = await User.find({ role: "DRIVER", depotName: depot });
+
+    const logs = [];
+
+    for (let driver of drivers) {
+      const driverLogs = await DailyLog.find({ driverId: driver._id })
+        .sort({ signInTime: -1 }); // latest logs first
+
+      logs.push({
+        driverName: driver.name,
+        pfNo: driver.pfNo,
+        dailyLogs: driverLogs
+      });
+    }
+
+    res.json(logs);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+export const getDepotReport = async (req, res) => {
+  try {
+    const { from, to } = req.query;
+
+    const drivers = await User.find({
+      role: "DRIVER",
+      depotName: req.user.depot
+    });
+
+    const report = [];
+
+    for (let driver of drivers) {
+      const logs = await DailyLog.find({
+        driverId: driver._id,
+        logDate: {
+          $gte: new Date(from),
+          $lte: new Date(to)
+        }
+      });
+
+      const totalHours = logs.reduce((sum, l) => sum + (l.hours || 0), 0);
+      const totalKm = logs.reduce((sum, l) => sum + (l.km || 0), 0);
+
+      report.push({
+        driverName: driver.name,
+        pfNo: driver.pfNo,
+        totalDays: logs.length,
+        totalHours,
+        totalKm,
+        logs
+      });
+    }
+
+    res.json({
+      depot: req.user.depot,
+      from,
+      to,
+      report
+    });
+
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+
+controllers/drivercontroller.js
+
+import DriverProfile from "../models/DriverProfile.js";
+import DailyLog from "../models/DailyLog.js";
+
+/* VIEW OWN PROFILE */
+export const getDriverProfile = async (req, res) => {
+  const profile = await DriverProfile.findOne({ userId: req.user.id });
+  res.json(profile);
+};
+
+/* SIGN IN */
+export const driverSignIn = async (req, res) => {
+  await DailyLog.create({
+    driverId: req.user.id,
+    signInTime: new Date(),
+    signInStation: req.body.station
+  });
+
+  res.json({ msg: "Signed in successfully" });
+};
+
+/* SIGN OUT */
+export const driverSignOut = async (req, res) => {
+  const { hours, km, mileage, station } = req.body;
+
+  if (!hours || !km || !mileage) {
+    return res.status(400).json({ msg: "Hours, KM, Mileage required" });
+  }
+
+  await DailyLog.findOneAndUpdate(
+    { driverId: req.user.id, signOutTime: null },
+    {
+      signOutTime: new Date(),
+      signOutStation: station,
+      hours,
+      km,
+      mileage
+    }
+  );
+
+  res.json({ msg: "Logout successful" });
+};
+
+/* ALERTS */
+export const driverAlerts = async (req, res) => {
+  const profile = await DriverProfile.findOne({ userId: req.user.id });
+
+  const alerts = [];
+  const today = new Date();
+
+  if (profile.training?.dueDate < today) alerts.push("Training overdue");
+  if (profile.lrDetails?.dueDate < today) alerts.push("LR overdue");
+
+  res.json(alerts);
+};
+
+
+ middleware/auth.js
+
+ // middleware/auth.js
+ import jwt from "jsonwebtoken";
+ 
+ export const verifyToken = (req, res, next) => {
+   const token = req.headers.authorization?.split(" ")[1];
+   if (!token) return res.status(401).json({ msg: "No token" });
+ 
+   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+     if (err) return res.status(403).json({ msg: "Invalid token" });
+     req.user = user;
+     next();
+   });
+ };
+ 
+ export const allowRoles = (...roles) => {
+   return (req, res, next) => {
+     if (!roles.includes(req.user.role))
+       return res.status(403).json({ msg: "Access denied" });
+     next();
+   };
+ };
+ 
+
+ models/circular.js
+
+ // models/Circular.js
+ import mongoose from "mongoose";
+ 
+ const circularSchema = new mongoose.Schema({
+   title: String,
+   pdfUrl: String,
+   postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+ }, { timestamps: true });
+ 
+ export default mongoose.model("Circular", circularSchema);
+ 
+ models/dailylog.js
+
+ // models/DailyLog.js
+ import mongoose from "mongoose";
+ const dailyLogSchema = new mongoose.Schema({
+   driverId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+ 
+   logDate: {
+     type: Date,
+     default: () => new Date().setHours(0,0,0,0)
+   },
+ 
+   signInTime: Date,
+   signInStation: String,
+ 
+   signOutTime: Date,
+   signOutStation: String,
+ 
+   hours: Number,
+   km: Number,
+   mileage: Number
+ 
+ }, { timestamps: true });
+ 
+ 
+ export default mongoose.model("DailyLog", dailyLogSchema);
+ 
+
+ models/driverprofile.js
+
+ // models/DriverProfile.js
+ import mongoose from "mongoose";
+ 
+ const driverProfileSchema = new mongoose.Schema({
+   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+ 
+   designation: String,
+   basicPay: Number,
+   dateOfEntry: Date,
+   dateOfAppointment: Date,
+ 
+   training: {
+     section: String,
+     doneDate: Date,
+     dueDate: Date,
+     schedule: String
+   },
+ 
+   lrDetails: {
+     doneDate: Date,
+     dueDate: Date,
+     schedule: String
+   }
+ 
+ }, { timestamps: true });
+ 
+ export default mongoose.model("DriverProfile", driverProfileSchema);
+ 
+
+ models/user.js
+
+ // models/User.js
+ import mongoose from "mongoose";
+ 
+ const userSchema = new mongoose.Schema({
+   name: { type: String, required: true },
+   pfNo: { type: String, unique: true }, // mainly for driver
+   email: { type: String, unique: true,sparse: true },
+   password: { type: String, required: true },
+ 
+   role: {
+     type: String,
+     enum: ["DRIVER", "DEPOT_MANAGER", "SUPER_ADMIN"],
+     required: true
+   },
+ 
+   depotName: { type: String }, // for driver & depot manager
+ 
+ }, { timestamps: true });
+ 
+ export default mongoose.model("User", userSchema);
+ 
+
+ routes/adminrotes.js
+
+ import express from "express";
+ import { verifyToken, allowRoles } from "../middleware/auth.js";
+ import { getAdminReport } from "../controllers/adminController.js";
+ 
+ const router = express.Router();
+ router.get(
+   "/reports",
+   verifyToken,
+   allowRoles("SUPER_ADMIN"),
+   getAdminReport
+ );
+ 
+ 
+ export default router;
+ 
+
+
+ routes/authrotes.js
+
+ import express from "express";
+ import { registerDriver, login } from "../controllers/authController.js";
+ 
+ const router = express.Router();
+ 
+ router.post("/register", registerDriver);
+ router.post("/login", login);
+ 
+ export default router;
+ 
+
+
+ routes/circularrotes.js
+
+ import express from "express";
+ import { verifyToken, allowRoles } from "../middleware/auth.js";
+ import { uploadCircular, getCirculars } from "../controllers/circularController.js";
+ import cloudinary, { upload } from "../utils/cloudinary.js";
+ 
+ const router = express.Router();
+ 
+ // POST /api/admin/circulars → Upload PDF
+ router.post(
+   "/circulars",
+   verifyToken,
+   allowRoles("SUPER_ADMIN"),
+   upload.single("pdf"), // Multer expects field name "pdf"
+   uploadCircular
+ );
+ 
+ // GET /api/admin/circulars → Get all circulars
+ router.get(
+   "/circulars",
+   verifyToken,
+   allowRoles("SUPER_ADMIN", "DEPOT_MANAGER", "DRIVER"),
+   getCirculars
+ );
+ 
+ export default router;
+ 
+
+
+ routes/depotrotes.js
+
+ import express from "express";
+ import { verifyToken, allowRoles } from "../middleware/auth.js";
+ import { getDepotDailyLogs, getDepotDrivers, getDepotReport } from "../controllers/depotController.js";
+ 
+ const router = express.Router();
+ 
+ router.get(
+   "/drivers",
+   verifyToken,
+   allowRoles("DEPOT_MANAGER"),
+   getDepotDrivers
+ );
+ router.get("/daily-logs", verifyToken, allowRoles("DEPOT_MANAGER"), getDepotDailyLogs);
+ router.get(
+   "/reports",
+   verifyToken,
+   allowRoles("DEPOT_MANAGER"),
+   getDepotReport
+ );
+ 
+ 
+ export default router;
+ 
+
+
+ routes/driverrotes.js
+ 
+
+ import express from "express";
+ import { verifyToken, allowRoles } from "../middleware/auth.js";
+ import {
+   getDriverProfile,
+   driverSignIn,
+   driverSignOut,
+   driverAlerts
+ } from "../controllers/driverController.js";
+ 
+ const router = express.Router();
+ 
+ router.get("/profile", verifyToken, allowRoles("DRIVER"), getDriverProfile);
+ router.post("/signin", verifyToken, allowRoles("DRIVER"), driverSignIn);
+ router.post("/signout", verifyToken, allowRoles("DRIVER"), driverSignOut);
+ router.get("/alerts", verifyToken, allowRoles("DRIVER"), driverAlerts);
+ 
+ export default router;
+ 
+
+ utils/cloudinary.js
+
+ // utils/cloudinary.js
+ import { v2 as cloudinary } from "cloudinary";
+ import { CloudinaryStorage } from "multer-storage-cloudinary";
+ import multer from "multer";
+ 
+ cloudinary.config({
+   cloud_name: process.env.CLOUD_NAME,
+   api_key: process.env.CLOUDINARY_API_KEY,
+   api_secret: process.env.CLOUDINARY_API_SECRET
+ });
+ 
+ // Storage config for PDFs only
+ const storage = new CloudinaryStorage({
+   cloudinary,
+   params: {
+     folder: "railway_circulars",
+     resource_type: "raw", // raw for pdf
+     format: async (req, file) => "pdf", // force pdf
+   },
+ });
+ 
+ export const upload = multer({ storage });
+ export default cloudinary;
+ 
+
+ server.js
+
+ import express from "express";
+ import dotenv from "dotenv";
+ import mongoose from "mongoose";
+ 
+ import authRoutes from "./routes/authRoutes.js";
+ import driverRoutes from "./routes/driverRoutes.js";
+ import depotRoutes from "./routes/depotRoutes.js";
+ import adminRoutes from "./routes/adminRoutes.js";
+ import circularRoutes from "./routes/circularRoutes.js";
+ 
+ 
+ 
+ dotenv.config();
+ 
+ const app = express();
+ app.use(express.json());
+ 
+ mongoose.connect(process.env.MONGO_URI)
+   .then(() => console.log("MongoDB Connected"))
+   .catch(err => console.log("DB Error", err));
+ 
+ app.get("/", (req, res) => {
+   res.send("Railway Backend Running");
+ });
+ 
+ /* ROUTES */
+ app.use("/api/auth", authRoutes);
+ app.use("/api/driver", driverRoutes);
+ app.use("/api/depot", depotRoutes);
+ app.use("/api/admin", adminRoutes);
+ app.use("/api/admin", circularRoutes);
+ 
+ const PORT = process.env.PORT || 5000;
+ 
+ app.listen(PORT, () => {
+ 
+   console.log(`Server running on port ${PORT}`);
+ });
+ 
+
+ 
