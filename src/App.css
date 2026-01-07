@@ -1,0 +1,462 @@
+/* =========================================================
+   BASE RESET & ROOT
+   ========================================================= */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+button {
+  margin: 5px;
+  padding: 10px 20px;
+  background: black;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+input {
+  display: block;
+  margin: 10px auto;
+  padding: 10px;
+  width: 220px;
+}
+
+/* =========================================================
+   BACKGROUND VIDEO (GLOBAL)
+   ========================================================= */
+.bg-video {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -1;
+}
+
+/* =========================================================
+   NAVBAR – GLASS WHITE + RESPONSIVE
+   ========================================================= */
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 10px auto;
+  padding: 12px 20px;
+
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* LOGO WITH GOLD SHINE */
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.logo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  left: -120%;
+  width: 60%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 215, 0, 0.6),
+    transparent
+  );
+  animation: shine 3.5s infinite;
+}
+
+@keyframes shine {
+  0% { left: -120%; }
+  50% { left: 120%; }
+  100% { left: 120%; }
+}
+
+.nav-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nav-links button {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #000;
+  border: 1px solid #ccc;
+  white-space: nowrap;
+}
+
+.logout-btn {
+  border: 1px solid #000;
+}
+
+@media (max-width: 600px) {
+  .nav-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .nav-links {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  .nav-links button {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* =========================================================
+   HERO / LOGIN PAGE (NO NAVBAR)
+   ========================================================= */
+.hero-container {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+}
+
+.hero-overlay {
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Corner title */
+.corner-title {
+  font-size: 35px;        /* 👈 change size here */
+  color: #f7f6f2;        /* 👈 gold color */
+}
+
+/* Login card – transparent black */
+/* LOGIN CONTENT (REPLACES login-card-hero) */
+.login-content {
+  width: 70%;
+  max-width: 400px;
+  min-height: 30vh;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* 🔥 center everything */
+
+  color: rgb(247, 249, 241);
+  text-align: center;
+}
+
+
+.login-heading {
+  font-size: 36px;
+  margin-bottom: 35px;
+}
+
+/* LABELS */
+.login-content label {
+  width: 100%;
+  text-align: left;
+  font-size: 19px;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+
+.login-content input,
+.login-content select {
+  width: 100%;          /* all same width */
+  max-width: 520px;     /* controls overall size */
+  height: 58px;         /* 🔥 SAME HEIGHT for all */
+  padding: 0 18px;      /* inner spacing */
+  font-size: 20px;      /* readable text */
+  
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  outline: none;
+  border-radius: 4px;
+
+  box-sizing: border-box;
+}
+
+.login-btn {
+  margin-top: 35px;
+  padding: 12px 32px;
+  font-size: 18px;
+  font-weight: 600;
+  background: rgb(20, 8, 8);
+  color: rgb(243, 241, 241);
+  border-radius: 6px;
+  width: auto;           /* 🔥 not full width */
+}
+
+/* =========================================================
+   DARK PAGE WRAPPER
+   ========================================================= */
+.dark-page {
+  min-height: 100vh;
+  background: #0f0f0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================================================
+   DASHBOARD & ICON CARDS
+   ========================================================= */
+.dashboard-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: black;
+}
+
+.dashboard-card {
+  display: flex;
+  gap: 40px;
+  padding: 50px;
+  background: rgba(252, 249, 249, 0.7);
+  border-radius: 25px;
+}
+
+.icon-card {
+  width: 180px;
+  height: 180px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 40px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.icon-card span {
+  margin-top: 10px;
+  font-size: 18px;
+}
+
+/* =========================================================
+   FORM CARDS
+   ========================================================= */
+.form-card {
+  padding: 60px;
+  border-radius: 25px;
+  text-align: center;
+}
+
+.yellow-card {
+  background: rgba(255, 215, 0, 0.85);
+}
+
+.form-card input {
+  width: 80%;
+  padding: 12px;
+  margin: 10px auto;
+}
+
+.form-card label {
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.form-card button {
+  padding: 12px 30px;
+  margin-top: 15px;
+}
+
+.tall-form {
+  min-height: 80vh;
+  max-width: 600px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* =========================================================
+   BIO DATA
+   ========================================================= */
+.biodata-card {
+  width: 90%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.bio-card {
+  background: rgba(255, 200, 120, 0.9);
+  padding: 40px;
+  border-radius: 25px;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.bio-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 20px;
+}
+
+.bio-card p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.bio-card button {
+  padding: 10px 18px;
+  margin: 5px;
+}
+
+/* =========================================================
+   PHOTO UPLOAD
+   ========================================================= */
+.photo-upload {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: white;
+  margin: auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-upload img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+/* =========================================================
+   TABLES (CHECKS, LR, DAILY)
+   ========================================================= */
+table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid black;
+  padding: 10px;
+}
+
+table button {
+  margin: 0 4px;
+  padding: 6px 10px;
+}
+
+/* CHECKS & LR CARDS */
+.checks-card,
+.lr-card {
+  background: rgba(255, 190, 110, 0.9);
+  padding: 40px;
+  border-radius: 25px;
+  width: 90%;
+  max-width: 750px;
+  text-align: center;
+}
+/* ===== NOTIFICATION MODAL OVERLAY ===== */
+.notification-overlay {
+  position: fixed;
+  inset: 0; /* top, right, bottom, left = 0 */
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== POPUP CARD ===== */
+.notification-popup {
+  width: 90%;
+  max-width: 420px;
+  background: #fff;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+
+  animation: popupScale 0.3s ease;
+}
+
+.notification-popup h3 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* ===== INDIVIDUAL CIRCULAR CARD ===== */
+.notification-card {
+  background: #ffe0a3;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.notification-card strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.notification-card button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* ===== POPUP ANIMATION ===== */
+@keyframes popupScale {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
