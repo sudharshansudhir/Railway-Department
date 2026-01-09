@@ -46,7 +46,7 @@ export default function DepotManagerDashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">
-                Depot Manager Dashboard
+                SSE/TRD Dashboard
               </h2>
               <p className="text-sm text-gray-500">
                 Manage drivers under your depot

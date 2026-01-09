@@ -11,20 +11,42 @@ export default function DriverHealth() {
     dueDate: "",
     schedule: ""
   });
-  const [saving, setSaving] = useState(false);
 
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  /* ================= LOAD EXISTING DATA ================= */
   useEffect(() => {
-    api.get("/driver/profile").then(res => {
-      setTraining(res.data.training || {});
-    });
+    api.get("/driver/profile")
+      .then(res => {
+        const existingTraining = res.data?.profile?.training;
+
+        if (existingTraining) {
+          setTraining({
+            section: existingTraining.section || "",
+            doneDate: existingTraining.doneDate
+              ? existingTraining.doneDate.substring(0, 10)
+              : "",
+            dueDate: existingTraining.dueDate
+              ? existingTraining.dueDate.substring(0, 10)
+              : "",
+            schedule: existingTraining.schedule || ""
+          });
+        }
+      })
+      .catch(() => {
+        Swal.fire("Error", "Unable to load training data", "error");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
+  /* ================= SAVE ================= */
   const save = async () => {
     if (!training.section || !training.doneDate || !training.dueDate) {
       Swal.fire({
         icon: "warning",
         title: "Incomplete Details",
-        text: "Please fill all mandatory training fields",
+        text: "Section, Done Date & Due Date are mandatory",
         confirmButtonColor: "#2563eb",
       });
       return;
@@ -33,13 +55,16 @@ export default function DriverHealth() {
     try {
       setSaving(true);
 
-      await api.put("/driver/profile/training", { training });
-
+      await api.put("/driver/profile/training", {
+        training: {
+          ...training
+        }
+      });
 
       Swal.fire({
         icon: "success",
-        title: "Training Details Saved",
-        text: "Your training compliance has been updated",
+        title: "Training Updated",
+        text: "Training details saved successfully",
         timer: 1400,
         showConfirmButton: false,
       });
@@ -47,7 +72,7 @@ export default function DriverHealth() {
       Swal.fire({
         icon: "error",
         title: "Save Failed",
-        text: "Unable to save training details. Please try again.",
+        text: "Unable to save training details",
         confirmButtonColor: "#dc2626",
       });
     } finally {
@@ -58,6 +83,17 @@ export default function DriverHealth() {
   const isOverdue =
     training.dueDate &&
     new Date(training.dueDate) < new Date();
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen flex items-center justify-center text-gray-500">
+          Loading training details...
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -77,11 +113,11 @@ export default function DriverHealth() {
               Health / Training Details
             </h2>
             <p className="text-sm text-gray-500">
-              Maintain mandatory training compliance
+              View & update mandatory training compliance
             </p>
           </div>
 
-          {/* STATUS BANNER */}
+          {/* STATUS */}
           {training.dueDate && (
             <div
               className={`mb-6 p-4 rounded-xl flex items-center gap-3
@@ -95,7 +131,7 @@ export default function DriverHealth() {
               <p className="text-sm font-medium">
                 {isOverdue
                   ? "Training overdue. Immediate action required."
-                  : `Training valid till ${training.dueDate.substring(0, 10)}`}
+                  : `Training valid till ${training.dueDate}`}
               </p>
             </div>
           )}
@@ -103,49 +139,40 @@ export default function DriverHealth() {
           {/* FORM */}
           <div className="space-y-5">
 
-            {/* SECTION */}
             <InputField
-              label="Training Section"
-              icon={<ClipboardCheck />}
+              label="Type of Training"
               placeholder="Diesel / Electric / EMU"
-              value={training.section || ""}
+              value={training.section}
               onChange={v => setTraining({ ...training, section: v })}
             />
 
-            {/* DONE DATE */}
             <DateField
               label="Training Done Date"
-              icon={<Calendar />}
-              value={training.doneDate?.substring(0, 10) || ""}
+              value={training.doneDate}
               onChange={v => setTraining({ ...training, doneDate: v })}
             />
 
-            {/* DUE DATE */}
             <DateField
               label="Next Due Date"
-              icon={<Calendar />}
-              value={training.dueDate?.substring(0, 10) || ""}
+              value={training.dueDate}
               onChange={v => setTraining({ ...training, dueDate: v })}
             />
 
-            {/* SCHEDULE */}
             <InputField
               label="Schedule"
-              icon={<ClipboardCheck />}
               placeholder="Annual / 2 Years"
-              value={training.schedule || ""}
+              value={training.schedule}
               onChange={v => setTraining({ ...training, schedule: v })}
             />
 
-            {/* SAVE BUTTON */}
             <button
               onClick={save}
               disabled={saving}
-              className={`w-full flex justify-center items-center gap-2 py-2.5 rounded-xl font-semibold text-white transition
+              className={`w-full py-2.5 rounded-xl font-semibold text-white transition
                 ${
                   saving
                     ? "bg-emerald-400 cursor-not-allowed"
-                    : "bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98]"
+                    : "bg-emerald-600 hover:bg-emerald-700"
                 }`}
             >
               {saving ? "Saving..." : "Save Training Details"}
@@ -157,49 +184,39 @@ export default function DriverHealth() {
   );
 }
 
-/* ------------------ REUSABLE INPUT COMPONENTS ------------------ */
+/* ================= UI COMPONENTS ================= */
 
-function InputField({ label, icon, value, onChange, placeholder }) {
+function InputField({ label, value, onChange, placeholder }) {
   return (
     <div>
       <label className="block text-sm font-semibold text-gray-700 mb-1">
         {label}
       </label>
-      <div className="relative">
-        <span className="absolute left-3 top-2.5 text-gray-400">
-          {icon}
-        </span>
-        <input
-          type="text"
-          value={value}
-          placeholder={placeholder}
-          onChange={e => onChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm
-                     focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-        />
-      </div>
+      <input
+        type="text"
+        value={value}
+        placeholder={placeholder}
+        onChange={e => onChange(e.target.value)}
+        className="w-full px-4 py-2.5 border rounded-lg text-sm
+                   focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+      />
     </div>
   );
 }
 
-function DateField({ label, icon, value, onChange }) {
+function DateField({ label, value, onChange }) {
   return (
     <div>
       <label className="block text-sm font-semibold text-gray-700 mb-1">
         {label}
       </label>
-      <div className="relative">
-        <span className="absolute left-3 top-2.5 text-gray-400">
-          {icon}
-        </span>
-        <input
-          type="date"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm
-                     focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-        />
-      </div>
+      <input
+        type="date"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="w-full px-4 py-2.5 border rounded-lg text-sm
+                   focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+      />
     </div>
   );
 }

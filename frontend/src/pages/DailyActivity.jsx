@@ -8,136 +8,131 @@ import {
   Clock,
   Route,
   Gauge,
-  AlertTriangle,
-  MapPin
+  MapPin,
+  Hash,
+  CheckCircle
 } from "lucide-react";
 
 export default function DailyActivity() {
-  const [station, setStation] = useState("");
+  const [fromStation, setFromStation] = useState("");
+  const [toStation, setToStation] = useState("");
+  const [twNumber, setTwNumber] = useState("");
   const [hours, setHours] = useState("");
   const [km, setKm] = useState("");
-  const [mileage, setMileage] = useState("");
-  const [alcoholConsumed, setAlcoholConsumed] = useState(false);
+  const [breathAnalyserDone, setBreathAnalyserDone] = useState(false);
+
+  const [signedIn, setSignedIn] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  /* ================= GET CURRENT LOCATION ================= */
+  /* ================= DERIVED ================= */
+  const mileage = Number(hours || 0) * 20 + Number(km || 0);
 
-  const fetchCurrentLocation = async () => {
-    if (!navigator.geolocation) {
-      Swal.fire("Error", "Geolocation not supported", "error");
-      return;
-    }
+  /* ================= LOCATION ================= */
+  const getLocationName = async () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) reject();
 
-    Swal.fire({
-      title: "Fetching Location",
-      text: "Please wait while we detect your current station",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-
-          const data = await res.json();
-
-          const locationName =
-            data.address?.railway ||
-            data.address?.station ||
-            data.address?.city ||
-            data.display_name;
-
-          setStation(locationName);
-          Swal.close();
-        } catch {
-          Swal.fire("Error", "Unable to resolve location name", "error");
-        }
-      },
-      () => {
-        Swal.fire(
-          "Permission Denied",
-          "Location access is required for duty sign-in",
-          "error"
+      navigator.geolocation.getCurrentPosition(async pos => {
+        const { latitude, longitude } = pos.coords;
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
         );
-      },
-      { enableHighAccuracy: true }
-    );
+        const data = await res.json();
+
+        resolve(
+          data.address?.railway ||
+          data.address?.station ||
+          data.display_name
+        );
+      });
+    });
   };
 
+  /* ================= CHECK ACTIVE DUTY ================= */
   useEffect(() => {
-    fetchCurrentLocation();
+    api.get("/driver/active-duty").then(async res => {
+      if (res.data.active) {
+        setSignedIn(true);
+        setFromStation(res.data.fromStation);
+        setTwNumber(res.data.twNumber);
+        setBreathAnalyserDone(res.data.breathAnalyserDone);
+      } else {
+        const loc = await getLocationName();
+        setFromStation(loc);
+      }
+    });
   }, []);
 
   /* ================= SIGN IN ================= */
-
   const signIn = async () => {
-    if (!station) {
-      Swal.fire("Location Missing", "Unable to detect station", "warning");
+    if (!twNumber) {
+      Swal.fire("Missing Data", "TW Number required", "warning");
       return;
     }
 
     try {
       setLoading(true);
-      await api.post("/driver/signin", { station });
+      await api.post("/driver/signin", {
+        fromStation,
+        twNumber,
+        breathAnalyserDone
+      });
+
+      setSignedIn(true);
 
       Swal.fire({
         icon: "success",
-        title: "Signed In",
-        text: `Signed in at ${station}`,
-        timer: 1500,
-        showConfirmButton: false,
+        title: "Signed ON",
+        text: "Duty started successfully",
+        timer: 1400,
+        showConfirmButton: false
       });
     } catch (e) {
-      Swal.fire("Error", e.response?.data?.msg || "Sign-in failed", "error");
+      Swal.fire("Error", e.response?.data?.msg || "Failed", "error");
     } finally {
       setLoading(false);
     }
   };
 
   /* ================= SIGN OUT ================= */
-
   const signOut = async () => {
     if (!hours || !km) {
-      Swal.fire("Missing Data", "Hours and KM are mandatory", "warning");
+      Swal.fire("Missing Data", "Hours & KM required", "warning");
       return;
     }
-
-    const confirm = await Swal.fire({
-      icon: "warning",
-      title: "Confirm Sign Out",
-      html: alcoholConsumed
-        ? "<b style='color:red'>Alcohol consumption marked as YES</b>"
-        : "Alcohol consumption marked as NO",
-      showCancelButton: true,
-      confirmButtonText: "Confirm Sign Out",
-    });
-
-    if (!confirm.isConfirmed) return;
 
     try {
       setLoading(true);
 
+      const loc = await getLocationName();
+      setToStation(loc);
+
       await api.post("/driver/signout", {
-        station,
+        toStation: loc,
         hours,
-        km,
-        mileage,
-        alcoholConsumed
+        km
       });
 
-      Swal.fire("Signed Out", "Duty completed successfully", "success");
+      Swal.fire({
+        icon: "success",
+        title: "Duty Completed",
+        text: "Mileage recorded successfully",
+        timer: 1600,
+        showConfirmButton: false
+      });
 
+      // RESET
+      setSignedIn(false);
+      setTwNumber("");
       setHours("");
       setKm("");
-      setMileage("");
-      setAlcoholConsumed(false);
+      setBreathAnalyserDone(false);
+
+      const freshLoc = await getLocationName();
+      setFromStation(freshLoc);
+
     } catch (e) {
-      Swal.fire("Error", e.response?.data?.msg || "Sign-out failed", "error");
+      Swal.fire("Error", e.response?.data?.msg || "Failed", "error");
     } finally {
       setLoading(false);
     }
@@ -147,49 +142,111 @@ export default function DailyActivity() {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-slate-100 px-4 py-6">
-        <div className="max-w-3xl mx-auto space-y-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6">
+        <div className="max-w-4xl mx-auto space-y-8">
 
-          <h2 className="text-2xl font-bold text-center">
-            Daily Activity
-          </h2>
-
-          {/* CURRENT LOCATION */}
-          <div className="bg-white p-4 rounded-xl shadow flex items-center gap-3">
-            <MapPin className="text-blue-600" />
-            <div>
-              <p className="text-sm text-gray-500">Current Station</p>
-              <p className="font-semibold text-gray-800">
-                {station || "Detecting location..."}
-              </p>
-            </div>
+          {/* HEADER */}
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-800">
+              Mileage & Duty Log
+            </h2>
+            <p className="text-sm text-gray-500">
+              Tower Wagon Driver Daily Activity
+            </p>
           </div>
 
-          {/* SIGN IN */}
-          <ActionCard title="Sign In" icon={<LogIn />} color="blue">
-            <ActionButton label="Sign In" onClick={signIn} loading={loading} />
-          </ActionCard>
+          {/* SIGN ON CARD */}
+          <SectionCard
+            title="Sign ON"
+            icon={<LogIn />}
+            status={signedIn ? "Completed" : "Pending"}
+            statusColor={signedIn ? "green" : "yellow"}
+          >
+            <ReadOnlyInput
+              label="From Station"
+              icon={<MapPin />}
+              value={fromStation}
+            />
 
-          {/* SIGN OUT */}
-          <ActionCard title="Sign Out" icon={<LogOut />} color="red">
-            <Input label="Total Hours" value={hours} onChange={setHours} icon={<Clock />} />
-            <Input label="Total KM" value={km} onChange={setKm} icon={<Route />} />
-            <Input label="Mileage" value={mileage} onChange={setMileage} icon={<Gauge />} />
+            <Input
+              label="TW Number"
+              icon={<Hash />}
+              value={twNumber}
+              onChange={setTwNumber}
+              disabled={signedIn}
+            />
 
-            <div className="flex items-center gap-2 mt-3 p-3 border rounded-lg bg-red-50">
-              <AlertTriangle className="text-red-600" />
-              <label className="flex items-center gap-2 text-sm font-semibold">
-                <input
-                  type="checkbox"
-                  checked={alcoholConsumed}
-                  onChange={e => setAlcoholConsumed(e.target.checked)}
-                />
-                Alcohol Consumed During Duty
-              </label>
+            <label className="flex items-center gap-3 mt-3 text-sm font-semibold text-gray-700">
+              <input
+                type="checkbox"
+                checked={breathAnalyserDone}
+                disabled={signedIn}
+                onChange={e => setBreathAnalyserDone(e.target.checked)}
+              />
+              Breath Analyser Test Done
+            </label>
+
+            <ActionButton
+              label={signedIn ? "Signed ON" : "Sign ON"}
+              icon={<CheckCircle />}
+              onClick={signIn}
+              loading={loading}
+              disabled={signedIn}
+              color="green"
+            />
+          </SectionCard>
+
+          {/* SIGN OFF CARD */}
+          <SectionCard
+            title="Sign OFF"
+            icon={<LogOut />}
+            status={signedIn ? "Pending" : "Disabled"}
+            statusColor={signedIn ? "red" : "gray"}
+          >
+            <ReadOnlyInput
+              label="To Station (Auto detected)"
+              icon={<MapPin />}
+              value={toStation}
+            />
+
+            <Input
+              label="Hours"
+              icon={<Clock />}
+              value={hours}
+              onChange={setHours}
+              disabled={!signedIn}
+            />
+
+            <Input
+              label="Kilometers"
+              icon={<Route />}
+              value={km}
+              onChange={setKm}
+              disabled={!signedIn}
+            />
+
+            {/* MILEAGE */}
+            <div className="mt-4 flex items-center gap-4 bg-indigo-50 border border-indigo-200 p-4 rounded-xl">
+              <Gauge className="text-indigo-700" />
+              <div>
+                <p className="text-xs text-gray-500">
+                  Calculated Mileage (Hrs × 20 + KM)
+                </p>
+                <p className="text-2xl font-bold text-indigo-700">
+                  {mileage}
+                </p>
+              </div>
             </div>
 
-            <ActionButton label="Sign Out" onClick={signOut} loading={loading} color="red" />
-          </ActionCard>
+            <ActionButton
+              label="Sign OFF"
+              icon={<LogOut />}
+              onClick={signOut}
+              loading={loading}
+              disabled={!signedIn}
+              color="red"
+            />
+          </SectionCard>
 
         </div>
       </div>
@@ -199,45 +256,75 @@ export default function DailyActivity() {
 
 /* ================= UI COMPONENTS ================= */
 
-function ActionCard({ title, icon, children }) {
+function SectionCard({ title, icon, status, statusColor, children }) {
   return (
-    <div className="bg-white p-6 rounded-xl shadow">
-      <div className="flex items-center gap-2 mb-4 font-semibold">
-        {icon}
-        {title}
+    <div className="bg-white rounded-2xl shadow-xl p-6">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2 font-semibold text-lg">
+          {icon}
+          {title}
+        </div>
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-semibold
+            bg-${statusColor}-100 text-${statusColor}-700`}
+        >
+          {status}
+        </span>
       </div>
       {children}
     </div>
   );
 }
 
-function Input({ label, value, onChange, icon }) {
+function Input({ label, icon, value, onChange, disabled }) {
   return (
     <div className="mb-3">
       <label className="text-sm font-semibold">{label}</label>
       <div className="relative">
-        <span className="absolute left-3 top-2.5 text-gray-400">{icon}</span>
+        <span className="absolute left-3 top-2.5 text-gray-400">
+          {icon}
+        </span>
         <input
-          type="number"
           value={value}
+          disabled={disabled}
           onChange={e => onChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border rounded-lg"
+          className="w-full pl-10 pr-4 py-2 border rounded-lg disabled:bg-gray-100"
         />
       </div>
     </div>
   );
 }
 
-function ActionButton({ label, onClick, loading, color = "green" }) {
+function ReadOnlyInput({ label, icon, value }) {
+  return (
+    <div className="mb-3">
+      <label className="text-sm font-semibold">{label}</label>
+      <div className="relative">
+        <span className="absolute left-3 top-2.5 text-gray-400">
+          {icon}
+        </span>
+        <input
+          value={value}
+          readOnly
+          className="w-full pl-10 pr-4 py-2 border rounded-lg bg-gray-100"
+        />
+      </div>
+    </div>
+  );
+}
+
+function ActionButton({ label, icon, onClick, loading, disabled, color }) {
   return (
     <button
       onClick={onClick}
-      disabled={loading}
-      className={`w-full mt-4 py-2 rounded-lg text-white font-semibold transition
+      disabled={disabled || loading}
+      className={`w-full mt-5 py-2.5 rounded-xl font-semibold text-white flex
+        items-center justify-center gap-2 transition
         ${color === "red" ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
-        ${loading && "opacity-60 cursor-not-allowed"}`}
+        ${(disabled || loading) && "opacity-60 cursor-not-allowed"}`}
     >
       {loading ? "Processing..." : label}
+      {icon}
     </button>
   );
 }

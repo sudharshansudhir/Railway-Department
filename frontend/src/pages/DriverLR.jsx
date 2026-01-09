@@ -2,29 +2,32 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
-import { FileText, Calendar, AlertTriangle } from "lucide-react";
+import { FileText, Calendar, AlertTriangle, Layers } from "lucide-react";
 
 export default function DriverLR() {
   const [lr, setLr] = useState({
+    section: "",
     doneDate: "",
     dueDate: "",
     schedule: ""
   });
+
   const [saving, setSaving] = useState(false);
 
+  /* ================= LOAD LR ================= */
   useEffect(() => {
     api.get("/driver/profile").then(res => {
-      setLr(res.data.lrDetails || {});
+      setLr(res.data.profile?.lrDetails || {});
     });
   }, []);
 
+  /* ================= SAVE ================= */
   const save = async () => {
-    if (!lr.doneDate || !lr.dueDate) {
+    if (!lr.section || !lr.doneDate || !lr.dueDate) {
       Swal.fire({
         icon: "warning",
         title: "Missing Information",
-        text: "Please fill LR done date and due date",
-        confirmButtonColor: "#4f46e5",
+        text: "LR Section, Done Date and Due Date are mandatory",
       });
       return;
     }
@@ -32,23 +35,19 @@ export default function DriverLR() {
     try {
       setSaving(true);
 
-     await api.put("/driver/profile/lr", { lrDetails: lr });
-
+      await api.put("/driver/profile/lr", {
+        lrDetails: lr
+      });
 
       Swal.fire({
         icon: "success",
         title: "LR Details Saved",
-        text: "Loco Running validity updated successfully",
+        text: "Road Learning compliance updated successfully",
         timer: 1400,
         showConfirmButton: false,
       });
     } catch (err) {
-      Swal.fire({
-        icon: "error",
-        title: "Save Failed",
-        text: "Unable to save LR details. Try again.",
-        confirmButtonColor: "#dc2626",
-      });
+      Swal.fire("Error", err.response?.data?.msg || "Save failed", "error");
     } finally {
       setSaving(false);
     }
@@ -72,14 +71,14 @@ export default function DriverLR() {
               </div>
             </div>
             <h2 className="text-xl font-bold text-gray-800">
-              LR (Loco Running) Details
+              LR (Road Learning) Details
             </h2>
             <p className="text-sm text-gray-500">
-              Maintain mandatory LR compliance
+              Mandatory road learning compliance
             </p>
           </div>
 
-          {/* STATUS BANNER */}
+          {/* STATUS */}
           {lr.dueDate && (
             <div
               className={`mb-6 p-4 rounded-xl flex items-center gap-3
@@ -101,7 +100,15 @@ export default function DriverLR() {
           {/* FORM */}
           <div className="space-y-5">
 
-            {/* DONE DATE */}
+            {/* LR SECTION */}
+            <InputField
+              label="LR Section"
+              icon={<Layers />}
+              placeholder="Section / Route Name"
+              value={lr.section || ""}
+              onChange={v => setLr({ ...lr, section: v })}
+            />
+
             <DateField
               label="LR Done Date"
               icon={<Calendar />}
@@ -109,7 +116,6 @@ export default function DriverLR() {
               onChange={v => setLr({ ...lr, doneDate: v })}
             />
 
-            {/* DUE DATE */}
             <DateField
               label="LR Due Date"
               icon={<Calendar />}
@@ -117,7 +123,6 @@ export default function DriverLR() {
               onChange={v => setLr({ ...lr, dueDate: v })}
             />
 
-            {/* SCHEDULE */}
             <InputField
               label="Schedule"
               placeholder="Annual / 6 Months"
@@ -125,15 +130,14 @@ export default function DriverLR() {
               onChange={v => setLr({ ...lr, schedule: v })}
             />
 
-            {/* SAVE BUTTON */}
             <button
               onClick={save}
               disabled={saving}
-              className={`w-full flex justify-center items-center gap-2 py-2.5 rounded-xl font-semibold text-white transition
+              className={`w-full py-2.5 rounded-xl font-semibold text-white transition
                 ${
                   saving
                     ? "bg-indigo-400 cursor-not-allowed"
-                    : "bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98]"
+                    : "bg-indigo-600 hover:bg-indigo-700"
                 }`}
             >
               {saving ? "Saving..." : "Save LR Details"}
@@ -145,22 +149,26 @@ export default function DriverLR() {
   );
 }
 
-/* ------------------ REUSABLE INPUT COMPONENTS ------------------ */
+/* ================= INPUTS ================= */
 
-function InputField({ label, value, onChange, placeholder }) {
+function InputField({ label, value, onChange, placeholder, icon }) {
   return (
     <div>
       <label className="block text-sm font-semibold text-gray-700 mb-1">
         {label}
       </label>
-      <input
-        type="text"
-        value={value}
-        placeholder={placeholder}
-        onChange={e => onChange(e.target.value)}
-        className="w-full px-4 py-2.5 border rounded-lg text-sm
-                   focus:ring-2 focus:ring-indigo-600 focus:outline-none"
-      />
+      <div className="relative">
+        <span className="absolute left-3 top-2.5 text-gray-400">
+          {icon}
+        </span>
+        <input
+          type="text"
+          value={value}
+          placeholder={placeholder}
+          onChange={e => onChange(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm"
+        />
+      </div>
     </div>
   );
 }
@@ -179,8 +187,7 @@ function DateField({ label, icon, value, onChange }) {
           type="date"
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm
-                     focus:ring-2 focus:ring-indigo-600 focus:outline-none"
+          className="w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm"
         />
       </div>
     </div>

@@ -11,6 +11,7 @@ import {
   checkActiveDuty,
   getDutyStatus
 } from "../controllers/driverController.js";
+import { saveTCard } from "../controllers/tcardController.js";
 
 const router = express.Router();
 
@@ -38,6 +39,11 @@ router.get(
   getDutyStatus
 );
 
-
+router.post(
+  "/tcard",
+  verifyToken,
+  allowRoles("DRIVER"),
+  saveTCard
+);
 
 export default router;

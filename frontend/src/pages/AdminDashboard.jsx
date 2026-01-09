@@ -51,7 +51,7 @@ export default function AdminDashboard() {
             <div>
               <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                 <Shield className="text-indigo-600" />
-                Super Admin Dashboard
+                Sr.DEE/TRD/SA Dashboard
               </h2>
               <p className="text-sm text-gray-500">
                 Global visibility across all depots

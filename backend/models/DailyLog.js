@@ -9,21 +9,23 @@ const dailyLogSchema = new mongoose.Schema({
 
   logDate: {
     type: Date,
-    required: true,
+    default: () => new Date().setHours(0, 0, 0, 0),
     index: true
   },
 
-  signInTime: { type: Date, required: true },
-  signInStation: { type: String, required: true },
-
+  signInTime: Date,
   signOutTime: Date,
-  signOutStation: String,
-alcoholConsumed: Boolean,
+
+  fromStation: String,
+  toStation: String,
+
+  twNumber: String,
 
   hours: Number,
   km: Number,
-  mileage: Number
+  mileage: Number,
 
+  breathAnalyserDone: Boolean
 }, { timestamps: true });
 
 export default mongoose.model("DailyLog", dailyLogSchema);

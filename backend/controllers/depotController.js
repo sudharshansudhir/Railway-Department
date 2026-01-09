@@ -3,16 +3,20 @@ import DailyLog from "../models/DailyLog.js";
 
 import DriverProfile from "../models/DriverProfile.js";
 
+// import User from "../models/User.js";
+// import DriverProfile from "../models/DriverProfile.js";
+// import DailyLog from "../models/DailyLog.js";
+
 export const getDriverFullProfile = async (req, res) => {
   try {
     const driverId = req.params.driverId;
 
-    // ensure driver belongs to same depot
+    /* 🔒 Ensure same depot */
     const driver = await User.findOne({
       _id: driverId,
       role: "DRIVER",
-      depotName: req.user.depot
-    });
+      depotName: req.user.depotName
+    }).select("name pfNo depotName");
 
     if (!driver) {
       return res.status(403).json({ msg: "Access denied" });
@@ -20,11 +24,15 @@ export const getDriverFullProfile = async (req, res) => {
 
     const profile = await DriverProfile.findOne({ userId: driverId });
 
+    const logs = await DailyLog.find({ driverId })
+      .sort({ logDate: -1 });
+
     res.json({
       name: driver.name,
       pfNo: driver.pfNo,
       depotName: driver.depotName,
-      profile
+      profile,
+      logs            // ✅ IMPORTANT
     });
 
   } catch (err) {
@@ -37,7 +45,7 @@ export const getDriverFullProfile = async (req, res) => {
 export const getDepotDrivers = async (req, res) => {
   const drivers = await User.find({
     role: "DRIVER",
-    depotName: req.user.depot
+    depotName: req.user.depotName
   }).select("name pfNo depotName"); // only return necessary fields
 
   res.json(drivers);
@@ -46,7 +54,7 @@ export const getDepotDrivers = async (req, res) => {
 // NEW: Get depot drivers + their daily logs
 export const getDepotDailyLogs = async (req, res) => {
   try {
-    const depot = req.user.depot;
+    const depot = req.user.depotName;
 
     // Get all drivers in this depot
     const drivers = await User.find({ role: "DRIVER", depotName: depot });
@@ -76,7 +84,7 @@ export const getDepotReport = async (req, res) => {
 
     const drivers = await User.find({
       role: "DRIVER",
-      depotName: req.user.depot
+      depotName: req.user.depotName
     });
 
     const report = [];
@@ -111,7 +119,7 @@ const logs = await DailyLog.find({
     }
 
     res.json({
-      depot: req.user.depot,
+      depot: req.user.depotName,
       from,
       to,
       report

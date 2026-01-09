@@ -101,7 +101,7 @@ const logout = async () => {
           >
             <Train className="text-indigo-600" />
             <span className="font-bold text-lg text-gray-800">
-              Railway Compliance System
+              Tower Wagon Driver Management system
             </span>
           </div>
 
@@ -112,7 +112,7 @@ const logout = async () => {
             {role === "DRIVER" && (
               <>
                 <NavButton to="/driver" icon={<User size={18} />} label="Dashboard" />
-                <NavButton to="/driver/daily" icon={<ClipboardList size={18} />} label="Daily Activity" />
+                <NavButton to="/driver/daily" icon={<ClipboardList size={18} />} label="Mileage Details" />
                 <NavButton to="/circulars" icon={<FileText size={18} />} label="Circulars" />
               </>
             )}

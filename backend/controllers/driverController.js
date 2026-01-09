@@ -4,22 +4,35 @@ import DailyLog from "../models/DailyLog.js";
 /* ===================== PROFILE ===================== */
 
 /* VIEW OWN PROFILE */
+import User from "../models/User.js";
+// import DriverProfile from "../models/DriverProfile.js";
+
 export const getDriverProfile = async (req, res) => {
+  const user = await User.findById(req.user.id)
+    .select("name pfNo depotName");
+
   const profile = await DriverProfile.findOne({ userId: req.user.id });
-  res.json(profile);
+
+  res.json({
+    user,
+    profile
+  });
 };
+
 
 /* UPDATE BIO DATA */
 export const updateBioData = async (req, res) => {
-  const { designation, basicPay, dateOfEntry, dateOfAppointment } = req.body;
+  const { hrmsId,designation, basicPay, dateOfEntry, dateOfAppointment,dateOfEntryAsTWD } = req.body;
 
   const updated = await DriverProfile.findOneAndUpdate(
     { userId: req.user.id },
     {
+      hrmsId,
       designation,
       basicPay,
       dateOfEntry,
-      dateOfAppointment
+      dateOfAppointment,
+      dateOfEntryAsTWD
     },
     { new: true }
   );
@@ -46,59 +59,82 @@ export const updateTraining = async (req, res) => {
 
 /* UPDATE LR */
 export const updateLR = async (req, res) => {
-  const { lrDetails } = req.body;
+  try {
+    const { lrDetails } = req.body;
 
-  if (!lrDetails?.doneDate || !lrDetails?.dueDate) {
-    return res.status(400).json({ msg: "Incomplete LR details" });
+    if (!lrDetails?.section || !lrDetails?.doneDate || !lrDetails?.dueDate) {
+      return res.status(400).json({
+        msg: "LR Section, Done Date and Due Date are mandatory"
+      });
+    }
+
+    const profile = await DriverProfile.findOneAndUpdate(
+      { userId: req.user.id },
+      { $set: { lrDetails } },
+      { new: true, upsert: true }
+    );
+
+    res.json({
+      msg: "LR details updated successfully",
+      lrDetails: profile.lrDetails
+    });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
   }
-
-  const updated = await DriverProfile.findOneAndUpdate(
-    { userId: req.user.id },
-    { lrDetails },
-    { new: true }
-  );
-
-  res.json(updated);
 };
 
-/* ===================== DUTY LOG ===================== */
 
-/* SIGN IN */
+/* ===================== DUTY LOG ===================== */
+/* ================= SIGN IN ================= */
+
+/* ================= SIGN IN ================= */
 export const driverSignIn = async (req, res) => {
+  const { fromStation, twNumber, breathAnalyserDone } = req.body;
+
+  if (!fromStation || !twNumber) {
+    return res.status(400).json({ msg: "Missing sign-in data" });
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // One log per day
-  const existingLog = await DailyLog.findOne({
+  const existing = await DailyLog.findOne({
     driverId: req.user.id,
-    logDate: today
+    logDate: today,
+    signOutTime: { $exists: false }
   });
 
-  if (existingLog) {
-    return res.status(400).json({ msg: "Already signed in today" });
+  if (existing) {
+    return res.status(400).json({ msg: "Already signed in" });
   }
 
   await DailyLog.create({
     driverId: req.user.id,
     logDate: today,
     signInTime: new Date(),
-    signInStation: req.body.station
+    fromStation,
+    twNumber,
+    breathAnalyserDone
   });
 
   res.json({ msg: "Signed in successfully" });
 };
 
-/* SIGN OUT */
+/* ================= SIGN OUT ================= */
 export const driverSignOut = async (req, res) => {
-  const { hours, km, mileage, station } = req.body;
+  const { toStation, hours, km } = req.body;
 
-  if (!hours || !km) {
-    return res.status(400).json({ msg: "Hours and KM required" });
+  if (!toStation || !hours || !km) {
+    return res.status(400).json({ msg: "Missing sign-out data" });
   }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const log = await DailyLog.findOne({
     driverId: req.user.id,
-    signOutTime: null
+    logDate: today,
+    signOutTime: { $exists: false }
   });
 
   if (!log) {
@@ -106,15 +142,17 @@ export const driverSignOut = async (req, res) => {
   }
 
   log.signOutTime = new Date();
-  log.signOutStation = station;
-  log.hours = hours;
-  log.km = km;
-  log.mileage = mileage;
+  log.toStation = toStation;
+  log.hours = Number(hours);
+  log.km = Number(km);
+  log.mileage = log.hours * 20 + log.km;
 
   await log.save();
 
   res.json({ msg: "Signed out successfully" });
 };
+
+
 
 /* ===================== ALERTS ===================== */
 

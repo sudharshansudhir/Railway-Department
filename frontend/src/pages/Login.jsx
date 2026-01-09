@@ -69,10 +69,10 @@ export default function Login() {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-800">
-            Railway Management System
+            Tower Wagon Driver Management system
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Secure Access Portal
+             TRD/SA Division
           </p>
         </div>
 
