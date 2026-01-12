@@ -12,6 +12,7 @@ import {
   BadgeIndianRupee,
   Hash
 } from "lucide-react";
+import Navbar from "../components/Navbar";
 
 export default function DriverDetails() {
   const { driverId } = useParams();
@@ -19,12 +20,12 @@ export default function DriverDetails() {
   const [logs, setLogs] = useState([]);
   const [tCards, setTCards] = useState([]);
 
+  /* ================= LOAD T-CARDS ================= */
   useEffect(() => {
-  api.get(`/depot/driver/${driverId}/tcards`)
-    .then(res => setTCards(res.data))
-    .catch(() => setTCards([]));
-}, [driverId]);
-
+    api.get(`/depot/driver/${driverId}/tcards`)
+      .then(res => setTCards(res.data))
+      .catch(() => setTCards([]));
+  }, [driverId]);
 
   /* ================= LOAD DRIVER PROFILE ================= */
   useEffect(() => {
@@ -33,16 +34,6 @@ export default function DriverDetails() {
       setLogs(res.data.logs || []);
     });
   }, [driverId]);
-
-  /* ================= LOAD DAILY LOGS ================= */
-  // useEffect(() => {
-  //   if (!data?.pfNo) return;
-
-  //   api.get("/depot/daily-logs").then(res => {
-  //     const driverLogs = res.data.find(d => d.pfNo === data.pfNo);
-  //     if (driverLogs) setLogs(driverLogs.dailyLogs);
-  //   });
-  // }, [data?.pfNo]);
 
   if (!data) {
     return (
@@ -53,8 +44,12 @@ export default function DriverDetails() {
   }
 
   const profile = data.profile || {};
+  const trainings = profile.trainings || {};
+  const lrList = profile.lrDetails || [];
 
   return (
+    <>
+    <Navbar/>
     <div className="min-h-screen bg-slate-100 px-4 py-6">
       <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
 
@@ -77,210 +72,171 @@ export default function DriverDetails() {
           </InfoGrid>
         </Section>
 
-        {/* COMPLETE BIO DATA */}
+        {/* BIO DATA */}
         <Section title="Complete Bio Data" icon={<ClipboardList />}>
           <InfoGrid>
             <InfoCard label="HRMS ID" value={profile.hrmsId || "-"} icon={<Hash />} />
-            <InfoCard label="Designation" value={profile.designation || "-"} icon={<User />} />
+            <InfoCard label="Designation" value={profile.designation || "-"} />
             <InfoCard label="Basic Pay" value={profile.basicPay || "-"} icon={<BadgeIndianRupee />} />
             <InfoCard
               label="Date of Appointment"
-              value={
-                profile.dateOfAppointment
-                  ? profile.dateOfAppointment.substring(0, 10)
-                  : "-"
-              }
+              value={profile.dateOfAppointment?.substring(0, 10) || "-"}
               icon={<Calendar />}
             />
             <InfoCard
               label="Date of Entry as TWD"
-              value={
-                profile.dateOfEntryAsTWD
-                  ? profile.dateOfEntryAsTWD.substring(0, 10)
-                  : "-"
-              }
+              value={profile.dateOfEntryAsTWD?.substring(0, 10) || "-"}
               icon={<Calendar />}
             />
           </InfoGrid>
         </Section>
 
-        {/* TRAINING DETAILS */}
+        {/* ================= TRAINING TABLE ================= */}
         <Section title="Training / Health Details" icon={<Activity />}>
-          <InfoGrid>
-            <InfoCard
-              label="Training Section"
-              value={profile.training?.section || "-"}
-            />
-            <InfoCard
-              label="Training Done Date"
-              value={
-                profile.training?.doneDate
-                  ? profile.training.doneDate.substring(0, 10)
-                  : "-"
-              }
-            />
-            <InfoCard
-              label="Training Due Date"
-              value={
-                profile.training?.dueDate
-                  ? profile.training.dueDate.substring(0, 10)
-                  : "-"
-              }
-            />
-            <InfoCard
-              label="Training Schedule"
-              value={profile.training?.schedule || "-"}
-            />
-          </InfoGrid>
-        </Section>
-
-        {/* LR DETAILS */}
-        <Section title="LR (Road Learning) Details" icon={<FileText />}>
-          <InfoGrid>
-            <InfoCard
-              label="LR Section"
-              value={
-                profile.lrDetails?.section
-                  ? profile.lrDetails.section
-                  : "-"
-              }
-            />
-            <InfoCard
-              label="LR Done Date"
-              value={
-                profile.lrDetails?.doneDate
-                  ? profile.lrDetails.doneDate.substring(0, 10)
-                  : "-"
-              }
-            />
-            <InfoCard
-              label="LR Due Date"
-              value={
-                profile.lrDetails?.dueDate
-                  ? profile.lrDetails.dueDate.substring(0, 10)
-                  : "-"
-              }
-            />
-            <InfoCard
-              label="LR Schedule"
-              value={profile.lrDetails?.schedule || "-"}
-            />
-          </InfoGrid>
-        </Section>
-
-        {/* DAILY DUTY LOGS */}
-        <Section title="Daily Duty Logs" icon={<ClipboardList />}>
-          <div className="overflow-x-auto rounded-xl border">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-100 text-gray-700">
-                <tr>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Sign ON</TableHead>
-                  <TableHead>Sign OFF</TableHead>
-                  <TableHead>KM</TableHead>
-                  <TableHead>Hours</TableHead>
-                  <TableHead>Mileage</TableHead>
+          <TableWrapper>
+            <thead>
+              <tr>
+                <TableHead>Training Type</TableHead>
+                <TableHead>Done Date</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead>Schedule</TableHead>
+              </tr>
+            </thead>
+            <tbody>
+              {["PME", "GRS_RC", "TR4", "OC"].map(type => (
+                <tr key={type}>
+                  <TableCell>{type}</TableCell>
+                  <TableCell>{trainings[type]?.doneDate?.substring(0, 10) || "-"}</TableCell>
+                  <TableCell>{trainings[type]?.dueDate?.substring(0, 10) || "-"}</TableCell>
+                  <TableCell>{trainings[type]?.schedule || "-"}</TableCell>
                 </tr>
-              </thead>
-              <tbody>
-                {logs.length === 0 && (
-                  <tr>
-                    <td colSpan="6" className="text-center py-6 text-gray-500">
-                      No duty logs available
-                    </td>
-                  </tr>
-                )}
-
-                {logs.map(log => (
-                  <tr key={log._id} className="hover:bg-slate-50 transition">
-                    <TableCell>{log.logDate?.substring(0, 10)}</TableCell>
-                    <TableCell>
-  {log.fromStation}<br />
-  <span className="text-xs text-gray-500">
-    {new Date(log.signInTime).toLocaleTimeString()}
-  </span>
-</TableCell>
-
-<TableCell>
-  {log.toStation}<br />
-  <span className="text-xs text-gray-500">
-    {new Date(log.signOutTime).toLocaleTimeString()}
-  </span>
-</TableCell>
-
-                    <TableCell center>{log.km ?? "-"}</TableCell>
-                    <TableCell center>{log.hours ?? "-"}</TableCell>
-                    <TableCell center>{log.mileage ?? "-"}</TableCell>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </TableWrapper>
         </Section>
 
-        {/* ================= T-CARD CHECKLIST ================= */}
-<Section title="T-Card Daily Checklist" icon={<ClipboardList />}>
+        {/* ================= LR TABLE ================= */}
+        <Section title="LR (Road Learning) Details" icon={<FileText />}>
+          <TableWrapper>
+            <thead>
+              <tr>
+                <TableHead>Section</TableHead>
+                <TableHead>Done Date</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead>Schedule</TableHead>
+              </tr>
+            </thead>
+            <tbody>
+              {lrList.length === 0 && (
+                <tr>
+                  <td colSpan="4" className="text-center py-4 text-gray-500">
+                    No LR details available
+                  </td>
+                </tr>
+              )}
 
-  {tCards.length === 0 && (
-    <p className="text-sm text-gray-500">
-      No T-Card checklist submitted
-    </p>
-  )}
+              {lrList.map((lr, idx) => (
+                <tr key={idx}>
+                  <TableCell>{lr.section}</TableCell>
+                  <TableCell>{lr.doneDate?.substring(0, 10)}</TableCell>
+                  <TableCell>{lr.dueDate?.substring(0, 10)}</TableCell>
+                  <TableCell>{lr.schedule}</TableCell>
+                </tr>
+              ))}
+            </tbody>
+          </TableWrapper>
+        </Section>
 
-  {tCards.map(card => (
-    <div
-      key={card._id}
-      className="border rounded-xl p-4 mb-6 bg-slate-50"
-    >
-      <div className="flex justify-between mb-3 text-sm font-semibold">
-        <span>
-          Date: {card.date.substring(0, 10)}
-        </span>
-        <span>
-          T-Car No: {card.tCarNo}
-        </span>
-      </div>
+        {/* ================= DAILY DUTY LOGS ================= */}
+        <Section title="Daily Duty Logs" icon={<ClipboardList />}>
+          <TableWrapper>
+            <thead>
+              <tr>
+                <TableHead>Date</TableHead>
+                <TableHead>Sign ON</TableHead>
+                <TableHead>Sign OFF</TableHead>
+                <TableHead>KM</TableHead>
+                <TableHead>Hours</TableHead>
+                <TableHead>Mileage</TableHead>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="text-center py-6 text-gray-500">
+                    No duty logs available
+                  </td>
+                </tr>
+              )}
 
-      <div className="space-y-2">
-        {card.items.map((item, idx) => (
-          <div
-            key={idx}
-            className="flex items-start gap-3 text-sm"
-          >
-            <span className="mt-0.5">
-              {item.checked ? "✅" : "❌"}
-            </span>
-            <div className="flex-1">
-              <p className="font-medium">
-                {item.description}
-              </p>
-              <p className="text-xs text-gray-500">
-                Remarks: {item.remarks || "-"}
-              </p>
+              {logs.map(log => (
+                <tr key={log._id}>
+                  <TableCell>{log.logDate?.substring(0, 10)}</TableCell>
+                  <TableCell>
+                    {log.fromStation}
+                    <br />
+                    <span className="text-xs text-gray-500">
+                      {new Date(log.signInTime).toLocaleTimeString()}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {log.toStation}
+                    <br />
+                    <span className="text-xs text-gray-500">
+                      {new Date(log.signOutTime).toLocaleTimeString()}
+                    </span>
+                  </TableCell>
+                  <TableCell center>{log.km}</TableCell>
+                  <TableCell center>{log.hours}</TableCell>
+                  <TableCell center>{log.mileage}</TableCell>
+                </tr>
+              ))}
+            </tbody>
+          </TableWrapper>
+        </Section>
+
+        {/* ================= T-CARD ================= */}
+        <Section title="T-Card Daily Checklist" icon={<ClipboardList />}>
+          {tCards.length === 0 && (
+            <p className="text-sm text-gray-500">No T-Card checklist submitted</p>
+          )}
+
+          {tCards.map(card => (
+            <div key={card._id} className="border rounded-xl p-4 mb-6 bg-slate-50">
+              <div className="flex justify-between mb-3 text-sm font-semibold">
+                <span>Date: {card.date.substring(0, 10)}</span>
+                <span>T-Car No: {card.tCarNo}</span>
+              </div>
+
+              {card.items.map((item, idx) => (
+                <div key={idx} className="flex gap-3 text-sm mb-2">
+                  <span>{item.checked ? "✅" : "❌"}</span>
+                  <div>
+                    <p className="font-medium">{item.description}</p>
+                    <p className="text-xs text-gray-500">
+                      Remarks: {item.remarks || "-"}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  ))}
-</Section>
-
+          ))}
+        </Section>
 
       </div>
     </div>
+    </>
   );
 }
 
-/* ================= REUSABLE UI COMPONENTS ================= */
+/* ================= UI HELPERS ================= */
 
 function Section({ title, icon, children }) {
   return (
     <div className="mb-10">
       <div className="flex items-center gap-2 mb-4">
         <div className="text-blue-700">{icon}</div>
-        <h3 className="text-lg font-semibold text-gray-800">
-          {title}
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
       </div>
       {children}
     </div>
@@ -302,16 +258,22 @@ function InfoCard({ label, value, icon }) {
         {icon && <span className="text-gray-400">{icon}</span>}
         {label}
       </p>
-      <p className="font-semibold text-gray-800">
-        {value}
-      </p>
+      <p className="font-semibold text-gray-800">{value}</p>
+    </div>
+  );
+}
+
+function TableWrapper({ children }) {
+  return (
+    <div className="overflow-x-auto rounded-xl border">
+      <table className="min-w-full text-sm">{children}</table>
     </div>
   );
 }
 
 function TableHead({ children }) {
   return (
-    <th className="px-3 py-3 border-b text-left font-semibold">
+    <th className="px-3 py-3 border-b text-left font-semibold bg-slate-100">
       {children}
     </th>
   );
@@ -319,11 +281,7 @@ function TableHead({ children }) {
 
 function TableCell({ children, center }) {
   return (
-    <td
-      className={`px-3 py-2 border-b ${
-        center ? "text-center" : "text-left"
-      }`}
-    >
+    <td className={`px-3 py-2 border-b ${center ? "text-center" : ""}`}>
       {children}
     </td>
   );

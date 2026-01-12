@@ -1,28 +1,30 @@
+import User from "../models/User.js";
 import DriverProfile from "../models/DriverProfile.js";
 import DailyLog from "../models/DailyLog.js";
 
-/* ===================== PROFILE ===================== */
+/* ======================================================
+   PROFILE
+====================================================== */
 
 /* VIEW OWN PROFILE */
-import User from "../models/User.js";
-// import DriverProfile from "../models/DriverProfile.js";
-
 export const getDriverProfile = async (req, res) => {
   const user = await User.findById(req.user.id)
     .select("name pfNo depotName");
 
   const profile = await DriverProfile.findOne({ userId: req.user.id });
 
-  res.json({
-    user,
-    profile
-  });
+  res.json({ user, profile });
 };
-
 
 /* UPDATE BIO DATA */
 export const updateBioData = async (req, res) => {
-  const { hrmsId,designation, basicPay, dateOfEntry, dateOfAppointment,dateOfEntryAsTWD } = req.body;
+  const {
+    hrmsId,
+    designation,
+    basicPay,
+    dateOfAppointment,
+    dateOfEntryAsTWD
+  } = req.body;
 
   const updated = await DriverProfile.findOneAndUpdate(
     { userId: req.user.id },
@@ -30,64 +32,82 @@ export const updateBioData = async (req, res) => {
       hrmsId,
       designation,
       basicPay,
-      dateOfEntry,
       dateOfAppointment,
       dateOfEntryAsTWD
     },
-    { new: true }
+    { new: true, upsert: true }
   );
 
   res.json(updated);
 };
 
-/* UPDATE TRAINING */
-export const updateTraining = async (req, res) => {
-  const { training } = req.body;
+/* ======================================================
+   TRAINING (UPDATED TO NEW SCHEMA)
+====================================================== */
 
-  if (!training?.section || !training?.doneDate || !training?.dueDate) {
-    return res.status(400).json({ msg: "Incomplete training details" });
+/* UPDATE TRAININGS (PME / GRS_RC / TR4 / OC) */
+export const updateTraining = async (req, res) => {
+  const { trainings } = req.body;
+
+  if (!trainings) {
+    return res.status(400).json({ msg: "Training data missing" });
   }
 
   const updated = await DriverProfile.findOneAndUpdate(
     { userId: req.user.id },
-    { training },
-    { new: true }
+    { $set: { trainings } },
+    { new: true, upsert: true }
   );
 
-  res.json(updated);
+  res.json({
+    msg: "Training details updated successfully",
+    trainings: updated.trainings
+  });
 };
 
-/* UPDATE LR */
+/* ======================================================
+   LR (NO SECTION)
+====================================================== */
+
+/* ======================================================
+   LR – MULTIPLE ENTRIES
+====================================================== */
+
 export const updateLR = async (req, res) => {
-  try {
-    const { lrDetails } = req.body;
+  const { lrDetails } = req.body;
 
-    if (!lrDetails?.section || !lrDetails?.doneDate || !lrDetails?.dueDate) {
-      return res.status(400).json({
-        msg: "LR Section, Done Date and Due Date are mandatory"
-      });
-    }
-
-    const profile = await DriverProfile.findOneAndUpdate(
-      { userId: req.user.id },
-      { $set: { lrDetails } },
-      { new: true, upsert: true }
-    );
-
-    res.json({
-      msg: "LR details updated successfully",
-      lrDetails: profile.lrDetails
+  if (
+    !lrDetails?.section ||
+    !lrDetails?.doneDate ||
+    !lrDetails?.dueDate
+  ) {
+    return res.status(400).json({
+      msg: "LR Section, Done Date and Due Date are mandatory"
     });
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
   }
+
+  const updated = await DriverProfile.findOneAndUpdate(
+    { userId: req.user.id },
+    {
+      $push: {
+        lrDetails: lrDetails
+      }
+    },
+    { new: true, upsert: true }
+  );
+
+  res.json({
+    msg: "LR entry added successfully",
+    lrDetails: updated.lrDetails
+  });
 };
 
 
-/* ===================== DUTY LOG ===================== */
-/* ================= SIGN IN ================= */
+/* ======================================================
+   DUTY LOG
+====================================================== */
 
-/* ================= SIGN IN ================= */
+/* SIGN IN */
 export const driverSignIn = async (req, res) => {
   const { fromStation, twNumber, breathAnalyserDone } = req.body;
 
@@ -120,7 +140,7 @@ export const driverSignIn = async (req, res) => {
   res.json({ msg: "Signed in successfully" });
 };
 
-/* ================= SIGN OUT ================= */
+/* SIGN OUT */
 export const driverSignOut = async (req, res) => {
   const { toStation, hours, km } = req.body;
 
@@ -152,42 +172,55 @@ export const driverSignOut = async (req, res) => {
   res.json({ msg: "Signed out successfully" });
 };
 
-
-
-/* ===================== ALERTS ===================== */
+/* ======================================================
+   ALERTS (UPDATED FOR MULTI-TRAINING)
+====================================================== */
 
 export const driverAlerts = async (req, res) => {
   const profile = await DriverProfile.findOne({ userId: req.user.id });
   const today = new Date();
-
   const alerts = [];
 
-  if (profile?.training?.dueDate && profile.training.dueDate < today) {
-    alerts.push({ type: "TRAINING", message: "Training overdue" });
+  /* TRAINING ALERTS */
+  if (profile?.trainings) {
+    Object.entries(profile.trainings).forEach(([key, value]) => {
+      if (value?.dueDate && value.dueDate < today) {
+        alerts.push({
+          type: "TRAINING",
+          message: `${key} training overdue`
+        });
+      }
+    });
   }
 
-  if (profile?.lrDetails?.dueDate && profile.lrDetails.dueDate < today) {
-    alerts.push({ type: "LR", message: "LR overdue" });
+  /* 🔥 LR ALERT – CHECK LATEST ENTRY */
+  if (profile?.lrDetails?.length) {
+    const latestLR = profile.lrDetails.at(-1);
+    if (latestLR?.dueDate && latestLR.dueDate < today) {
+      alerts.push({
+        type: "LR",
+        message: `LR overdue for ${latestLR.section}`
+      });
+    }
   }
 
   res.json(alerts);
 };
+/* ======================================================
+   DUTY STATUS CHECKS
+====================================================== */
 
+/* CHECK ACTIVE DUTY */
 export const checkActiveDuty = async (req, res) => {
-  try {
-    const activeLog = await DailyLog.findOne({
-      driverId: req.user.id,
-      signOutTime: null
-    });
+  const activeLog = await DailyLog.findOne({
+    driverId: req.user.id,
+    signOutTime: null
+  });
 
-    res.json({
-      active: !!activeLog
-    });
-  } catch (err) {
-    res.status(500).json({ msg: "Failed to check duty status" });
-  }
+  res.json({ active: !!activeLog });
 };
 
+/* GET YESTERDAY DUTY STATUS */
 export const getDutyStatus = async (req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -200,13 +233,8 @@ export const getDutyStatus = async (req, res) => {
     logDate: yesterday
   });
 
-  if (!log) {
-    return res.json({ status: "NO_DUTY" });
-  }
-
-  if (!log.signOutTime) {
-    return res.json({ status: "INCOMPLETE" });
-  }
+  if (!log) return res.json({ status: "NO_DUTY" });
+  if (!log.signOutTime) return res.json({ status: "INCOMPLETE" });
 
   res.json({ status: "COMPLETED" });
 };

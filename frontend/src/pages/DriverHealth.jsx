@@ -4,12 +4,16 @@ import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
 import { HeartPulse, Calendar, ClipboardCheck } from "lucide-react";
 
+/* 🔥 PREDEFINED TRAININGS */
+const TRAINING_KEYS = ["PME", "GRS_RC", "TR4", "OC"];
+
 export default function DriverHealth() {
-  const [training, setTraining] = useState({
-    section: "",
-    doneDate: "",
-    dueDate: "",
-    schedule: ""
+
+  const [trainings, setTrainings] = useState({
+    PME: { doneDate: "", dueDate: "", schedule: "" },
+    GRS_RC: { doneDate: "", dueDate: "", schedule: "" },
+    TR4: { doneDate: "", dueDate: "", schedule: "" },
+    OC: { doneDate: "", dueDate: "", schedule: "" }
   });
 
   const [saving, setSaving] = useState(false);
@@ -19,19 +23,22 @@ export default function DriverHealth() {
   useEffect(() => {
     api.get("/driver/profile")
       .then(res => {
-        const existingTraining = res.data?.profile?.training;
+        const existing = res.data?.profile?.trainings;
 
-        if (existingTraining) {
-          setTraining({
-            section: existingTraining.section || "",
-            doneDate: existingTraining.doneDate
-              ? existingTraining.doneDate.substring(0, 10)
-              : "",
-            dueDate: existingTraining.dueDate
-              ? existingTraining.dueDate.substring(0, 10)
-              : "",
-            schedule: existingTraining.schedule || ""
+        if (existing) {
+          const formatted = {};
+          TRAINING_KEYS.forEach(key => {
+            formatted[key] = {
+              doneDate: existing[key]?.doneDate
+                ? existing[key].doneDate.substring(0, 10)
+                : "",
+              dueDate: existing[key]?.dueDate
+                ? existing[key].dueDate.substring(0, 10)
+                : "",
+              schedule: existing[key]?.schedule || ""
+            };
           });
+          setTrainings(formatted);
         }
       })
       .catch(() => {
@@ -42,47 +49,39 @@ export default function DriverHealth() {
 
   /* ================= SAVE ================= */
   const save = async () => {
-    if (!training.section || !training.doneDate || !training.dueDate) {
-      Swal.fire({
-        icon: "warning",
-        title: "Incomplete Details",
-        text: "Section, Done Date & Due Date are mandatory",
-        confirmButtonColor: "#2563eb",
-      });
-      return;
+    for (const key of TRAINING_KEYS) {
+      const t = trainings[key];
+      if ((t.doneDate || t.dueDate || t.schedule) &&
+          (!t.doneDate || !t.dueDate)) {
+        Swal.fire({
+          icon: "warning",
+          title: "Incomplete Details",
+          text: `${key} training requires Done Date & Due Date`,
+        });
+        return;
+      }
     }
 
     try {
       setSaving(true);
 
       await api.put("/driver/profile/training", {
-        training: {
-          ...training
-        }
+        trainings
       });
 
       Swal.fire({
         icon: "success",
         title: "Training Updated",
-        text: "Training details saved successfully",
+        text: "All training details saved successfully",
         timer: 1400,
         showConfirmButton: false,
       });
-    } catch (err) {
-      Swal.fire({
-        icon: "error",
-        title: "Save Failed",
-        text: "Unable to save training details",
-        confirmButtonColor: "#dc2626",
-      });
+    } catch {
+      Swal.fire("Error", "Unable to save training details", "error");
     } finally {
       setSaving(false);
     }
   };
-
-  const isOverdue =
-    training.dueDate &&
-    new Date(training.dueDate) < new Date();
 
   if (loading) {
     return (
@@ -100,10 +99,10 @@ export default function DriverHealth() {
       <Navbar />
 
       <div className="min-h-screen bg-slate-100 px-4 py-6">
-        <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
+        <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
 
           {/* HEADER */}
-          <div className="mb-6 text-center">
+          <div className="mb-8 text-center">
             <div className="flex justify-center mb-2">
               <div className="p-3 rounded-full bg-emerald-100">
                 <HeartPulse className="text-emerald-700" />
@@ -113,74 +112,99 @@ export default function DriverHealth() {
               Health / Training Details
             </h2>
             <p className="text-sm text-gray-500">
-              View & update mandatory training compliance
+              Maintain mandatory training compliance
             </p>
           </div>
 
-          {/* STATUS */}
-          {training.dueDate && (
-            <div
-              className={`mb-6 p-4 rounded-xl flex items-center gap-3
-                ${
-                  isOverdue
-                    ? "bg-red-50 text-red-700 border border-red-200"
-                    : "bg-green-50 text-green-700 border border-green-200"
-                }`}
-            >
-              <ClipboardCheck />
-              <p className="text-sm font-medium">
-                {isOverdue
-                  ? "Training overdue. Immediate action required."
-                  : `Training valid till ${training.dueDate}`}
-              </p>
-            </div>
-          )}
-
-          {/* FORM */}
-          <div className="space-y-5">
-
-            <InputField
-              label="Type of Training"
-              placeholder="Diesel / Electric / EMU"
-              value={training.section}
-              onChange={v => setTraining({ ...training, section: v })}
-            />
-
-            <DateField
-              label="Training Done Date"
-              value={training.doneDate}
-              onChange={v => setTraining({ ...training, doneDate: v })}
-            />
-
-            <DateField
-              label="Next Due Date"
-              value={training.dueDate}
-              onChange={v => setTraining({ ...training, dueDate: v })}
-            />
-
-            <InputField
-              label="Schedule"
-              placeholder="Annual / 2 Years"
-              value={training.schedule}
-              onChange={v => setTraining({ ...training, schedule: v })}
-            />
-
-            <button
-              onClick={save}
-              disabled={saving}
-              className={`w-full py-2.5 rounded-xl font-semibold text-white transition
-                ${
-                  saving
-                    ? "bg-emerald-400 cursor-not-allowed"
-                    : "bg-emerald-600 hover:bg-emerald-700"
-                }`}
-            >
-              {saving ? "Saving..." : "Save Training Details"}
-            </button>
+          {/* TRAINING SECTIONS */}
+          <div className="space-y-8">
+            {TRAINING_KEYS.map(key => (
+              <TrainingSection
+                key={key}
+                title={key.replace("_", " ")}
+                data={trainings[key]}
+                onChange={v =>
+                  setTrainings({
+                    ...trainings,
+                    [key]: v
+                  })
+                }
+              />
+            ))}
           </div>
+
+          {/* SAVE BUTTON */}
+          <button
+            onClick={save}
+            disabled={saving}
+            className={`w-full mt-8 py-2.5 rounded-xl font-semibold text-white transition
+              ${
+                saving
+                  ? "bg-emerald-400 cursor-not-allowed"
+                  : "bg-emerald-600 hover:bg-emerald-700"
+              }`}
+          >
+            {saving ? "Saving..." : "Save Training Details"}
+          </button>
+
         </div>
       </div>
     </>
+  );
+}
+
+/* ================= TRAINING SECTION ================= */
+
+function TrainingSection({ title, data, onChange }) {
+  const isOverdue =
+    data.dueDate && new Date(data.dueDate) < new Date();
+
+  return (
+    <div className="border rounded-xl p-5 bg-slate-50">
+
+      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+        <ClipboardCheck />
+        {title}
+      </h3>
+
+      {data.dueDate && (
+        <div
+          className={`mb-4 p-3 rounded-lg text-sm
+            ${
+              isOverdue
+                ? "bg-red-50 text-red-700 border border-red-200"
+                : "bg-green-50 text-green-700 border border-green-200"
+            }`}
+        >
+          {isOverdue
+            ? "Training overdue"
+            : `Valid till ${data.dueDate}`}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <DateField
+          label="Done Date"
+          value={data.doneDate}
+          onChange={v => onChange({ ...data, doneDate: v })}
+        />
+
+        <DateField
+          label="Next Due Date"
+          value={data.dueDate}
+          onChange={v => onChange({ ...data, dueDate: v })}
+        />
+
+        <InputField
+          label="Schedule"
+          placeholder="Annual / 2 Years"
+          value={data.schedule}
+          onChange={v => onChange({ ...data, schedule: v })}
+        />
+
+      </div>
+    </div>
   );
 }
 
@@ -189,9 +213,7 @@ export default function DriverHealth() {
 function InputField({ label, value, onChange, placeholder }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-1">
-        {label}
-      </label>
+      <label className="block text-sm font-semibold mb-1">{label}</label>
       <input
         type="text"
         value={value}
@@ -207,8 +229,8 @@ function InputField({ label, value, onChange, placeholder }) {
 function DateField({ label, value, onChange }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-1">
-        {label}
+      <label className="block text-sm font-semibold mb-1 flex items-center gap-1">
+        <Calendar size={14} /> {label}
       </label>
       <input
         type="date"

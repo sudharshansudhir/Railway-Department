@@ -4,23 +4,25 @@ import User from "../models/User.js";
 export const getDriverTCardsForDepot = async (req, res) => {
   try {
     const { driverId } = req.params;
+    const depotName = req.user.depotName;
 
-    // 🔒 Ensure driver belongs to same depot
     const driver = await User.findOne({
       _id: driverId,
       role: "DRIVER",
-      depotName: req.user.depotName
+      depotName
     });
 
     if (!driver) {
-      return res.status(403).json({ msg: "Access denied" });
+      return res.status(403).json({
+        msg: "Access denied"
+      });
     }
 
-    const tcards = await TCardChecklist.find({
+    const cards = await TCardChecklist.find({
       driverId
     }).sort({ date: -1 });
 
-    res.json(tcards);
+    res.json(cards);
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }

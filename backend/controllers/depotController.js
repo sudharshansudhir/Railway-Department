@@ -6,35 +6,36 @@ import DriverProfile from "../models/DriverProfile.js";
 // import User from "../models/User.js";
 // import DriverProfile from "../models/DriverProfile.js";
 // import DailyLog from "../models/DailyLog.js";
-
 export const getDriverFullProfile = async (req, res) => {
   try {
-    const driverId = req.params.driverId;
+    const { driverId } = req.params;
+    const depotName = req.user.depotName;
 
-    /* 🔒 Ensure same depot */
-    const driver = await User.findOne({
+    const user = await User.findOne({
       _id: driverId,
       role: "DRIVER",
-      depotName: req.user.depotName
+      depotName // 🔥 SECURITY CHECK
     }).select("name pfNo depotName");
 
-    if (!driver) {
-      return res.status(403).json({ msg: "Access denied" });
+    if (!user) {
+      return res.status(403).json({
+        msg: "Access denied to this driver"
+      });
     }
 
-    const profile = await DriverProfile.findOne({ userId: driverId });
-
-    const logs = await DailyLog.find({ driverId })
-      .sort({ logDate: -1 });
-
-    res.json({
-      name: driver.name,
-      pfNo: driver.pfNo,
-      depotName: driver.depotName,
-      profile,
-      logs            // ✅ IMPORTANT
+    const profile = await DriverProfile.findOne({
+      userId: driverId
     });
 
+    const logs = await DailyLog.find({
+      driverId
+    }).sort({ logDate: -1 });
+
+    res.json({
+      ...user.toObject(),
+      profile,
+      logs
+    });
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
@@ -43,12 +44,26 @@ export const getDriverFullProfile = async (req, res) => {
 
 // Current function to get only drivers (keep it if needed)
 export const getDepotDrivers = async (req, res) => {
-  const drivers = await User.find({
-    role: "DRIVER",
-    depotName: req.user.depotName
-  }).select("name pfNo depotName"); // only return necessary fields
+  try {
+    const depotName = req.user.depotName; // 🔥 FROM JWT
 
-  res.json(drivers);
+    if (!depotName) {
+      return res.status(400).json({
+        msg: "Depot not assigned to this manager"
+      });
+    }
+
+    const drivers = await User.find({
+      role: "DRIVER",
+      depotName: depotName // 🔥 CRITICAL FILTER
+    })
+      .select("name pfNo depotName")
+      .sort({ name: 1 });
+
+    res.json(drivers);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
 };
 
 // NEW: Get depot drivers + their daily logs
