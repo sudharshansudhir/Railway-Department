@@ -1,6 +1,6 @@
 import express from "express";
 import { verifyToken, allowRoles } from "../middleware/auth.js";
-import { getAdminReport, getAdminUsers } from "../controllers/adminController.js";
+import { adminRegisterUser, getAdminReport, getAdminUsers, getDistinctDepots } from "../controllers/adminController.js";
 import { downloadAdminReport } from "../controllers/adminController.js";
 
 
@@ -14,6 +14,22 @@ router.get(
   allowRoles("SUPER_ADMIN"),
   getAdminReport
 );
+
+router.post(
+  "/register",
+  verifyToken,
+  allowRoles("SUPER_ADMIN"),
+  adminRegisterUser
+);
+
+router.get(
+  "/depots",
+  verifyToken,
+  allowRoles("SUPER_ADMIN"),
+  getDistinctDepots
+);
+
+
 
 router.get(
   "/users",

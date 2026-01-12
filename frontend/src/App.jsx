@@ -17,6 +17,7 @@ import AdminReportDownload from "./pages/AdminReportDownload";
 import CircularList from "./pages/CircularList";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRegister from "./pages/AdminRegister";
 
 export default function App() {
   return (
@@ -34,6 +35,12 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+  path="/admin/register"
+  element={<AdminRegister />}
+/>
+
 
       <Route
         path="/driver/daily"
