@@ -96,7 +96,7 @@ export default function DailyActivity() {
 
   /* ================= SIGN OUT ================= */
   const signOut = async () => {
-    if (!hours || !km) {
+    if (!hours || !km || !breathAnalyserDone) {
       Swal.fire("Missing Data", "Hours & KM required", "warning");
       return;
     }
@@ -110,7 +110,8 @@ export default function DailyActivity() {
       await api.post("/driver/signout", {
         toStation: loc,
         hours,
-        km
+        km,
+        breathAnalyserDone
       });
 
       Swal.fire({
@@ -176,16 +177,7 @@ export default function DailyActivity() {
               disabled={signedIn}
             />
 
-            <label className="flex items-center gap-3 mt-3 text-sm font-semibold text-gray-700">
-              <input
-                type="checkbox"
-                checked={breathAnalyserDone}
-                disabled={signedIn}
-                onChange={e => setBreathAnalyserDone(e.target.checked)}
-              />
-              Breath Analyser Test Done
-            </label>
-
+         
             <ActionButton
               label={signedIn ? "Signed ON" : "Sign ON"}
               icon={<CheckCircle />}
@@ -224,6 +216,16 @@ export default function DailyActivity() {
               onChange={setKm}
               disabled={!signedIn}
             />
+               <label className="flex items-center gap-3 mt-3 text-sm font-semibold text-gray-700">
+              <input
+                type="checkbox"
+                checked={breathAnalyserDone}
+                // disabled={signedIn}
+                onChange={e => setBreathAnalyserDone(!breathAnalyserDone)}
+              />
+              Breath Analyser Test Done
+            </label>
+
 
             {/* MILEAGE */}
             <div className="mt-4 flex items-center gap-4 bg-indigo-50 border border-indigo-200 p-4 rounded-xl">

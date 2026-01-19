@@ -32,6 +32,7 @@ export default function DriverDetails() {
     api.get(`/depot/driver/${driverId}`).then(res => {
       setData(res.data);
       setLogs(res.data.logs || []);
+      console.log(res.data.logs)
     });
   }, [driverId]);
 
@@ -156,6 +157,7 @@ export default function DriverDetails() {
                 <TableHead>Sign ON</TableHead>
                 <TableHead>Sign OFF</TableHead>
                 <TableHead>KM</TableHead>
+                <TableHead>Breath Analyse</TableHead>
                 <TableHead>Hours</TableHead>
                 <TableHead>Mileage</TableHead>
               </tr>
@@ -187,6 +189,7 @@ export default function DriverDetails() {
                     </span>
                   </TableCell>
                   <TableCell center>{log.km}</TableCell>
+                  <TableCell center>{log.breathAnalyserDone?"YES":"NO"}</TableCell>
                   <TableCell center>{log.hours}</TableCell>
                   <TableCell center>{log.mileage}</TableCell>
                 </tr>

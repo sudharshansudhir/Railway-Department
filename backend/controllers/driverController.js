@@ -142,7 +142,7 @@ export const driverSignIn = async (req, res) => {
 
 /* SIGN OUT */
 export const driverSignOut = async (req, res) => {
-  const { toStation, hours, km } = req.body;
+  const { toStation, hours, km ,breathAnalyserDone} = req.body;
 
   if (!toStation || !hours || !km) {
     return res.status(400).json({ msg: "Missing sign-out data" });
@@ -165,6 +165,7 @@ export const driverSignOut = async (req, res) => {
   log.toStation = toStation;
   log.hours = Number(hours);
   log.km = Number(km);
+  log.breathAnalyserDone=breathAnalyserDone;
   log.mileage = log.hours * 20 + log.km;
 
   await log.save();
@@ -216,6 +217,7 @@ export const checkActiveDuty = async (req, res) => {
     driverId: req.user.id,
     signOutTime: null
   });
+  // console.log(activeLog)
 
   res.json({ active: !!activeLog });
 };

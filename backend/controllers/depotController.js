@@ -31,6 +31,7 @@ export const getDriverFullProfile = async (req, res) => {
       driverId
     }).sort({ logDate: -1 });
 
+    console.log(logs)
     res.json({
       ...user.toObject(),
       profile,
