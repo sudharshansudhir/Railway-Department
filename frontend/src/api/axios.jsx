@@ -1,8 +1,7 @@
 import axios from "axios";
-const PORT=process.env.PORT;
 
 const api = axios.create({
-  baseURL: `${PORT}`, // backend
+  baseURL: `${import.meta.env.VITE_API_URI}`, // backend
 });
 
 api.interceptors.request.use((config) => {
