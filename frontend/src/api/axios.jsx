@@ -1,7 +1,8 @@
 import axios from "axios";
+const PORT=process.env.PORT;
 
 const api = axios.create({
-  baseURL: "http://localhost:3000/api", // backend
+  baseURL: `${PORT}`, // backend
 });
 
 api.interceptors.request.use((config) => {
