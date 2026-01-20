@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   pfNo: { type: String, unique: true }, // mainly for driver
-  email: { type: String, unique: true,sparse: true },
   password: { type: String, required: true },
 
   role: {

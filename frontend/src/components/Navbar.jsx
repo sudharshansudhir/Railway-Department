@@ -96,8 +96,7 @@ const logout = async () => {
 
           {/* LOGO */}
           <div
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-2 "
           >
             <Train className="text-indigo-600" />
             <span className="font-bold text-lg text-gray-800">
