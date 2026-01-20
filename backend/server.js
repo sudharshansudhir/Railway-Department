@@ -27,11 +27,11 @@ app.get("/", (req, res) => {
 });
 
 /* ROUTES */
-app.use("/api/auth", authRoutes);
-app.use("/api/driver", driverRoutes);
-app.use("/api/depot", depotRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/admin", circularRoutes);
+app.use("/auth", authRoutes);
+app.use("/driver", driverRoutes);
+app.use("/depot", depotRoutes);
+app.use("/admin", adminRoutes);
+app.use("/admin", circularRoutes);
 
 const PORT = process.env.PORT || 5000;
 
