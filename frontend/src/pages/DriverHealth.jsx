@@ -3,6 +3,7 @@ import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
 import { HeartPulse, Calendar, ClipboardCheck } from "lucide-react";
+import Footer from "../components/Footer";
 
 /* 🔥 PREDEFINED TRAININGS */
 const TRAINING_KEYS = ["PME", "GRS_RC", "TR4", "OC"];
@@ -149,6 +150,7 @@ export default function DriverHealth() {
 
         </div>
       </div>
+      <Footer/>
     </>
   );
 }

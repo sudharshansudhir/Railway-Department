@@ -12,6 +12,7 @@ import {
   ScrollText
 } from "lucide-react";
 import Swal from "sweetalert2";
+import Footer from "../components/Footer";
 
 export default function DriverDashboard() {
   const navigate = useNavigate();
@@ -201,6 +202,7 @@ export default function DriverDashboard() {
           </div>
         </div>
       </div>
+      <Footer/>
     </>
   );
 }

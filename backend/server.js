@@ -36,6 +36,5 @@ app.use("/admin", circularRoutes);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, async() => {
-  console.log(await bcrypt.hash("driver123",10))
   console.log(`Server running on port ${PORT}`);
 });

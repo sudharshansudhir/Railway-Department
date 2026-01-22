@@ -3,6 +3,7 @@ import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
 import { FileText, Calendar, Layers } from "lucide-react";
+import Footer from "../components/Footer";
 
 export default function DriverLR() {
 
@@ -94,6 +95,7 @@ export default function DriverLR() {
 
         </div>
       </div>
+      <Footer/>
     </>
   );
 }

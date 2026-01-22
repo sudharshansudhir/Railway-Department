@@ -15,11 +15,11 @@ export default defineConfig({
       },
       includeAssets: ['favicon.svg', 'robots.txt'],
       manifest: {
-        name: 'Railways App',
-        short_name: 'Railways',
+        name: 'Tower Wagon Driver Management System',
+        short_name: 'Tower Wagon Driver system',
         description: 'Railways MERN Web App',
-        theme_color: '#0d6efd',
-        background_color: '#ffffff',
+        theme_color: '#2375f1',
+        background_color: '#424242',
         display: 'standalone',
         start_url: '/',
         icons: [

@@ -15,7 +15,7 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "railway_circulars",
-    resource_type: "auto",     // 🔥 IMPORTANT
+    resource_type: "raw",     // 🔥 IMPORTANT
     allowed_formats: ["pdf"], // 🔒 PDF only
   },
 });

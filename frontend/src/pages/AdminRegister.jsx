@@ -9,6 +9,7 @@ import {
   Train,
   Shield
 } from "lucide-react";
+import Footer from "../components/Footer";
 
 export default function AdminRegister() {
   const [form, setForm] = useState({
@@ -132,6 +133,7 @@ export default function AdminRegister() {
           </div>
         </div>
       </div>
+      <Footer/>
     </>
   );
 }

@@ -9,6 +9,7 @@ import {
   Eye,
   Train
 } from "lucide-react";
+import Footer from "../components/Footer";
 
 export default function DepotManagerDashboard() {
   const [drivers, setDrivers] = useState([]);
@@ -140,6 +141,7 @@ export default function DepotManagerDashboard() {
 
         </div>
       </div>
+      <Footer/>
     </>
   );
 }

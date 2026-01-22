@@ -13,15 +13,63 @@ import {
   Users,
   FileText
 } from "lucide-react";
+import { useEffect } from "react";
+
+
+
 
 export default function Navbar() {
+
+
+
+
+
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
   const role = localStorage.getItem("role");
 
-  /* ================= LOGOUT SAFETY ================= */
+ useEffect(() => {
+  if (role === "SUPER_ADMIN") return; // admins don't get notified
+
+  const checkNewCircular = async () => {
+    try {
+      const res = await api.get("/admin/circulars");
+
+      if (!res.data.length) return;
+
+      const latestCircular = res.data[0]; // sorted desc in backend
+      const latestTime = new Date(latestCircular.createdAt).getTime();
+
+      const lastSeen = localStorage.getItem("lastSeenCircularAt");
+
+      if (!lastSeen) {
+        // first time login → mark seen silently
+        localStorage.setItem("lastSeenCircularAt", latestTime);
+        return;
+      }
+
+      if (latestTime > Number(lastSeen)) {
+        await Swal.fire({
+          icon: "info",
+          title: "New Circular Published",
+          text: `"${latestCircular.title}" has been posted by Admin`,
+          confirmButtonColor: "#4f46e5",
+        });
+
+        localStorage.setItem("lastSeenCircularAt", latestTime);
+      }
+    } catch (err) {
+      // fail silently (no user disturbance)
+      console.error("Circular check failed");
+    }
+  };
+
+  checkNewCircular();
+}, [role]);
+
+/* ================= LOGOUT SAFETY ================= */
 
 const logout = async () => {
   if (role === "DRIVER") {

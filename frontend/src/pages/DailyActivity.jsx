@@ -12,6 +12,7 @@ import {
   Hash,
   CheckCircle
 } from "lucide-react";
+import Footer from "../components/Footer";
 
 export default function DailyActivity() {
   const [fromStation, setFromStation] = useState("");
@@ -252,6 +253,7 @@ export default function DailyActivity() {
 
         </div>
       </div>
+      <Footer/>
     </>
   );
 }

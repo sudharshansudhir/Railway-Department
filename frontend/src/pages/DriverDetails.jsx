@@ -13,6 +13,7 @@ import {
   Hash
 } from "lucide-react";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 export default function DriverDetails() {
   const { driverId } = useParams();
@@ -228,6 +229,7 @@ export default function DriverDetails() {
 
       </div>
     </div>
+    <Footer/>
     </>
   );
 }

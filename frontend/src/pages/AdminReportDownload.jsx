@@ -1,43 +1,154 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import Swal from "sweetalert2";
+import { Download, Calendar, Building2 } from "lucide-react";
+import Footer from "../components/Footer";
 
 export default function AdminReportDownload() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [depot, setDepot] = useState("");
+  const [depots, setDepots] = useState([]);
 
-  const download = () => {
-    window.open(
-      `http://localhost:5000/api/admin/reports/download?from=${from}&to=${to}&depot=${depot}`,
-      "_blank"
-    );
+  // 🔹 Fetch depots from backend
+  useEffect(() => {
+    const fetchDepots = async () => {
+      try {
+        const res = await api.get("/admin/depots");
+        setDepots(res.data);
+      } catch {
+        Swal.fire("Error", "Failed to load depots", "error");
+      }
+    };
+    fetchDepots();
+  }, []);
+
+  const download = async () => {
+    if (!from || !to) {
+      Swal.fire("Missing Dates", "Please select From & To dates", "warning");
+      return;
+    }
+
+    try {
+      const res = await api.get("/admin/reports/download", {
+        params: { from, to, depot },
+        responseType: "blob",
+      });
+
+      const blob = new Blob([res.data], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `admin-report-${from}-to-${to}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch {
+      Swal.fire("Download Failed", "Unable to generate report", "error");
+    }
   };
 
   return (
     <>
       <Navbar />
+
       <div className="min-h-screen bg-slate-100 p-6">
-        <div className="max-w-xl mx-auto bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-bold mb-4">Download Admin Report</h2>
+        <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-md p-6">
 
-          <input type="date" onChange={e => setFrom(e.target.value)} className="w-full mb-3" />
-          <input type="date" onChange={e => setTo(e.target.value)} className="w-full mb-3" />
+          {/* HEADER */}
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-gray-800">
+              Admin Report Download
+            </h2>
+            <p className="text-sm text-gray-500">
+              Generate CSV reports based on date range and depot
+            </p>
+          </div>
 
-          <select onChange={e => setDepot(e.target.value)} className="w-full mb-4">
-            <option value="">All Depots</option>
-            <option value="CBE">CBE</option>
-            <option value="PTJ">PTJ</option>
-          </select>
+          {/* FILTERS */}
+          <div className="space-y-5">
 
+            {/* DATE RANGE */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date Range
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="relative">
+                  <Calendar
+                    size={18}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type="date"
+                    value={from}
+                    onChange={e => setFrom(e.target.value)}
+                    className="w-full border rounded-lg pl-10 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="relative">
+                  <Calendar
+                    size={18}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type="date"
+                    value={to}
+                    onChange={e => setTo(e.target.value)}
+                    className="w-full border rounded-lg pl-10 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* DEPOT */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Depot
+              </label>
+
+              <div className="relative">
+                <Building2
+                  size={18}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <select
+                  value={depot}
+                  onChange={e => setDepot(e.target.value)}
+                  className="w-full border rounded-lg pl-10 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                >
+                  <option value="">All Depots</option>
+                  {depots.map(d => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ACTION */}
           <button
             onClick={download}
-            className="w-full bg-indigo-600 text-white py-2 rounded"
+            className="mt-6 w-full flex items-center justify-center gap-2
+                       bg-indigo-600 text-white py-2.5 rounded-lg
+                       font-medium hover:bg-indigo-700 transition"
           >
+            <Download size={18} />
             Download CSV
           </button>
+
         </div>
       </div>
+      <Footer/>
     </>
   );
 }

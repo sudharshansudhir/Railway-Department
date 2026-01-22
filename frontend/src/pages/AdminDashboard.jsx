@@ -11,6 +11,7 @@ import {
   Filter,
   UserPlus
 } from "lucide-react";
+import Footer from "../components/Footer";
 
 export default function AdminDashboard() {
   const [depot, setDepot] = useState("");
@@ -148,6 +149,7 @@ export default function AdminDashboard() {
 
         </div>
       </div>
+      <Footer/>
     </>
   );
 }

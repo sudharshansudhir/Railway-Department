@@ -9,6 +9,7 @@ import {
   IdCard,
   Building2
 } from "lucide-react";
+import Footer from "../components/Footer";
 
 export default function DriverProfile() {
   const [user, setUser] = useState(null);
@@ -151,6 +152,7 @@ export default function DriverProfile() {
 
         </div>
       </div>
+      <Footer/>
     </>
   );
 }
