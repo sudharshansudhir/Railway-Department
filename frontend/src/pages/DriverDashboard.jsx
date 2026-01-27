@@ -45,13 +45,13 @@ export default function DriverDashboard() {
     let tCarNo = "";
 
     const { value } = await Swal.fire({
-      title: "Daily T-Card Checklist",
+      title: "Daily Tower Car Checklist",
       width: 900,
       showCancelButton: true,
       confirmButtonText: "Submit Checklist",
       html: `
         <input id="tcar" class="swal2-input"
-          placeholder="T Car No (e.g. PTJ / SR 210067)" />
+          placeholder="Tower Car No (e.g. PTJ / SR 210067)" />
 
         <div style="text-align:left; max-height:400px; overflow:auto;">
           ${items
@@ -189,7 +189,7 @@ export default function DriverDashboard() {
             <Card title="Mileage Details" icon={<ClipboardList />} onClick={() => navigate("/driver/daily")} />
 
             <Card
-              title="Daily T-Card Checklist"
+              title="Daily Tower Car Checklist"
               icon={<CheckSquare />}
               onClick={openTCardPopup}
             />

@@ -2,17 +2,36 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
-import { FileText, Calendar, Layers } from "lucide-react";
+import { Calendar, Layers } from "lucide-react";
 import Footer from "../components/Footer";
 
-export default function DriverLR() {
+/* ================= SCHEDULE CALCULATOR ================= */
+const calculateSchedule = (start, end) => {
+  console.log(start,end)
+  if (!start || !end) return "";
 
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  console.log(startDate,endDate)
+
+  const months =
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+    (endDate.getMonth() - startDate.getMonth());
+
+  if (months === 12) return "1 year";
+  if (months === 24) return "2 Years";
+  if (months % 12 === 0) return `${months / 12} Years`;
+
+  return `${months} Months`;
+};
+
+
+export default function DriverLR() {
   const [lrList, setLrList] = useState([]);
   const [lr, setLr] = useState({
     section: "",
     doneDate: "",
-    dueDate: "",
-    schedule: ""
+    dueDate: ""
   });
   const [saving, setSaving] = useState(false);
 
@@ -30,15 +49,28 @@ export default function DriverLR() {
       return;
     }
 
+    // ✅ Calculate schedule ONLY on submit
+    const schedule = calculateSchedule(lr.doneDate, lr.dueDate);
+
+    if (!schedule) {
+      Swal.fire("Invalid Dates", "Due Date must be after Done Date", "warning");
+      return;
+    }
+
     try {
       setSaving(true);
 
+      const payload = {
+        ...lr,
+        schedule
+      };
+
       const res = await api.put("/driver/profile/lr", {
-        lrDetails: lr
+        lrDetails: payload
       });
 
       setLrList(res.data.lrDetails);
-      setLr({ section: "", doneDate: "", dueDate: "", schedule: "" });
+      setLr({ section: "", doneDate: "", dueDate: "" });
 
       Swal.fire("Saved", "LR entry added successfully", "success");
     } catch (err) {
@@ -79,10 +111,36 @@ export default function DriverLR() {
 
           {/* 🔥 ADD NEW LR */}
           <div className="space-y-4 mt-6">
-            <Input label="Section" value={lr.section} onChange={v => setLr({ ...lr, section: v })} />
-            <Date label="Done Date" value={lr.doneDate} onChange={v => setLr({ ...lr, doneDate: v })} />
-            <Date label="Due Date" value={lr.dueDate} onChange={v => setLr({ ...lr, dueDate: v })} />
-            <Input label="Schedule" value={lr.schedule} onChange={v => setLr({ ...lr, schedule: v })} />
+            <Input
+              label="Section"
+              value={lr.section}
+              onChange={v =>
+                setLr(prev => ({ ...prev, section: v }))
+              }
+            />
+
+            <DateField
+              label="Done Date"
+              value={lr.doneDate}
+              onChange={v =>
+                setLr(prev => ({ ...prev, doneDate: v }))
+              }
+            />
+
+            <DateField
+              label="Due Date"
+              value={lr.dueDate}
+              onChange={v =>
+                setLr(prev => ({ ...prev, dueDate: v }))
+              }
+            />
+
+            {/* Schedule shown ONLY after save (read-only conceptually) */}
+            {/* <Input
+              label="Schedule (auto on submit)"
+              value=""
+              disabled
+            /> */}
 
             <button
               onClick={save}
@@ -95,37 +153,40 @@ export default function DriverLR() {
 
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 }
 
 /* ================= UI ================= */
 
-function Input({ label, value, onChange }) {
+function Input({ label, value, onChange, disabled }) {
   return (
     <div>
       <label className="text-sm font-semibold">{label}</label>
       <input
         value={value}
-        onChange={e => onChange(e.target.value)}
-        className="w-full border px-4 py-2 rounded-lg"
+        disabled={disabled}
+        onChange={e => onChange?.(e.target.value)}
+        className="w-full border px-4 py-2 rounded-lg
+                   disabled:bg-gray-100 disabled:cursor-not-allowed"
       />
     </div>
   );
 }
 
-function Date({ label, value, onChange }) {
+function DateField({ label, value, onChange }) {
   return (
     <div>
-      <label className="text-sm font-semibold flex gap-1 items-center">
+      <label className="block text-sm font-semibold mb-1 flex items-center gap-1">
         <Calendar size={14} /> {label}
       </label>
       <input
         type="date"
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full border px-4 py-2 rounded-lg"
+        className="w-full px-4 py-2.5 border rounded-lg text-sm
+                   focus:ring-2 focus:ring-emerald-600 focus:outline-none"
       />
     </div>
   );

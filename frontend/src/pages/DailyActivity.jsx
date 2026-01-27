@@ -18,15 +18,19 @@ export default function DailyActivity() {
   const [fromStation, setFromStation] = useState("");
   const [toStation, setToStation] = useState("");
   const [twNumber, setTwNumber] = useState("");
-  const [hours, setHours] = useState("");
   const [km, setKm] = useState("");
+  const [breathAnalyserinitial, setBreathAnalyserinitial] = useState(false);
   const [breathAnalyserDone, setBreathAnalyserDone] = useState(false);
 
   const [signedIn, setSignedIn] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [signInTime, setSignInTime] = useState(null);
+const [hours, setHours] = useState(0);
+
 
   /* ================= DERIVED ================= */
-  const mileage = Number(hours || 0) * 20 + Number(km || 0);
+const mileage = Number(hours || 0) * 20 + Number(km || 0);
+
 
   /* ================= LOCATION ================= */
   const getLocationName = async () => {
@@ -50,24 +54,41 @@ export default function DailyActivity() {
   };
 
   /* ================= CHECK ACTIVE DUTY ================= */
-  useEffect(() => {
-    api.get("/driver/active-duty").then(async res => {
-      if (res.data.active) {
-        setSignedIn(true);
-        setFromStation(res.data.fromStation);
-        setTwNumber(res.data.twNumber);
-        setBreathAnalyserDone(res.data.breathAnalyserDone);
-      } else {
-        const loc = await getLocationName();
-        setFromStation(loc);
-      }
-    });
-  }, []);
+useEffect(() => {
+  api.get("/driver/active-duty").then(async res => {
+    if (res.data.active) {
+      setSignedIn(true);
+      setFromStation(res.data.fromStation);
+      setTwNumber(res.data.twNumber);
+      setBreathAnalyserDone(res.data.breathAnalyserDone);
+      setSignInTime(res.data.signInTime); // 👈 IMPORTANT
+    } else {
+      const loc = await getLocationName();
+      setFromStation(loc);
+    }
+  });
+}, []);
+
+useEffect(() => {
+  if (!signInTime || !signedIn) return;
+
+  const interval = setInterval(() => {
+    const now = new Date();
+    const start = new Date(signInTime);
+
+    const diffMs = now - start;
+    const hrs = diffMs / (1000 * 60 * 60);
+
+    setHours(Number(hrs.toFixed(2)));
+  }, 60000); // update every 1 min
+
+  return () => clearInterval(interval);
+}, [signInTime, signedIn]);
 
   /* ================= SIGN IN ================= */
   const signIn = async () => {
     if (!twNumber) {
-      Swal.fire("Missing Data", "TW Number required", "warning");
+      Swal.fire("Missing Data", "Tower Car Number required", "warning");
       return;
     }
 
@@ -76,7 +97,7 @@ export default function DailyActivity() {
       await api.post("/driver/signin", {
         fromStation,
         twNumber,
-        breathAnalyserDone
+        breathAnalyserinitial
       });
 
       setSignedIn(true);
@@ -97,8 +118,8 @@ export default function DailyActivity() {
 
   /* ================= SIGN OUT ================= */
   const signOut = async () => {
-    if (!hours || !km || !breathAnalyserDone) {
-      Swal.fire("Missing Data", "Hours & KM required", "warning");
+    if (!km || !breathAnalyserDone) {
+      Swal.fire("Missing Data", "KM required", "warning");
       return;
     }
 
@@ -110,7 +131,6 @@ export default function DailyActivity() {
 
       await api.post("/driver/signout", {
         toStation: loc,
-        hours,
         km,
         breathAnalyserDone
       });
@@ -126,7 +146,6 @@ export default function DailyActivity() {
       // RESET
       setSignedIn(false);
       setTwNumber("");
-      setHours("");
       setKm("");
       setBreathAnalyserDone(false);
 
@@ -171,13 +190,21 @@ export default function DailyActivity() {
             />
 
             <Input
-              label="TW Number"
+              label="Tower Car Number"
               icon={<Hash />}
               value={twNumber}
               onChange={setTwNumber}
               disabled={signedIn}
             />
-
+<label className="flex items-center gap-3 mt-3 text-sm font-semibold text-gray-700">
+              <input
+                type="checkbox"
+                checked={breathAnalyserinitial}
+                // disabled={signedIn}
+                onChange={e => setBreathAnalyserinitial(!breathAnalyserinitial)}
+              />
+              Breath Analyser Test Done
+            </label>
          
             <ActionButton
               label={signedIn ? "Signed ON" : "Sign ON"}
@@ -202,14 +229,7 @@ export default function DailyActivity() {
               value={toStation}
             />
 
-            <Input
-              label="Hours"
-              icon={<Clock />}
-              value={hours}
-              onChange={setHours}
-              disabled={!signedIn}
-            />
-
+          
             <Input
               label="Kilometers"
               icon={<Route />}

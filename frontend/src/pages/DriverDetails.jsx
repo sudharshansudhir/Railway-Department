@@ -200,9 +200,9 @@ export default function DriverDetails() {
         </Section>
 
         {/* ================= T-CARD ================= */}
-        <Section title="T-Card Daily Checklist" icon={<ClipboardList />}>
+        <Section title="Tower Car Daily Checklist" icon={<ClipboardList />}>
           {tCards.length === 0 && (
-            <p className="text-sm text-gray-500">No T-Card checklist submitted</p>
+            <p className="text-sm text-gray-500">No Tower Car checklist submitted</p>
           )}
 
           {tCards.map(card => (

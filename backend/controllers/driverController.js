@@ -108,74 +108,96 @@ export const updateLR = async (req, res) => {
 ====================================================== */
 
 /* SIGN IN */
+/* SIGN IN */
 export const driverSignIn = async (req, res) => {
-  const { fromStation, twNumber, breathAnalyserDone } = req.body;
+  try {
+    const { fromStation, twNumber, breathAnalyserinitial } = req.body;
 
-  if (!fromStation || !twNumber) {
-    return res.status(400).json({ msg: "Missing sign-in data" });
+    if (!fromStation || !twNumber) {
+      return res.status(400).json({ msg: "Missing sign-in data" });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const existing = await DailyLog.findOne({
+      driverId: req.user.id,
+      logDate: today,
+      signOutTime: { $exists: false }
+    });
+
+    if (existing) {
+      return res.status(400).json({ msg: "Already signed in" });
+    }
+
+    await DailyLog.create({
+      driverId: req.user.id,
+      logDate: today,
+      signInTime: new Date(),
+      fromStation,
+      twNumber,
+      breathAnalyserinitial
+    });
+
+    res.json({ msg: "Signed in successfully" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
   }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const existing = await DailyLog.findOne({
-    driverId: req.user.id,
-    logDate: today,
-    signOutTime: { $exists: false }
-  });
-
-  if (existing) {
-    return res.status(400).json({ msg: "Already signed in" });
-  }
-
-  await DailyLog.create({
-    driverId: req.user.id,
-    logDate: today,
-    signInTime: new Date(),
-    fromStation,
-    twNumber,
-    breathAnalyserDone
-  });
-
-  res.json({ msg: "Signed in successfully" });
 };
+
 
 /* SIGN OUT */
 export const driverSignOut = async (req, res) => {
-  const { toStation, hours, km ,breathAnalyserDone} = req.body;
+  try {
+    const { toStation, km, breathAnalyserDone } = req.body;
 
-  if (!toStation || !hours || !km) {
-    return res.status(400).json({ msg: "Missing sign-out data" });
+    if (!toStation || !km) {
+      return res.status(400).json({ msg: "Missing sign-out data" });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const log = await DailyLog.findOne({
+      driverId: req.user.id,
+      logDate: today,
+      signOutTime: { $exists: false }
+    });
+
+    if (!log) {
+      return res.status(400).json({ msg: "No active duty found" });
+    }
+
+    const signOutTime = new Date();
+
+    // 🔥 Calculate hours from signInTime → signOutTime
+    const diffMs = signOutTime - log.signInTime; // milliseconds
+    const hours = diffMs / (1000 * 60 * 60);     // convert to hours
+
+    log.signOutTime = signOutTime;
+    log.toStation = toStation;
+    log.km = Number(km);
+    log.hours = Number(hours.toFixed(2)); // rounded to 2 decimals
+    log.breathAnalyserDone = breathAnalyserDone;
+
+    // Example mileage logic
+    log.mileage = log.hours * 20 + log.km;
+
+    await log.save();
+
+    res.json({
+      msg: "Signed out successfully",
+      hours: log.hours
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
   }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const log = await DailyLog.findOne({
-    driverId: req.user.id,
-    logDate: today,
-    signOutTime: { $exists: false }
-  });
-
-  if (!log) {
-    return res.status(400).json({ msg: "No active duty found" });
-  }
-
-  log.signOutTime = new Date();
-  log.toStation = toStation;
-  log.hours = Number(hours);
-  log.km = Number(km);
-  log.breathAnalyserDone=breathAnalyserDone;
-  log.mileage = log.hours * 20 + log.km;
-
-  await log.save();
-
-  res.json({ msg: "Signed out successfully" });
 };
 
-/* ======================================================
-   ALERTS (UPDATED FOR MULTI-TRAINING)
-====================================================== */
 
 export const driverAlerts = async (req, res) => {
   const profile = await DriverProfile.findOne({ userId: req.user.id });

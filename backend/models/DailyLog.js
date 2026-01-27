@@ -25,7 +25,8 @@ const dailyLogSchema = new mongoose.Schema({
   km: Number,
   mileage: Number,
 
-  breathAnalyserDone: Boolean
+  breathAnalyserDone: Boolean,
+  breathAnalyserinitial: Boolean
 }, { timestamps: true });
 
 export default mongoose.model("DailyLog", dailyLogSchema);

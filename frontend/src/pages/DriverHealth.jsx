@@ -7,6 +7,24 @@ import Footer from "../components/Footer";
 
 /* 🔥 PREDEFINED TRAININGS */
 const TRAINING_KEYS = ["PME", "GRS_RC", "TR4", "OC"];
+const calculateSchedule = (start, end) => {
+  if (!start || !end) return "";
+
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+
+  console.log(startDate,endDate)
+  const months =
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+    (endDate.getMonth() - startDate.getMonth());
+
+  if (months === 12) return "1 year";
+  if (months === 24) return "2 Years";
+  if (months % 12 === 0) return `${months / 12} Years`;
+
+  return `${months} Months`;
+};
+
 
 export default function DriverHealth() {
 
@@ -94,6 +112,9 @@ export default function DriverHealth() {
       </>
     );
   }
+
+
+
 
   return (
     <>
@@ -187,23 +208,33 @@ function TrainingSection({ title, data, onChange }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
         <DateField
-          label="Done Date"
-          value={data.doneDate}
-          onChange={v => onChange({ ...data, doneDate: v })}
-        />
+  label="Done Date"
+  value={data.doneDate}
+  onChange={v => {
+    const schedule = calculateSchedule(v, data.dueDate);
+    onChange({ ...data, doneDate: v, schedule });
+  }}
+/>
 
-        <DateField
-          label="Next Due Date"
-          value={data.dueDate}
-          onChange={v => onChange({ ...data, dueDate: v })}
-        />
 
-        <InputField
-          label="Schedule"
-          placeholder="Annual / 2 Years"
-          value={data.schedule}
-          onChange={v => onChange({ ...data, schedule: v })}
-        />
+ 
+<DateField
+  label="Next Due Date"
+  value={data.dueDate}
+  onChange={v => {
+    const schedule = calculateSchedule(data.doneDate, v);
+    onChange({ ...data, dueDate: v, schedule });
+  }}
+/>
+
+
+       <InputField
+  label="Schedule"
+  placeholder="Auto calculated"
+  value={data.schedule}
+  disabled
+/>
+
 
       </div>
     </div>
@@ -212,7 +243,7 @@ function TrainingSection({ title, data, onChange }) {
 
 /* ================= UI COMPONENTS ================= */
 
-function InputField({ label, value, onChange, placeholder }) {
+function InputField({ label, value, onChange, placeholder, disabled }) {
   return (
     <div>
       <label className="block text-sm font-semibold mb-1">{label}</label>
@@ -220,13 +251,16 @@ function InputField({ label, value, onChange, placeholder }) {
         type="text"
         value={value}
         placeholder={placeholder}
-        onChange={e => onChange(e.target.value)}
+        disabled={disabled}
+        onChange={e => onChange?.(e.target.value)}
         className="w-full px-4 py-2.5 border rounded-lg text-sm
+                   disabled:bg-gray-100 disabled:cursor-not-allowed
                    focus:ring-2 focus:ring-emerald-600 focus:outline-none"
       />
     </div>
   );
 }
+
 
 function DateField({ label, value, onChange }) {
   return (
