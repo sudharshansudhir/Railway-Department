@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Swal from "sweetalert2";
 import { Train, Lock, User } from "lucide-react";
+import { useCircularGuard } from "../context/CircularGuard";
 
 export default function Login() {
   const [pfNo, setPfNo] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { refreshCircularStatus } = useCircularGuard();
 
   const login = async () => {
     if (!pfNo || !password) {
@@ -28,6 +30,22 @@ export default function Login() {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
+      localStorage.setItem("passwordChanged", res.data.passwordChanged ? "true" : "false");
+
+      // Check if first login (password not changed)
+      if (!res.data.passwordChanged) {
+        await Swal.fire({
+          icon: "warning",
+          title: "Password Change Required",
+          text: "For security, you must change your default password before continuing.",
+          confirmButtonColor: "#d97706"
+        });
+        navigate("/change-password");
+        return;
+      }
+
+      // Trigger circular check after login
+      refreshCircularStatus();
 
       await Swal.fire({
         icon: "success",

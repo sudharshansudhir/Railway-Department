@@ -11,7 +11,8 @@ import {
   ClipboardList,
   Shield,
   Users,
-  FileText
+  FileText,
+  CheckSquare
 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -177,8 +178,8 @@ const logout = async () => {
               <>
                 <NavButton to="/admin" icon={<Shield size={18} />} label="Dashboard" />
                 <NavButton to="/admin/circular-upload" icon={<FileText size={18} />} label="Upload Circular" />
+                <NavButton to="/admin/circular-status" icon={<CheckSquare size={18} />} label="Circular Status" />
                 <NavButton to="/admin/report-download" icon={<ClipboardList size={18} />} label="Reports" />
-                <NavButton to="/circulars" icon={<FileText size={18} />} label="View Circulars" />
               </>
             )}
 
@@ -227,8 +228,8 @@ const logout = async () => {
             <>
               <NavButton to="/admin" icon={<Shield />} label="Dashboard" />
               <NavButton to="/admin/circular-upload" icon={<FileText />} label="Upload Circular" />
+              <NavButton to="/admin/circular-status" icon={<CheckSquare />} label="Circular Status" />
               <NavButton to="/admin/report-download" icon={<ClipboardList />} label="Reports" />
-              <NavButton to="/circulars" icon={<FileText />} label="View Circulars" />
             </>
           )}
 

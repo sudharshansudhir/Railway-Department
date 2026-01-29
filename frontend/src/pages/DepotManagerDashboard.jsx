@@ -18,6 +18,12 @@ export default function DepotManagerDashboard() {
 
   const navigate = useNavigate();
 
+  /* ================= VIEW USER DETAILS ================= */
+  const viewUserDetails = (userId) => {
+    // Navigate to dedicated detail page for full comprehensive view
+    navigate(`/manager/driver/${userId}`);
+  };
+
   useEffect(() => {
     api.get("/depot/drivers")
       .then(res => setDrivers(res.data))
@@ -123,9 +129,7 @@ export default function DepotManagerDashboard() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         <button
-                          onClick={() =>
-                            navigate(`/manager/driver/${d._id}`)
-                          }
+                          onClick={() => viewUserDetails(d._id)}
                           className="inline-flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition"
                         >
                           <Eye size={16} />
@@ -141,6 +145,8 @@ export default function DepotManagerDashboard() {
 
         </div>
       </div>
+
+
       <Footer/>
     </>
   );

@@ -101,8 +101,8 @@ export default function AdminRegister() {
               value={form.role}
               onChange={v => setForm({ ...form, role: v })}
               options={[
-                { value: "DRIVER", label: "Driver" },
-                { value: "DEPOT_MANAGER", label: "Depot Manager" }
+                { value: "DRIVER", label: "Tower Wagon Driver (TWD)" },
+                { value: "DEPOT_MANAGER", label: "SSE/TRD (Depot Manager)" }
               ]}
             />
 

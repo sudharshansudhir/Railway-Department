@@ -10,7 +10,11 @@ import {
   FileText,
   Calendar,
   BadgeIndianRupee,
-  Hash
+  Hash,
+  ChevronLeft,
+  ChevronRight,
+  CalendarDays,
+  Loader2
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -19,14 +23,80 @@ export default function DriverDetails() {
   const { driverId } = useParams();
   const [data, setData] = useState(null);
   const [logs, setLogs] = useState([]);
-  const [tCards, setTCards] = useState([]);
 
-  /* ================= LOAD T-CARDS ================= */
+  // T-Card state with date-based filtering (same as Admin)
+  const [tcardSelectedDate, setTcardSelectedDate] = useState("");
+  const [tcardAvailableDates, setTcardAvailableDates] = useState([]);
+  const [tcardData, setTcardData] = useState([]);
+  const [tcardLoading, setTcardLoading] = useState(false);
+  const [tcardTotalCount, setTcardTotalCount] = useState(0);
+
+  /* ================= LOAD T-CARD DATES ================= */
+  const loadTCardDates = async () => {
+    try {
+      setTcardLoading(true);
+      const res = await api.get(`/depot/driver/${driverId}/tcards`);
+      const tcards = res.data || [];
+
+      // Extract unique dates from T-Cards
+      const dates = [...new Set(tcards.map(t => t.date?.substring(0, 10)))].filter(Boolean).sort().reverse();
+      setTcardAvailableDates(dates);
+      setTcardTotalCount(tcards.length);
+
+      // Auto-select latest date if available
+      if (dates.length > 0) {
+        setTcardSelectedDate(dates[0]);
+        // Filter T-Cards for the latest date
+        const filtered = tcards.filter(t => t.date?.substring(0, 10) === dates[0]);
+        setTcardData(filtered);
+      }
+    } catch (err) {
+      console.error("Failed to load T-Cards:", err);
+      setTcardData([]);
+    } finally {
+      setTcardLoading(false);
+    }
+  };
+
+  /* ================= LOAD T-CARD BY DATE ================= */
+  const loadTCardByDate = async (date) => {
+    try {
+      setTcardLoading(true);
+      const res = await api.get(`/depot/driver/${driverId}/tcards`);
+      const tcards = res.data || [];
+      const filtered = tcards.filter(t => t.date?.substring(0, 10) === date);
+      setTcardData(filtered);
+    } catch (err) {
+      console.error("Failed to load T-Card for date:", err);
+    } finally {
+      setTcardLoading(false);
+    }
+  };
+
+  /* ================= DATE NAVIGATION ================= */
+  const goToPreviousDate = () => {
+    const currentIndex = tcardAvailableDates.indexOf(tcardSelectedDate);
+    if (currentIndex < tcardAvailableDates.length - 1) {
+      setTcardSelectedDate(tcardAvailableDates[currentIndex + 1]);
+    }
+  };
+
+  const goToNextDate = () => {
+    const currentIndex = tcardAvailableDates.indexOf(tcardSelectedDate);
+    if (currentIndex > 0) {
+      setTcardSelectedDate(tcardAvailableDates[currentIndex - 1]);
+    }
+  };
+
   useEffect(() => {
-    api.get(`/depot/driver/${driverId}/tcards`)
-      .then(res => setTCards(res.data))
-      .catch(() => setTCards([]));
+    loadTCardDates();
   }, [driverId]);
+
+  useEffect(() => {
+    if (tcardSelectedDate) {
+      loadTCardByDate(tcardSelectedDate);
+    }
+  }, [tcardSelectedDate]);
 
   /* ================= LOAD DRIVER PROFILE ================= */
   useEffect(() => {
@@ -199,32 +269,112 @@ export default function DriverDetails() {
           </TableWrapper>
         </Section>
 
-        {/* ================= T-CARD ================= */}
+        {/* ================= T-CARD WITH DATE NAVIGATION ================= */}
         <Section title="Tower Car Daily Checklist" icon={<ClipboardList />}>
-          {tCards.length === 0 && (
-            <p className="text-sm text-gray-500">No Tower Car checklist submitted</p>
+          {/* Header with Date Navigation */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              {tcardTotalCount > 0 && (
+                <span className="text-sm text-gray-500">
+                  ({tcardTotalCount} total records)
+                </span>
+              )}
+            </div>
+
+            {/* Date Navigation Controls */}
+            {tcardAvailableDates.length > 0 && (
+              <div className="flex items-center gap-2">
+                {/* Previous Date Button */}
+                <button
+                  onClick={goToPreviousDate}
+                  disabled={tcardAvailableDates.indexOf(tcardSelectedDate) >= tcardAvailableDates.length - 1 || tcardLoading}
+                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  title="Previous Date"
+                >
+                  <ChevronLeft size={18} className="text-gray-600" />
+                </button>
+
+                {/* Date Picker */}
+                <div className="relative">
+                  <CalendarDays size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500" />
+                  <input
+                    type="date"
+                    value={tcardSelectedDate}
+                    onChange={(e) => setTcardSelectedDate(e.target.value)}
+                    className="pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none min-w-[160px]"
+                  />
+                </div>
+
+                {/* Next Date Button */}
+                <button
+                  onClick={goToNextDate}
+                  disabled={tcardAvailableDates.indexOf(tcardSelectedDate) <= 0 || tcardLoading}
+                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  title="Next Date"
+                >
+                  <ChevronRight size={18} className="text-gray-600" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Loading State */}
+          {tcardLoading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 size={32} className="animate-spin text-indigo-600" />
+              <span className="ml-3 text-gray-500">Loading checklist...</span>
+            </div>
           )}
 
-          {tCards.map(card => (
-            <div key={card._id} className="border rounded-xl p-4 mb-6 bg-slate-50">
-              <div className="flex justify-between mb-3 text-sm font-semibold">
-                <span>Date: {card.date.substring(0, 10)}</span>
-                <span>T-Car No: {card.tCarNo}</span>
-              </div>
+          {/* T-Card Content */}
+          {!tcardLoading && tcardData.length > 0 && (
+            <div className="space-y-4">
+              {tcardData.map(card => (
+                <div key={card._id} className="border rounded-xl p-4 bg-slate-50">
+                  <div className="flex justify-between mb-3 text-sm font-semibold">
+                    <span>Date: {card.date?.substring(0, 10)}</span>
+                    <span>T-Car No: {card.tCarNo}</span>
+                  </div>
 
-              {card.items.map((item, idx) => (
-                <div key={idx} className="flex gap-3 text-sm mb-2">
-                  <span>{item.checked ? "✅" : "❌"}</span>
-                  <div>
-                    <p className="font-medium">{item.description}</p>
-                    <p className="text-xs text-gray-500">
-                      Remarks: {item.remarks || "-"}
-                    </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {card.items?.map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm p-2 bg-white rounded-lg">
+                        <span className={item.checked ? "text-emerald-500" : "text-red-500"}>
+                          {item.checked ? "✓" : "✗"}
+                        </span>
+                        <div>
+                          <p className={item.checked ? "text-gray-700" : "text-red-700 font-medium"}>
+                            {item.description}
+                          </p>
+                          {item.remarks && (
+                            <p className="text-xs text-gray-400">
+                              Remarks: {item.remarks}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
             </div>
-          ))}
+          )}
+
+          {/* No Data for Selected Date */}
+          {!tcardLoading && tcardSelectedDate && tcardData.length === 0 && tcardAvailableDates.length > 0 && (
+            <div className="text-center py-8 bg-slate-50 rounded-xl">
+              <CalendarDays size={48} className="mx-auto text-gray-300 mb-3" />
+              <p className="text-gray-500 font-medium">No checklist found for selected date</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Try selecting a different date
+              </p>
+            </div>
+          )}
+
+          {/* No T-Cards at All */}
+          {!tcardLoading && tcardAvailableDates.length === 0 && (
+            <p className="text-sm text-gray-500">No Tower Car checklist submitted</p>
+          )}
         </Section>
 
       </div>

@@ -8,12 +8,16 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     react(),
-     VitePWA({
+    VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
-        enabled: true
+        enabled: true,
+        suppressWarnings: true
       },
-      includeAssets: ['favicon.svg', 'robots.txt'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}']
+      },
+      includeAssets: ['app-logo.png'],
       manifest: {
         name: 'Tower Wagon Driver Management System',
         short_name: 'Tower Wagon Driver system',
@@ -31,6 +35,5 @@ export default defineConfig({
         ]
       }
     })
-  ],
-    
+  ]
 })

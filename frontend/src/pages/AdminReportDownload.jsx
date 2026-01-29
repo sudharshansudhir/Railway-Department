@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
-import { Download, Calendar, Building2 } from "lucide-react";
+import { Download, Calendar, Building2, Loader2 } from "lucide-react";
 import Footer from "../components/Footer";
 
 export default function AdminReportDownload() {
@@ -10,15 +10,21 @@ export default function AdminReportDownload() {
   const [to, setTo] = useState("");
   const [depot, setDepot] = useState("");
   const [depots, setDepots] = useState([]);
+  const [loadingDepots, setLoadingDepots] = useState(true);
+  const [downloading, setDownloading] = useState(false);
 
   // 🔹 Fetch depots from backend
   useEffect(() => {
     const fetchDepots = async () => {
       try {
+        setLoadingDepots(true);
         const res = await api.get("/admin/depots");
         setDepots(res.data);
-      } catch {
+      } catch (err) {
+        console.error("Failed to load depots:", err);
         Swal.fire("Error", "Failed to load depots", "error");
+      } finally {
+        setLoadingDepots(false);
       }
     };
     fetchDepots();
@@ -31,6 +37,7 @@ export default function AdminReportDownload() {
     }
 
     try {
+      setDownloading(true);
       const res = await api.get("/admin/reports/download", {
         params: { from, to, depot },
         responseType: "blob",
@@ -47,8 +54,19 @@ export default function AdminReportDownload() {
       a.remove();
 
       window.URL.revokeObjectURL(url);
-    } catch {
-      Swal.fire("Download Failed", "Unable to generate report", "error");
+
+      Swal.fire({
+        icon: "success",
+        title: "Download Complete",
+        text: "Report has been downloaded successfully",
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (err) {
+      console.error("Download failed:", err);
+      Swal.fire("Download Failed", "Unable to generate report. Please try again.", "error");
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -138,12 +156,24 @@ export default function AdminReportDownload() {
           {/* ACTION */}
           <button
             onClick={download}
-            className="mt-6 w-full flex items-center justify-center gap-2
-                       bg-indigo-600 text-white py-2.5 rounded-lg
-                       font-medium hover:bg-indigo-700 transition"
+            disabled={downloading || !from || !to}
+            className={`mt-6 w-full flex items-center justify-center gap-2
+                       py-2.5 rounded-lg font-medium transition
+                       ${downloading || !from || !to
+                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                         : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
           >
-            <Download size={18} />
-            Download CSV
+            {downloading ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                Generating Report...
+              </>
+            ) : (
+              <>
+                <Download size={18} />
+                Download CSV
+              </>
+            )}
           </button>
 
         </div>

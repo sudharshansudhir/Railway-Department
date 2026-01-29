@@ -4,7 +4,8 @@ const dailyLogSchema = new mongoose.Schema({
   driverId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
+    index: true
   },
 
   logDate: {
@@ -28,5 +29,8 @@ const dailyLogSchema = new mongoose.Schema({
   breathAnalyserDone: Boolean,
   breathAnalyserinitial: Boolean
 }, { timestamps: true });
+
+// Compound index for efficient queries by driver and date
+dailyLogSchema.index({ driverId: 1, logDate: -1 });
 
 export default mongoose.model("DailyLog", dailyLogSchema);

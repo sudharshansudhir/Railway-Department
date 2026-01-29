@@ -9,9 +9,13 @@ import {
   Train,
   UserCog,
   Filter,
-  UserPlus
+  UserPlus,
+  Eye,
+  Pencil
 } from "lucide-react";
 import Footer from "../components/Footer";
+import UserDetailModal from "../components/UserDetailModal";
+import EditUserModal from "../components/EditUserModal";
 
 export default function AdminDashboard() {
   const [depot, setDepot] = useState("");
@@ -19,6 +23,10 @@ export default function AdminDashboard() {
   const [managers, setManagers] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal states
+  const [selectedManagerId, setSelectedManagerId] = useState(null);
+  const [editUserId, setEditUserId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -46,6 +54,17 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  /* ================= VIEW USER DETAILS ================= */
+  const viewDriverDetails = (userId) => {
+    // Navigate to dedicated detail page for drivers (comprehensive view)
+    navigate(`/admin/user/${userId}`);
+  };
+
+  const viewManagerDetails = (userId) => {
+    // Open modal for managers (compact view)
+    setSelectedManagerId(userId);
   };
 
   useEffect(() => {
@@ -123,12 +142,30 @@ export default function AdminDashboard() {
 
           {/* ================= MANAGERS ================= */}
           <Section title="Depot Managers" icon={<Users />}>
-            <Table headers={["Name", "PF No", "Depot"]} loading={loading} emptyText="No managers found">
+            <Table headers={["Name", "PF No", "Depot", "Actions"]} loading={loading} emptyText="No managers found">
               {managers.map(m => (
-                <tr key={m._id}>
+                <tr key={m._id} className="hover:bg-slate-50">
                   <td className="px-4 py-3">{m.name}</td>
                   <td className="px-4 py-3">{m.pfNo || "-"}</td>
                   <td className="px-4 py-3"><Badge>{m.depotName}</Badge></td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => viewManagerDetails(m._id)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                      >
+                        <Eye size={14} />
+                        View
+                      </button>
+                      <button
+                        onClick={() => setEditUserId(m._id)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
+                      >
+                        <Pencil size={14} />
+                        Edit
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </Table>
@@ -136,12 +173,30 @@ export default function AdminDashboard() {
 
           {/* ================= DRIVERS ================= */}
           <Section title="Drivers" icon={<Train />}>
-            <Table headers={["PF No", "Name", "Depot"]} loading={loading} emptyText="No drivers found">
+            <Table headers={["PF No", "Name", "Depot", "Actions"]} loading={loading} emptyText="No drivers found">
               {drivers.map(d => (
-                <tr key={d._id}>
+                <tr key={d._id} className="hover:bg-slate-50">
                   <td className="px-4 py-3">{d.pfNo}</td>
                   <td className="px-4 py-3">{d.name}</td>
                   <td className="px-4 py-3"><Badge>{d.depotName}</Badge></td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => viewDriverDetails(d._id)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                      >
+                        <Eye size={14} />
+                        View
+                      </button>
+                      <button
+                        onClick={() => setEditUserId(d._id)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
+                      >
+                        <Pencil size={14} />
+                        Edit
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </Table>
@@ -149,6 +204,25 @@ export default function AdminDashboard() {
 
         </div>
       </div>
+
+      {/* Manager Detail Modal */}
+      {selectedManagerId && (
+        <UserDetailModal
+          userId={selectedManagerId}
+          onClose={() => setSelectedManagerId(null)}
+          isAdmin={true}
+        />
+      )}
+
+      {/* Edit User Modal */}
+      {editUserId && (
+        <EditUserModal
+          userId={editUserId}
+          onClose={() => setEditUserId(null)}
+          onSuccess={() => loadUsers()}
+        />
+      )}
+
       <Footer/>
     </>
   );

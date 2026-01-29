@@ -4,13 +4,14 @@ const checklistItemSchema = new mongoose.Schema({
   description: String,
   checked: Boolean,
   remarks: String
-});
+}, { _id: false });
 
 const tCardChecklistSchema = new mongoose.Schema({
   driverId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
+    index: true
   },
 
   date: {
@@ -27,5 +28,8 @@ const tCardChecklistSchema = new mongoose.Schema({
   items: [checklistItemSchema]
 
 }, { timestamps: true });
+
+// Compound index for efficient queries by driver and date
+tCardChecklistSchema.index({ driverId: 1, date: -1 });
 
 export default mongoose.model("TCardChecklist", tCardChecklistSchema);

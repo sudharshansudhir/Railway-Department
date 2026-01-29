@@ -239,7 +239,6 @@ export const checkActiveDuty = async (req, res) => {
     driverId: req.user.id,
     signOutTime: null
   });
-  // console.log(activeLog)
 
   res.json({ active: !!activeLog });
 };

@@ -1,6 +1,5 @@
 import express from "express";
 import dotenv from "dotenv";
-import mongoose from "mongoose";
 import cors from 'cors'
 
 import authRoutes from "./routes/authRoutes.js";
@@ -8,19 +7,41 @@ import driverRoutes from "./routes/driverRoutes.js";
 import depotRoutes from "./routes/depotRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import circularRoutes from "./routes/circularRoutes.js";
-import bcrypt from "bcryptjs";
+import { connectDB } from "./config/db.js";
 
 
-dotenv.config();
+/**
+ * Environment Configuration
+ *
+ * Loads environment variables based on NODE_ENV:
+ * - development: loads .env.development (local MongoDB)
+ * - production/default: loads .env (MongoDB Atlas)
+ *
+ * To switch to local development:
+ *   NODE_ENV=development npm run dev:local
+ *
+ * To restore production (Atlas):
+ *   npm run dev (or NODE_ENV=production npm run dev)
+ */
+const envFile = process.env.NODE_ENV === "development" ? ".env.development" : ".env";
+
+// Clear existing env vars for MONGO_URI if in development to ensure .env.development takes precedence
+if (process.env.NODE_ENV === "development") {
+  delete process.env.MONGO_URI;
+}
+
+dotenv.config({ path: envFile, override: true });
+
+// Log which config is loaded
+console.log(`📄 Loaded config: ${envFile}`);
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log("DB Error", err));
+// Connect to MongoDB using environment-based configuration
+connectDB();
 
 app.get("/", (req, res) => {
   res.send("Railway Backend Running");

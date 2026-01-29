@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
+import ChangePassword from "./pages/ChangePassword";
 
 import DriverDashboard from "./pages/DriverDashboard";
 import DailyActivity from "./pages/DailyActivity";
@@ -12,7 +13,9 @@ import DriverDetails from "./pages/DriverDetails";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCircularUpload from "./pages/AdminCircularUpload";
+import AdminCircularStatus from "./pages/AdminCircularStatus";
 import AdminReportDownload from "./pages/AdminReportDownload";
+import AdminUserDetail from "./pages/AdminUserDetail";
 
 import CircularList from "./pages/CircularList";
 
@@ -26,6 +29,9 @@ export default function App() {
       {/* ================= LOGIN ================= */}
       <Route path="/" element={<Login />} />
 
+      {/* ================= CHANGE PASSWORD (First Login) ================= */}
+      <Route path="/change-password" element={<ChangePassword />} />
+
       {/* ================= DRIVER ================= */}
       <Route
         path="/driver"
@@ -37,9 +43,13 @@ export default function App() {
       />
 
       <Route
-  path="/admin/register"
-  element={<AdminRegister />}
-/>
+        path="/admin/register"
+        element={
+          <ProtectedRoute role="SUPER_ADMIN">
+            <AdminRegister />
+          </ProtectedRoute>
+        }
+      />
 
 
       <Route
@@ -117,10 +127,28 @@ export default function App() {
       />
 
       <Route
+        path="/admin/circular-status"
+        element={
+          <ProtectedRoute role="SUPER_ADMIN">
+            <AdminCircularStatus />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin/report-download"
         element={
           <ProtectedRoute role="SUPER_ADMIN">
             <AdminReportDownload />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/user/:userId"
+        element={
+          <ProtectedRoute role="SUPER_ADMIN">
+            <AdminUserDetail />
           </ProtectedRoute>
         }
       />
