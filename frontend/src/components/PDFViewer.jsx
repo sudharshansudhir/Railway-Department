@@ -65,15 +65,7 @@ export default function PDFViewer({
     let finalUrl = url;
 
     // If it's a Cloudinary URL with raw resource type
-    if (url.includes("cloudinary.com") && url.includes("/raw/")) {
-      // Add flags to ensure inline viewing
-      if (!url.includes("fl_attachment")) {
-        const urlParts = url.split("/upload/");
-        if (urlParts.length === 2) {
-          finalUrl = `${urlParts[0]}/upload/fl_attachment:false/${urlParts[1]}`;
-        }
-      }
-    }
+    
 
     setProcessedUrl(finalUrl);
     setLoading(true);

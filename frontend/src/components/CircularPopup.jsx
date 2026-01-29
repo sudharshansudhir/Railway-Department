@@ -33,6 +33,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
+import axios from "axios";
 
 // PDF.js worker
 const PDFJS_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
@@ -41,11 +42,52 @@ export default function CircularPopup({ circular, onAcknowledge, loading }) {
   const [scale, setScale] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [pdfLoaded, setPdfLoaded] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+
   const [pdfError, setPdfError] = useState(false);
   const [canAcknowledge, setCanAcknowledge] = useState(false);
   const [timeSpent, setTimeSpent] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+
+useEffect(() => {
+  if (!circular?._id) return;
+
+  const fetchSignedPdf = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.get(
+        `/api/admin/circulars/${circular._id}/pdf`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setPdfUrl(res.data.url);
+    } catch (err) {
+      console.error("Failed to fetch signed PDF", err);
+      setPdfError(true);
+    }
+  };
+
+  fetchSignedPdf();
+}, [circular?._id]);
+
+
+useEffect(() => {
+  const timeout = setTimeout(() => {
+    if (!pdfLoaded) {
+      setPdfError(true);
+    }
+  }, 8000);
+
+  return () => clearTimeout(timeout);
+}, [pdfLoaded]);
+
+
 
   const containerRef = useRef(null);
 
@@ -53,7 +95,7 @@ export default function CircularPopup({ circular, onAcknowledge, loading }) {
   const MIN_TIME_SECONDS = 5;
 
   // Detect content type
-  const isImage = circular?.pdfUrl?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+const isImage = false; // PDFs only
   const isPdf = !isImage;
 
   // Zoom controls
@@ -109,14 +151,14 @@ export default function CircularPopup({ circular, onAcknowledge, loading }) {
   const progressPercent = Math.min((timeSpent / MIN_TIME_SECONDS) * 100, 100);
 
   // Process URL for Cloudinary
-  let viewerUrl = circular.pdfUrl;
-  if (viewerUrl?.includes("cloudinary.com") && viewerUrl?.includes("/raw/")) {
-    // Ensure inline viewing for Cloudinary raw files
-    const urlParts = viewerUrl.split("/upload/");
-    if (urlParts.length === 2 && !viewerUrl.includes("fl_attachment")) {
-      viewerUrl = `${urlParts[0]}/upload/fl_attachment:false/${urlParts[1]}`;
-    }
-  }
+  // let viewerUrl = circular.pdfUrl;
+  // if (viewerUrl?.includes("cloudinary.com") && viewerUrl?.includes("/raw/")) {
+  //   // Ensure inline viewing for Cloudinary raw files
+  //   const urlParts = viewerUrl.split("/upload/");
+  //   if (urlParts.length === 2 && !viewerUrl.includes("fl_attachment")) {
+  //     viewerUrl = `${urlParts[0]}/upload/fl_attachment:false/${urlParts[1]}`;
+  //   }
+  // }
 
   return (
     <div
@@ -220,8 +262,7 @@ export default function CircularPopup({ circular, onAcknowledge, loading }) {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <a
-                  href={circular.pdfUrl}
-                  target="_blank"
+                  href={pdfUrl} target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 px-4 py-2
                              bg-indigo-600 text-white rounded-lg
@@ -231,8 +272,9 @@ export default function CircularPopup({ circular, onAcknowledge, loading }) {
                   View PDF
                 </a>
                 <a
-                  href={circular.pdfUrl}
-                  download
+                    href={pdfUrl}
+  target="_blank"
+  rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 px-4 py-2
                              bg-gray-100 text-gray-700 rounded-lg
                              hover:bg-gray-200 transition"
@@ -255,16 +297,19 @@ export default function CircularPopup({ circular, onAcknowledge, loading }) {
             style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}
           >
             <Worker workerUrl={PDFJS_WORKER_URL}>
-              <Viewer
-                fileUrl={viewerUrl}
-                defaultScale={SpecialZoomLevel.PageWidth}
-                onDocumentLoad={(e) => {
-                  setPdfLoaded(true);
-                  setTotalPages(e.doc.numPages);
-                }}
-                onPageChange={(e) => setCurrentPage(e.currentPage + 1)}
-                renderError={() => setPdfError(true)}
-              />
+              {pdfUrl && (
+  <Viewer
+    fileUrl={pdfUrl}
+    defaultScale={SpecialZoomLevel.PageWidth}
+    onDocumentLoad={(e) => {
+      setPdfLoaded(true);
+      setTotalPages(e.doc.numPages);
+    }}
+    onPageChange={(e) => setCurrentPage(e.currentPage + 1)}
+    renderError={() => setPdfError(true)}
+  />
+)}
+
             </Worker>
           </div>
         )}

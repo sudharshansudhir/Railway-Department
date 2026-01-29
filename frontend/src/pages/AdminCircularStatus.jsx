@@ -173,34 +173,35 @@ export default function AdminCircularStatus() {
           </div>
 
           {/* SUMMARY CARDS */}
-          {report && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <SummaryCard
-                icon={<Users />}
-                label="Total Users"
-                value={report.summary.total}
-                color="slate"
-              />
-              <SummaryCard
-                icon={<CheckCircle />}
-                label="Acknowledged"
-                value={report.summary.acknowledged}
-                color="emerald"
-              />
-              <SummaryCard
-                icon={<XCircle />}
-                label="Pending"
-                value={report.summary.pending}
-                color="red"
-              />
-              <SummaryCard
-                icon={<FileText />}
-                label="Completion"
-                value={`${report.summary.percentComplete}%`}
-                color="indigo"
-              />
-            </div>
-          )}
+         {report && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <SummaryCard
+      icon={<Users />}
+      label="Total Users"
+      value={report.summary.total}
+      color="slate"
+    />
+    <SummaryCard
+      icon={<CheckCircle />}
+      label="Acknowledged"
+      value={report.summary.acknowledged}
+      color="emerald"
+    />
+    <SummaryCard
+      icon={<XCircle />}
+      label="Pending"
+      value={report.summary.pending}
+      color="red"
+    />
+    <SummaryCard
+      icon={<FileText />}
+      label="Completion"
+      value={`${report.summary.percentComplete}%`}
+      color="indigo"
+    />
+  </div>
+)}
+
 
           {/* FILTERS */}
           {report && report.users.length > 0 && (

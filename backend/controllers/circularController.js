@@ -1,197 +1,115 @@
+import cloudinary from "../utils/cloudinary.js";
 import Circular from "../models/Circular.js";
 import User from "../models/User.js";
 
-/**
- * Upload a new circular (Admin only)
- * Stores the PDF in Cloudinary and saves metadata
- */
 export const uploadCircular = async (req, res) => {
   try {
-    const { title } = req.body;
-    if (!req.file) return res.status(400).json({ msg: "PDF file is required" });
+    if (!req.file || !req.body.title) {
+      return res.status(400).json({ message: "Title and PDF required" });
+    }
 
-    const circular = await Circular.create({
-      title,
-      pdfUrl: req.file.path, // Cloudinary URL
-      originalFilename: req.file.originalname, // Preserve original filename
-      postedBy: req.user.id
+    // 🔥 Convert buffer → base64
+    const base64File = `data:${req.file.mimetype};base64,${req.file.buffer.toString(
+      "base64"
+    )}`;
+
+    const result = await cloudinary.uploader.upload(base64File, {
+      folder: "circulars",
+  resource_type: "raw",        // ✅ FORCE RAW
+  access_mode: "public", // IMPORTANT
+      use_filename: true,
+      unique_filename: true,
     });
 
-    res.status(201).json({ msg: "Circular uploaded successfully", circular });
+    const circular = await Circular.create({
+      title: req.body.title,
+      pdfUrl: result.secure_url,
+      publicId: result.public_id,
+      originalFilename: req.file.originalname,
+    });
+
+    res.status(201).json(circular);
   } catch (err) {
-    console.error("Circular upload error:", err);
-    res.status(500).json({ msg: err.message });
+    console.error("❌ Upload failed:", err);
+    res.status(500).json({
+      message: "Upload failed",
+      error: err.message,
+    });
   }
 };
 
-/**
- * Get all circulars (for listing)
- * Excludes SUPER_ADMIN from viewing (they manage, not consume)
- */
+/* =======================
+   GET ALL CIRCULARS
+======================= */
 export const getCirculars = async (req, res) => {
   try {
     const circulars = await Circular.find().sort({ createdAt: -1 });
     res.json(circulars);
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    res.status(500).json({ message: "Failed to fetch circulars" });
   }
 };
 
-/**
- * Get the latest circular
- * Returns the most recent circular for acknowledgement check
- */
-export const getLatestCircular = async (req, res) => {
-  try {
-    const latestCircular = await Circular.findOne()
-      .sort({ createdAt: -1 })
-      .lean();
+/* =======================
+   STREAM PDF (VIEW / DOWNLOAD)
+======================= */
+export const getCircularPDF = async (req, res) => {
+  const circular = await Circular.findById(req.params.id);
 
-    if (!latestCircular) {
-      return res.json({
-        hasUnacknowledged: false,
-        circular: null
-      });
+  if (!circular) {
+    return res.status(404).json({ message: "Not found" });
+  }
+
+  // Force inline display
+  res.setHeader("Content-Disposition", "inline");
+  res.redirect(circular.pdfUrl);
+};
+export const acknowledgeCircular = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const circular = await Circular.findById(id);
+    if (!circular) {
+      return res.status(404).json({ msg: "Circular not found" });
     }
 
-    // Get user's last acknowledged circular
-    const user = await User.findById(req.user.id)
-      .select("lastAcknowledgedCircularId")
-      .lean();
-
-    // Check if user needs to acknowledge
-    const hasUnacknowledged = !user.lastAcknowledgedCircularId ||
-      user.lastAcknowledgedCircularId.toString() !== latestCircular._id.toString();
+    await User.findByIdAndUpdate(req.user.id, {
+      lastAcknowledgedCircularId: id,
+      lastAcknowledgedAt: new Date(),
+    });
 
     res.json({
-      hasUnacknowledged,
-      circular: hasUnacknowledged ? latestCircular : null
+      msg: "Circular acknowledged successfully",
+      circularId: id,
     });
 
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    console.error("Acknowledge failed:", err);
+    res.status(500).json({ msg: "Server error" });
   }
 };
 
-/**
- * Acknowledge a circular
- * Updates user's lastAcknowledgedCircularId
- */
-export const acknowledgeCircular = async (req, res) => {
+export const getCircularAcknowledgementReport = async (req, res) => {
   try {
-    const { circularId } = req.body;
+    const { circularId } = req.query;
 
     if (!circularId) {
-      return res.status(400).json({ msg: "Circular ID is required" });
+      return res.status(400).json({ msg: "Circular ID required" });
     }
 
-    // Verify circular exists
     const circular = await Circular.findById(circularId);
     if (!circular) {
       return res.status(404).json({ msg: "Circular not found" });
     }
 
-    // Get the latest circular
-    const latestCircular = await Circular.findOne().sort({ createdAt: -1 });
-
-    // Ensure user is acknowledging the latest circular
-    if (latestCircular._id.toString() !== circularId) {
-      return res.status(400).json({
-        msg: "You must acknowledge the latest circular"
-      });
-    }
-
-    // Update user's acknowledgement
-    await User.findByIdAndUpdate(req.user.id, {
-      lastAcknowledgedCircularId: circularId
-    });
-
-    res.json({
-      msg: "Circular acknowledged successfully",
-      acknowledgedCircularId: circularId
-    });
-
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
-  }
-};
-
-/**
- * Check circular acknowledgement status (for middleware/guards)
- * Returns whether user has acknowledged the latest circular
- */
-export const checkAcknowledgementStatus = async (req, res) => {
-  try {
-    const latestCircular = await Circular.findOne()
-      .sort({ createdAt: -1 })
-      .select("_id")
-      .lean();
-
-    // No circulars exist - no acknowledgement needed
-    if (!latestCircular) {
-      return res.json({
-        acknowledged: true,
-        reason: "NO_CIRCULARS"
-      });
-    }
-
-    const user = await User.findById(req.user.id)
-      .select("lastAcknowledgedCircularId")
-      .lean();
-
-    const acknowledged = !!(user.lastAcknowledgedCircularId &&
-      user.lastAcknowledgedCircularId.toString() === latestCircular._id.toString());
-
-    res.json({
-      acknowledged,
-      latestCircularId: latestCircular._id,
-      userAcknowledgedId: user.lastAcknowledgedCircularId || null
-    });
-
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
-  }
-};
-
-/**
- * Get circular acknowledgement report for Admin
- * Shows all users and their acknowledgement status for each circular
- */
-export const getCircularAcknowledgementReport = async (req, res) => {
-  try {
-    const { circularId } = req.query;
-
-    // Get the target circular (latest if not specified)
-    let targetCircular;
-    if (circularId) {
-      targetCircular = await Circular.findById(circularId).lean();
-      if (!targetCircular) {
-        return res.status(404).json({ msg: "Circular not found" });
-      }
-    } else {
-      targetCircular = await Circular.findOne().sort({ createdAt: -1 }).lean();
-    }
-
-    if (!targetCircular) {
-      return res.json({
-        circular: null,
-        users: [],
-        summary: { total: 0, acknowledged: 0, pending: 0 }
-      });
-    }
-
-    // Get all users who need to acknowledge (Drivers & Depot Managers)
+    // Fetch all users except admins if needed
     const users = await User.find({
-      role: { $in: ["DRIVER", "DEPOT_MANAGER"] }
-    })
-      .select("name pfNo role depotName lastAcknowledgedCircularId")
-      .sort({ role: 1, depotName: 1, name: 1 })
-      .lean();
+      role: { $ne: "SUPER_ADMIN" }
+    }).select("name pfNo role depotName lastAcknowledgedCircularId lastAcknowledgedAt");
 
-    // Map users with acknowledgement status
-    const usersWithStatus = users.map(user => {
-      const hasAcknowledged = user.lastAcknowledgedCircularId &&
-        user.lastAcknowledgedCircularId.toString() === targetCircular._id.toString();
+    const reportUsers = users.map(user => {
+      const acknowledged =
+        user.lastAcknowledgedCircularId?.toString() === circularId;
 
       return {
         _id: user._id,
@@ -199,35 +117,32 @@ export const getCircularAcknowledgementReport = async (req, res) => {
         pfNo: user.pfNo,
         role: user.role,
         depotName: user.depotName,
-        acknowledged: hasAcknowledged,
-        lastAcknowledgedCircularId: user.lastAcknowledgedCircularId
+        acknowledged,
+        acknowledgedAt: acknowledged ? user.lastAcknowledgedAt : null
       };
     });
 
-    // Calculate summary
-    const acknowledged = usersWithStatus.filter(u => u.acknowledged).length;
-    const pending = usersWithStatus.filter(u => !u.acknowledged).length;
+    const acknowledgedCount = reportUsers.filter(u => u.acknowledged).length;
+    const total = reportUsers.length;
 
     res.json({
       circular: {
-        _id: targetCircular._id,
-        title: targetCircular.title,
-        createdAt: targetCircular.createdAt
+        _id: circular._id,
+        title: circular.title
       },
-      users: usersWithStatus,
       summary: {
-        total: users.length,
-        acknowledged,
-        pending,
-        percentComplete: users.length > 0
-          ? Math.round((acknowledged / users.length) * 100)
-          : 100
-      }
+        total,
+        acknowledged: acknowledgedCount,
+        pending: total - acknowledgedCount,
+        percentComplete: total === 0
+          ? 0
+          : Math.round((acknowledgedCount / total) * 100)
+      },
+      users: reportUsers
     });
 
   } catch (err) {
-    console.error("Acknowledgement report error:", err);
-    res.status(500).json({ msg: err.message });
+    console.error("Ack report error:", err);
+    res.status(500).json({ msg: "Server error" });
   }
 };
-

@@ -6,7 +6,7 @@ import authRoutes from "./routes/authRoutes.js";
 import driverRoutes from "./routes/driverRoutes.js";
 import depotRoutes from "./routes/depotRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import circularRoutes from "./routes/circularRoutes.js";
+import circularRoutes from "./routes/adminCircularRoutes.js";
 import { connectDB } from "./config/db.js";
 
 
