@@ -108,10 +108,10 @@ export default function UserDetailModal({ userId, onClose, isAdmin = false }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+      className="fixed  inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-white scale-80 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
 
         {/* Header */}
         <div className="bg-indigo-600 text-white px-6 py-4 flex items-center justify-between">
@@ -125,7 +125,7 @@ export default function UserDetailModal({ userId, onClose, isAdmin = false }) {
               </h2>
               {user && (
                 <p className="text-sm text-indigo-200">
-                  {user.role?.replace("_", " ")} • {user.depotName}
+                  {user.role=="DEPOT_MANAGER"?`SSE/TRD/${user.depotName}`:`${user.role}`} • {user.depotName}
                 </p>
               )}
             </div>

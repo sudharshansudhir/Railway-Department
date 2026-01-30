@@ -97,7 +97,7 @@ export default function AdminDashboard() {
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
               <StatCard
                 icon={<UserCog />}
-                label="Managers"
+                label="SSE/TRD"
                 value={managers.length}
               />
               <StatCard
@@ -141,13 +141,13 @@ export default function AdminDashboard() {
           </div>
 
           {/* ================= MANAGERS ================= */}
-          <Section title="Depot Managers" icon={<Users />}>
+          <Section title="SSE/TRD" icon={<Users />}>
             <Table headers={["Name", "PF No", "Depot", "Actions"]} loading={loading} emptyText="No managers found">
               {managers.map(m => (
                 <tr key={m._id} className="hover:bg-slate-50">
                   <td className="px-4 py-3">{m.name}</td>
                   <td className="px-4 py-3">{m.pfNo || "-"}</td>
-                  <td className="px-4 py-3"><Badge>{m.depotName}</Badge></td>
+                  <td className="px-4 py-3"><Badge>SSE/TRD/{m.depotName}</Badge></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <button
