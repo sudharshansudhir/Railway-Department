@@ -162,7 +162,7 @@ export const driverSignOut = async (req, res) => {
 
     const log = await DailyLog.findOne({
       driverId: req.user.id,
-      logDate: today,
+      // logDate: today,
       signOutTime: { $exists: false }
     });
 

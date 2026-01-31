@@ -153,6 +153,7 @@ useEffect(() => {
       setFromStation(freshLoc);
 
     } catch (e) {
+      console.log(e)
       Swal.fire("Error", e.response?.data?.msg || "Failed", "error");
     } finally {
       setLoading(false);
