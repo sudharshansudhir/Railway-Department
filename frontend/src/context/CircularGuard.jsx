@@ -49,7 +49,7 @@ export function CircularGuardProvider({ children }) {
 
     try {
       setIsChecking(true);
-      const res = await api.get("/admin/circulars/latest");
+      const res = await api.get("/admin/circulars");
 
       if (res.data.hasUnacknowledged && res.data.circular) {
         setPendingCircular(res.data.circular);

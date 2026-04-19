@@ -4,19 +4,16 @@ import User from "../models/User.js";
 
 export const uploadCircular = async (req, res) => {
   try {
-    if (!req.file || !req.body.title) {
-      return res.status(400).json({ message: "Title and PDF required" });
+    if (!req.file || !req.body.title || !req.body.circularDate) {
+      return res.status(400).json({ message: "Title, Date and PDF required" });
     }
 
-    // 🔥 Convert buffer → base64
-    const base64File = `data:${req.file.mimetype};base64,${req.file.buffer.toString(
-      "base64"
-    )}`;
+    const base64File = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
 
     const result = await cloudinary.uploader.upload(base64File, {
       folder: "circulars",
-  resource_type: "raw",        // ✅ FORCE RAW
-  access_mode: "public", // IMPORTANT
+      resource_type: "raw",
+      access_mode: "public",
       use_filename: true,
       unique_filename: true,
     });
@@ -26,6 +23,7 @@ export const uploadCircular = async (req, res) => {
       pdfUrl: result.secure_url,
       publicId: result.public_id,
       originalFilename: req.file.originalname,
+      circularDate: new Date(req.body.circularDate) // ✅ SAVE DATE
     });
 
     res.status(201).json(circular);
@@ -43,8 +41,28 @@ export const uploadCircular = async (req, res) => {
 ======================= */
 export const getCirculars = async (req, res) => {
   try {
-    const circulars = await Circular.find().sort({ createdAt: -1 });
+
+    const { date } = req.query;
+
+    let filter = {};
+
+    // ✅ Filter by specific date if provided
+    if (date) {
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+
+      filter.circularDate = { $gte: start, $lte: end };
+    } 
+
+    // ✅ Sort by circularDate instead of createdAt
+    const circulars = await Circular.find(filter)
+      .sort({ circularDate: -1 });
+
     res.json(circulars);
+
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch circulars" });
   }

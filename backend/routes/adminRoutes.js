@@ -15,15 +15,16 @@ import {
 
 const router = express.Router();
 
-// Get admin report summary
+/* ================= REPORTS ================= */
 router.get(
   "/reports",
   verifyToken,
-  allowRoles("SUPER_ADMIN"),
+  allowRoles("SUPER_ADMIN", "ADEE"),
   getAdminReport
 );
 
-// Register new user (driver or depot manager)
+/* ================= REGISTER USER ================= */
+/* 🔥 ONLY SUPER ADMIN CAN CREATE ADEE */
 router.post(
   "/register",
   verifyToken,
@@ -31,67 +32,61 @@ router.post(
   adminRegisterUser
 );
 
-// Get distinct depot names
+/* ================= DEPOTS ================= */
 router.get(
   "/depots",
   verifyToken,
-  allowRoles("SUPER_ADMIN"),
+  allowRoles("SUPER_ADMIN", "ADEE"),
   getDistinctDepots
 );
 
-// Get all users (managers and drivers)
+/* ================= USERS ================= */
 router.get(
   "/users",
   verifyToken,
-  allowRoles("SUPER_ADMIN"),
+  allowRoles("SUPER_ADMIN", "ADEE"),
   getAdminUsers
 );
 
-// Get specific user details (Driver or Manager)
 router.get(
   "/users/:userId",
   verifyToken,
-  allowRoles("SUPER_ADMIN"),
+  allowRoles("SUPER_ADMIN", "ADEE"),
   getUserDetails
 );
 
-// Update user information
 router.put(
   "/users/:userId",
   verifyToken,
-  allowRoles("SUPER_ADMIN"),
+  allowRoles("SUPER_ADMIN", "ADEE"),
   updateUser
 );
 
-// Delete user
 router.delete(
   "/users/:userId",
   verifyToken,
-  allowRoles("SUPER_ADMIN"),
+  allowRoles("SUPER_ADMIN", "ADEE"),
   deleteUser
 );
 
-// Reset user password
 router.post(
   "/users/:userId/reset-password",
   verifyToken,
-  allowRoles("SUPER_ADMIN"),
+  allowRoles("SUPER_ADMIN", "ADEE"),
   resetUserPassword
 );
 
-// Get T-Cards for a specific user with optional date filter
 router.get(
   "/users/:userId/tcards",
   verifyToken,
-  allowRoles("SUPER_ADMIN"),
+  allowRoles("SUPER_ADMIN", "ADEE"),
   getUserTCards
 );
 
-// Download admin report as CSV
 router.get(
   "/reports/download",
   verifyToken,
-  allowRoles("SUPER_ADMIN"),
+  allowRoles("SUPER_ADMIN", "ADEE"),
   downloadAdminReport
 );
 

@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ["DRIVER", "DEPOT_MANAGER", "SUPER_ADMIN"],
+    enum: ["DRIVER", "DEPOT_MANAGER", "SUPER_ADMIN","ADEE"],
     required: true,
     index: true
   },
@@ -34,7 +34,13 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Circular",
     default: null
+  },
+  assignedDepots: [
+  {
+    type: String
   }
+],
+
 
 }, { timestamps: true });
 

@@ -86,20 +86,41 @@ export const updateLR = async (req, res) => {
     });
   }
 
-  const updated = await DriverProfile.findOneAndUpdate(
-    { userId: req.user.id },
-    {
-      $push: {
-        lrDetails: lrDetails
-      }
-    },
-    { new: true, upsert: true }
-  );
+  try {
+    // Normalize section (trim + uppercase for safety)
+    const sectionName = lrDetails.section.trim();
 
-  res.json({
-    msg: "LR entry added successfully",
-    lrDetails: updated.lrDetails
-  });
+    // 1️⃣ Remove existing LR with same section
+    await DriverProfile.findOneAndUpdate(
+      { userId: req.user.id },
+      {
+        $pull: {
+          lrDetails: {
+            section: sectionName
+          }
+        }
+      }
+    );
+
+    // 2️⃣ Push new LR entry
+    const updated = await DriverProfile.findOneAndUpdate(
+      { userId: req.user.id },
+      {
+        $push: {
+          lrDetails: lrDetails
+        }
+      },
+      { new: true, upsert: true }
+    );
+
+    res.json({
+      msg: "LR entry saved successfully",
+      lrDetails: updated.lrDetails
+    });
+
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
 };
 
 

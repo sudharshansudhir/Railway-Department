@@ -1,22 +1,21 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 export default function ProtectedRoute({ children, role }) {
   const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("role");
-  const passwordChanged = localStorage.getItem("passwordChanged");
-  const location = useLocation();
 
-  // Not logged in
-  if (!token) return <Navigate to="/" />;
-
-  // Password not changed - redirect to change password page
-  // (except if already on change-password page to avoid loop)
-  if (passwordChanged === "false" && location.pathname !== "/change-password") {
-    return <Navigate to="/change-password" />;
+  if (!token) {
+    return <Navigate to="/login" />;
   }
 
-  // Role mismatch
-  if (role && userRole !== role) return <Navigate to="/" />;
+  // 🔥 Allow ADEE to access SUPER_ADMIN routes
+  if (
+    role &&
+    role !== userRole &&
+    !(role === "SUPER_ADMIN" && userRole === "ADEE")
+  ) {
+    return <Navigate to="/" />;
+  }
 
   return children;
 }

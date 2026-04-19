@@ -3,7 +3,16 @@ import mongoose from "mongoose";
 const checklistItemSchema = new mongoose.Schema({
   description: String,
   checked: Boolean,
-  remarks: String
+  remarks: String,
+  priority: {
+    type: String,
+    enum: ["HIGH", "LOW", null],
+    default: null
+  },
+  dieselLevel: {
+    type: Number,
+    default: null
+  }
 }, { _id: false });
 
 const tCardChecklistSchema = new mongoose.Schema({
@@ -16,7 +25,14 @@ const tCardChecklistSchema = new mongoose.Schema({
 
   date: {
     type: Date,
-    default: () => new Date().setHours(0, 0, 0, 0),
+    default: () => {
+  const now = new Date();
+  return new Date(Date.UTC(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  ));
+},
     index: true
   },
 

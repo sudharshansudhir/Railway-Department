@@ -35,9 +35,23 @@ export const saveTCard = async (req, res) => {
     return res.status(400).json({ msg: "Incomplete checklist" });
   }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // const today = new Date();
+  // today.setHours(0, 0, 0, 0);
+const now = new Date();
 
+// Convert IST date → store as UTC midnight correctly
+const istDate = new Date(
+  now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+);
+
+// IMPORTANT FIX
+const today = new Date(
+  Date.UTC(
+    istDate.getFullYear(),
+    istDate.getMonth(),
+    istDate.getDate()
+  )
+);
   const existing = await TCardChecklist.findOne({
     driverId: req.user.id,
     date: today
@@ -52,7 +66,8 @@ export const saveTCard = async (req, res) => {
   await TCardChecklist.create({
     driverId: req.user.id,
     tCarNo,
-    items
+    items,
+    date: today 
   });
 
   res.json({ msg: "Daily T-Card checklist saved" });

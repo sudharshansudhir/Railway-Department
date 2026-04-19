@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const circularSchema = new mongoose.Schema(
   {
     title: {
-      type: String, 
+      type: String,
       required: true,
     },
     pdfUrl: {
@@ -17,6 +17,13 @@ const circularSchema = new mongoose.Schema(
     originalFilename: {
       type: String,
     },
+
+    // ✅ NEW FIELD
+    circularDate: {
+      type: Date,
+      required: true,
+      index: true
+    }
   },
   { timestamps: true }
 );

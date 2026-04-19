@@ -9,29 +9,32 @@ export default function AdminCircularUpload() {
   const [title, setTitle] = useState("");
   const [pdf, setPdf] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [circularDate, setCircularDate] = useState("");
 
   const upload = async () => {
-    if (!title || !pdf) {
-      Swal.fire("Missing Data", "Title and PDF required", "warning");
-      return;
-    }
+  if (!title || !pdf || !circularDate) {
+    Swal.fire("Missing Data", "Title, Date and PDF required", "warning");
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("pdf", pdf);
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("pdf", pdf);
+  formData.append("circularDate", circularDate); // ✅ send date
 
-    try {
-      setLoading(true);
-      await api.post("/admin/circulars", formData);
-      Swal.fire("Uploaded", "Circular uploaded successfully", "success");
-      setTitle("");
-      setPdf(null);
-    } catch {
-      Swal.fire("Error", "Upload failed", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    await api.post("/admin/circulars", formData);
+    Swal.fire("Uploaded", "Circular uploaded successfully", "success");
+    setTitle("");
+    setPdf(null);
+    setCircularDate("");
+  } catch {
+    Swal.fire("Error", "Upload failed", "error");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <>
@@ -63,6 +66,20 @@ export default function AdminCircularUpload() {
               className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
+
+          {/* DATE INPUT */}
+<div className="mb-5">
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Circular Date
+  </label>
+  <input
+    type="date"
+    value={circularDate}
+    onChange={e => setCircularDate(e.target.value)}
+    className="w-full border rounded-lg px-3 py-2 
+               focus:outline-none focus:ring-2 focus:ring-indigo-500"
+  />
+</div>
 
           {/* FILE UPLOAD */}
           <div className="mb-6">

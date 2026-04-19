@@ -27,12 +27,13 @@ export default function DepotManagerDashboard() {
   useEffect(() => {
     api.get("/depot/drivers")
       .then(res => setDrivers(res.data))
-      .catch(() =>
+      .catch((e) =>{
+        console.log(e)
         Swal.fire({
           icon: "error",
           title: "Error",
           text: "Failed to load drivers",
-        })
+        })}
       )
       .finally(() => setLoading(false));
   }, []);

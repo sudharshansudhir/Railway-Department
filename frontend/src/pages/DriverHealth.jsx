@@ -7,27 +7,25 @@ import Footer from "../components/Footer";
 
 /* 🔥 PREDEFINED TRAININGS */
 const TRAINING_KEYS = ["PME", "GRS_RC", "TR4", "OC"];
+
 const calculateSchedule = (start, end) => {
   if (!start || !end) return "";
 
   const startDate = new Date(start);
   const endDate = new Date(end);
 
-  console.log(startDate,endDate)
   const months =
     (endDate.getFullYear() - startDate.getFullYear()) * 12 +
     (endDate.getMonth() - startDate.getMonth());
 
-  if (months === 12) return "1 year";
+  if (months === 12) return "1 Year";
   if (months === 24) return "2 Years";
   if (months % 12 === 0) return `${months / 12} Years`;
 
   return `${months} Months`;
 };
 
-
 export default function DriverHealth() {
-
   const [trainings, setTrainings] = useState({
     PME: { doneDate: "", dueDate: "", schedule: "" },
     GRS_RC: { doneDate: "", dueDate: "", schedule: "" },
@@ -57,7 +55,9 @@ export default function DriverHealth() {
               schedule: existing[key]?.schedule || ""
             };
           });
+
           setTrainings(formatted);
+          checkTrainingAlerts(formatted); // 🔥 popup alert
         }
       })
       .catch(() => {
@@ -65,6 +65,44 @@ export default function DriverHealth() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  /* ================= ALERT CHECK FUNCTION ================= */
+  const checkTrainingAlerts = (data) => {
+    const today = new Date();
+
+    let overdueList = [];
+    let expiringList = [];
+
+    TRAINING_KEYS.forEach(key => {
+      const dueDate = data[key]?.dueDate;
+      if (!dueDate) return;
+
+      const diffMs = new Date(dueDate) - today;
+      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      if (daysLeft < 0) {
+        overdueList.push(`${key} overdue by ${Math.abs(daysLeft)} days`);
+      } else if (daysLeft <= 30) {
+        expiringList.push(`${key} expiring in ${daysLeft} days`);
+      }
+    });
+
+    if (overdueList.length > 0) {
+      Swal.fire({
+        icon: "error",
+        title: "⚠ Training Overdue",
+        html: overdueList.map(i => `<div>${i}</div>`).join(""),
+        confirmButtonColor: "#dc2626"
+      });
+    } else if (expiringList.length > 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "⏳ Training Expiring Soon",
+        html: expiringList.map(i => `<div>${i}</div>`).join(""),
+        confirmButtonColor: "#d97706"
+      });
+    }
+  };
 
   /* ================= SAVE ================= */
   const save = async () => {
@@ -95,6 +133,7 @@ export default function DriverHealth() {
         timer: 1400,
         showConfirmButton: false,
       });
+
     } catch {
       Swal.fire("Error", "Unable to save training details", "error");
     } finally {
@@ -113,9 +152,6 @@ export default function DriverHealth() {
     );
   }
 
-
-
-
   return (
     <>
       <Navbar />
@@ -123,7 +159,6 @@ export default function DriverHealth() {
       <div className="min-h-screen bg-slate-100 px-4 py-6">
         <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
 
-          {/* HEADER */}
           <div className="mb-8 text-center">
             <div className="flex justify-center mb-2">
               <div className="p-3 rounded-full bg-emerald-100">
@@ -138,7 +173,6 @@ export default function DriverHealth() {
             </p>
           </div>
 
-          {/* TRAINING SECTIONS */}
           <div className="space-y-8">
             {TRAINING_KEYS.map(key => (
               <TrainingSection
@@ -155,7 +189,6 @@ export default function DriverHealth() {
             ))}
           </div>
 
-          {/* SAVE BUTTON */}
           <button
             onClick={save}
             disabled={saving}
@@ -179,8 +212,36 @@ export default function DriverHealth() {
 /* ================= TRAINING SECTION ================= */
 
 function TrainingSection({ title, data, onChange }) {
-  const isOverdue =
-    data.dueDate && new Date(data.dueDate) < new Date();
+
+  const today = new Date();
+  const dueDateObj = data.dueDate ? new Date(data.dueDate) : null;
+
+  let statusBox = null;
+
+  if (dueDateObj) {
+    const diffMs = dueDateObj - today;
+    const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (daysLeft < 0) {
+      statusBox = (
+        <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
+          🔴 Training Overdue by {Math.abs(daysLeft)} days
+        </div>
+      );
+    } else if (daysLeft <= 30) {
+      statusBox = (
+        <div className="mb-4 p-3 rounded-lg text-sm bg-amber-50 text-amber-700 border border-amber-200">
+          🟡 Expiring in {daysLeft} days
+        </div>
+      );
+    } else {
+      statusBox = (
+        <div className="mb-4 p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">
+          🟢 Valid till {data.dueDate}
+        </div>
+      );
+    }
+  }
 
   return (
     <div className="border rounded-xl p-5 bg-slate-50">
@@ -190,52 +251,34 @@ function TrainingSection({ title, data, onChange }) {
         {title}
       </h3>
 
-      {data.dueDate && (
-        <div
-          className={`mb-4 p-3 rounded-lg text-sm
-            ${
-              isOverdue
-                ? "bg-red-50 text-red-700 border border-red-200"
-                : "bg-green-50 text-green-700 border border-green-200"
-            }`}
-        >
-          {isOverdue
-            ? "Training overdue"
-            : `Valid till ${data.dueDate}`}
-        </div>
-      )}
+      {statusBox}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
         <DateField
-  label="Done Date"
-  value={data.doneDate}
-  onChange={v => {
-    const schedule = calculateSchedule(v, data.dueDate);
-    onChange({ ...data, doneDate: v, schedule });
-  }}
-/>
+          label="Done Date"
+          value={data.doneDate}
+          onChange={v => {
+            const schedule = calculateSchedule(v, data.dueDate);
+            onChange({ ...data, doneDate: v, schedule });
+          }}
+        />
 
+        <DateField
+          label="Next Due Date"
+          value={data.dueDate}
+          onChange={v => {
+            const schedule = calculateSchedule(data.doneDate, v);
+            onChange({ ...data, dueDate: v, schedule });
+          }}
+        />
 
- 
-<DateField
-  label="Next Due Date"
-  value={data.dueDate}
-  onChange={v => {
-    const schedule = calculateSchedule(data.doneDate, v);
-    onChange({ ...data, dueDate: v, schedule });
-  }}
-/>
-
-
-       <InputField
-  label="Schedule"
-  placeholder="Auto calculated"
-  value={data.schedule}
-  disabled
-/>
-
-
+        <InputField
+          label="Schedule"
+          placeholder="Auto calculated"
+          value={data.schedule}
+          disabled
+        />
       </div>
     </div>
   );
@@ -260,7 +303,6 @@ function InputField({ label, value, onChange, placeholder, disabled }) {
     </div>
   );
 }
-
 
 function DateField({ label, value, onChange }) {
   return (

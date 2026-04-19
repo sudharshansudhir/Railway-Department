@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
@@ -12,6 +12,8 @@ import {
 import Footer from "../components/Footer";
 
 export default function AdminRegister() {
+  const [assignedDepots, setAssignedDepots] = useState([]);
+  const [depots, setDepots] = useState([]); // 🔥 dynamic depots
   const [form, setForm] = useState({
     name: "",
     pfNo: "",
@@ -21,16 +23,46 @@ export default function AdminRegister() {
 
   const [loading, setLoading] = useState(false);
 
+  /* ================= LOAD DEPOTS FROM BACKEND ================= */
+  useEffect(() => {
+    const fetchDepots = async () => {
+      try {
+        const res = await api.get("/admin/depots");
+        setDepots(res.data || []);
+      } catch (err) {
+        console.error("Failed to load depots", err);
+      }
+    };
+
+    fetchDepots();
+  }, []);
+
   const submit = async () => {
-    if (!form.name || !form.pfNo || !form.depotName) {
+    if (!form.name || !form.pfNo) {
       Swal.fire("Missing Data", "All fields are required", "warning");
+      return;
+    }
+
+    if (
+      ["DRIVER", "DEPOT_MANAGER"].includes(form.role) &&
+      !form.depotName
+    ) {
+      Swal.fire("Missing Data", "Depot Name is required", "warning");
+      return;
+    }
+
+    if (form.role === "ADEE" && assignedDepots.length === 0) {
+      Swal.fire("Missing Data", "Assign at least one depot for ADEE", "warning");
       return;
     }
 
     try {
       setLoading(true);
 
-      await api.post("/admin/register", form);
+      await api.post("/admin/register", {
+        ...form,
+        assignedDepots
+      });
 
       Swal.fire({
         icon: "success",
@@ -44,6 +76,8 @@ export default function AdminRegister() {
         role: "DRIVER",
         depotName: ""
       });
+
+      setAssignedDepots([]);
 
     } catch (err) {
       Swal.fire(
@@ -63,7 +97,6 @@ export default function AdminRegister() {
       <div className="min-h-screen bg-slate-100 px-4 py-6">
         <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
 
-          {/* HEADER */}
           <div className="text-center mb-6">
             <div className="flex justify-center mb-2">
               <div className="p-3 rounded-full bg-indigo-100">
@@ -78,7 +111,6 @@ export default function AdminRegister() {
             </p>
           </div>
 
-          {/* FORM */}
           <div className="space-y-5">
 
             <Input
@@ -102,16 +134,65 @@ export default function AdminRegister() {
               onChange={v => setForm({ ...form, role: v })}
               options={[
                 { value: "DRIVER", label: "Tower Wagon Driver (TWD)" },
-                { value: "DEPOT_MANAGER", label: "SSE/TRD (Depot Manager)" }
+                { value: "DEPOT_MANAGER", label: "SSE/TRD (Depot Manager)" },
+                { value: "ADEE", label: "ADEE (Mini Admin)" }
               ]}
             />
 
-            <Input
-              label="Depot Name"
-              icon={<Train />}
-              value={form.depotName}
-              onChange={v => setForm({ ...form, depotName: v })}
-            />
+            {/* DRIVER / MANAGER DEPOT */}
+            {["DRIVER", "DEPOT_MANAGER"].includes(form.role) && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Depot Name
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-gray-400">
+                    <Train />
+                  </span>
+                  <select
+                    value={form.depotName}
+                    onChange={e =>
+                      setForm({ ...form, depotName: e.target.value })
+                    }
+                    className="w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm bg-white"
+                  >
+                    <option value="">Select Depot</option>
+                    {depots.map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* ADEE MULTI DEPOT */}
+            {form.role === "ADEE" && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Assign Depots
+                </label>
+                <select
+                  multiple
+                  value={assignedDepots}
+                  onChange={e =>
+                    setAssignedDepots(
+                      Array.from(
+                        e.target.selectedOptions,
+                        option => option.value
+                      )
+                    )
+                  }
+                  className="w-full border rounded-lg text-sm p-2.5 bg-white"
+                >
+                  {depots.map(d => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-400 mt-1">
+                  Hold Ctrl (Windows) or Cmd (Mac) to select multiple depots
+                </p>
+              </div>
+            )}
 
             <div className="bg-slate-50 text-sm p-3 rounded-xl">
               🔐 Default password will be <b>PF Number</b>
@@ -133,7 +214,8 @@ export default function AdminRegister() {
           </div>
         </div>
       </div>
-      <Footer/>
+
+      <Footer />
     </>
   );
 }

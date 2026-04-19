@@ -11,7 +11,8 @@
 export const ROLES = {
   DRIVER: 'DRIVER',
   DEPOT_MANAGER: 'DEPOT_MANAGER',
-  SUPER_ADMIN: 'SUPER_ADMIN'
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  ADEE: 'ADEE' // 🔥 NEW ROLE
 };
 
 // Training types

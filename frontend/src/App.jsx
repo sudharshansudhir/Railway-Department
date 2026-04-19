@@ -7,7 +7,7 @@ import DailyActivity from "./pages/DailyActivity";
 import DriverProfile from "./pages/DriverProfile";
 import DriverHealth from "./pages/DriverHealth";
 import DriverLR from "./pages/DriverLR";
-
+import ADEEDashboard from "./pages/ADEEDashboard";
 import DepotManagerDashboard from "./pages/DepotManagerDashboard";
 import DriverDetails from "./pages/DriverDetails";
 
@@ -41,6 +41,14 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+  path="/adee"
+  element={
+    <ProtectedRoute role="SUPER_ADMIN">
+      <ADEEDashboard />
+    </ProtectedRoute>
+  }
+/>
 
       <Route
         path="/admin/register"

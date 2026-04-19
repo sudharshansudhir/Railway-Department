@@ -20,11 +20,16 @@ import EditUserModal from "../components/EditUserModal";
 export default function AdminDashboard() {
   const [depot, setDepot] = useState("");
   const [depots, setDepots] = useState([]);
+
   const [managers, setManagers] = useState([]);
   const [drivers, setDrivers] = useState([]);
+  const [miniAdmins, setMiniAdmins] = useState([]); // ✅ NEW
+
   const [loading, setLoading] = useState(true);
 
-  // Modal states
+  const role = localStorage.getItem("role");
+  const isADEE = role === "ADEE";
+
   const [selectedManagerId, setSelectedManagerId] = useState(null);
   const [editUserId, setEditUserId] = useState(null);
 
@@ -34,7 +39,7 @@ export default function AdminDashboard() {
   const loadDepots = async () => {
     try {
       const res = await api.get("/admin/depots");
-      setDepots(res.data);
+      setDepots(Array.isArray(res.data) ? res.data : []);
     } catch {
       Swal.fire("Error", "Failed to load depots", "error");
     }
@@ -47,8 +52,12 @@ export default function AdminDashboard() {
       const res = await api.get(
         `/admin/users${depot ? `?depot=${depot}` : ""}`
       );
-      setManagers(res.data.managers);
-      setDrivers(res.data.drivers);
+      // console.log(res)
+
+      setManagers(res.data.managers || []);
+      setDrivers(res.data.drivers || []);
+      setMiniAdmins(res.data.mini || []); // ✅ NEW
+
     } catch {
       Swal.fire("Error", "Unable to fetch admin data", "error");
     } finally {
@@ -56,14 +65,15 @@ export default function AdminDashboard() {
     }
   };
 
-  /* ================= VIEW USER DETAILS ================= */
   const viewDriverDetails = (userId) => {
-    // Navigate to dedicated detail page for drivers (comprehensive view)
     navigate(`/admin/user/${userId}`);
   };
 
   const viewManagerDetails = (userId) => {
-    // Open modal for managers (compact view)
+    setSelectedManagerId(userId);
+  };
+
+  const viewMiniAdminDetails = (userId) => { // ✅ NEW
     setSelectedManagerId(userId);
   };
 
@@ -87,10 +97,12 @@ export default function AdminDashboard() {
             <div>
               <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                 <Shield className="text-indigo-600" />
-                Sr.DEE/TRD/SA Dashboard
+                {isADEE ? "ADEE Dashboard" : "Sr.DEE/TRD/SA Dashboard"}
               </h2>
               <p className="text-sm text-gray-500">
-                Global visibility across all depots
+                {isADEE
+                  ? "Access limited to assigned depots"
+                  : "Global visibility across all depots"}
               </p>
             </div>
 
@@ -100,21 +112,31 @@ export default function AdminDashboard() {
                 label="SSE/TRD"
                 value={managers.length}
               />
+
               <StatCard
                 icon={<Train />}
                 label="Drivers"
                 value={drivers.length}
               />
 
-              <button
-                onClick={() => navigate("/admin/register")}
-                className="flex items-center gap-2 px-4 py-2
-                           bg-indigo-600 text-white rounded-xl
-                           hover:bg-indigo-700 transition shadow text-sm"
-              >
-                <UserPlus size={18} />
-                Add User
-              </button>
+              {/* ✅ NEW MINI ADMIN COUNT */}
+              <StatCard
+                icon={<Users />}
+                label="Mini Admins"
+                value={miniAdmins.length}
+              />
+
+              {!isADEE && (
+                <button
+                  onClick={() => navigate("/admin/register")}
+                  className="flex items-center gap-2 px-4 py-2
+                             bg-indigo-600 text-white rounded-xl
+                             hover:bg-indigo-700 transition shadow text-sm"
+                >
+                  <UserPlus size={18} />
+                  Add User
+                </button>
+              )}
             </div>
           </div>
 
@@ -140,6 +162,43 @@ export default function AdminDashboard() {
             </select>
           </div>
 
+          {/* ================= MINI ADMINS (NEW) ================= */}
+          <Section title="Mini Admins (ADEE)" icon={<Users />}>
+            <Table
+              headers={["Name", "PF No", "Depot", "Actions"]}
+              loading={loading}
+              emptyText="No mini admins found"
+            >
+              {miniAdmins.map(m => (
+                <tr key={m._id} className="hover:bg-slate-50">
+                  <td className="px-4 py-3">{m.name}</td>
+                  <td className="px-4 py-3">{m.pfNo || "-"}</td>
+                  <td className="px-4 py-3">
+                    <Badge>{m.assignedDepots.join("/")}</Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => viewMiniAdminDetails(m._id)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                      >
+                        <Eye size={14} />
+                        View
+                      </button>
+                      <button
+                        onClick={() => setEditUserId(m._id)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
+                      >
+                        <Pencil size={14} />
+                        Edit
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </Table>
+          </Section>
+
           {/* ================= MANAGERS ================= */}
           <Section title="SSE/TRD" icon={<Users />}>
             <Table headers={["Name", "PF No", "Depot", "Actions"]} loading={loading} emptyText="No managers found">
@@ -147,7 +206,9 @@ export default function AdminDashboard() {
                 <tr key={m._id} className="hover:bg-slate-50">
                   <td className="px-4 py-3">{m.name}</td>
                   <td className="px-4 py-3">{m.pfNo || "-"}</td>
-                  <td className="px-4 py-3"><Badge>SSE/TRD/{m.depotName}</Badge></td>
+                  <td className="px-4 py-3">
+                    <Badge>SSE/TRD/{m.depotName}</Badge>
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <button
@@ -178,7 +239,9 @@ export default function AdminDashboard() {
                 <tr key={d._id} className="hover:bg-slate-50">
                   <td className="px-4 py-3">{d.pfNo}</td>
                   <td className="px-4 py-3">{d.name}</td>
-                  <td className="px-4 py-3"><Badge>{d.depotName}</Badge></td>
+                  <td className="px-4 py-3">
+                    <Badge>{d.depotName}</Badge>
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <button
@@ -205,7 +268,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Manager Detail Modal */}
       {selectedManagerId && (
         <UserDetailModal
           userId={selectedManagerId}
@@ -214,7 +276,6 @@ export default function AdminDashboard() {
         />
       )}
 
-      {/* Edit User Modal */}
       {editUserId && (
         <EditUserModal
           userId={editUserId}
@@ -223,7 +284,7 @@ export default function AdminDashboard() {
         />
       )}
 
-      <Footer/>
+      <Footer />
     </>
   );
 }
@@ -268,10 +329,18 @@ function Table({ headers, children, loading, emptyText }) {
         </thead>
         <tbody>
           {loading && (
-            <tr><td colSpan={headers.length} className="py-6 text-center">Loading...</td></tr>
+            <tr>
+              <td colSpan={headers.length} className="py-6 text-center">
+                Loading...
+              </td>
+            </tr>
           )}
           {!loading && children.length === 0 && (
-            <tr><td colSpan={headers.length} className="py-6 text-center">{emptyText}</td></tr>
+            <tr>
+              <td colSpan={headers.length} className="py-6 text-center">
+                {emptyText}
+              </td>
+            </tr>
           )}
           {!loading && children}
         </tbody>

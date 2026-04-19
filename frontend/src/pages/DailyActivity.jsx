@@ -5,7 +5,6 @@ import Swal from "sweetalert2";
 import {
   LogIn,
   LogOut,
-  Clock,
   Route,
   Gauge,
   MapPin,
@@ -25,13 +24,14 @@ export default function DailyActivity() {
   const [signedIn, setSignedIn] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signInTime, setSignInTime] = useState(null);
-const [hours, setHours] = useState(0);
 
+  /* ================= NEW MILEAGE FORMULA ================= */
+  const totalDistance = Number(km || 0);
+  const mileageAmount = totalDistance * 5.2;
 
-  /* ================= DERIVED ================= */
-const mileage = Number(hours || 0) * 20 + Number(km || 0);
-
-
+  /* ================= TOWER CAR OPTIONS ================= */
+  const towerCars = ["RU 927/017",
+"SR 220035","SR 210018","SR 960025","SR 240063","RU 06878","SR 230022","SR 210067","RU 01896","RU 176019","SR 230059","RU 9516","RU 9514","RU 9496","RU 950021","LR","TRAINING"]
   /* ================= LOCATION ================= */
   const getLocationName = async () => {
     return new Promise((resolve, reject) => {
@@ -54,36 +54,20 @@ const mileage = Number(hours || 0) * 20 + Number(km || 0);
   };
 
   /* ================= CHECK ACTIVE DUTY ================= */
-useEffect(() => {
-  api.get("/driver/active-duty").then(async res => {
-    if (res.data.active) {
-      setSignedIn(true);
-      setFromStation(res.data.fromStation);
-      setTwNumber(res.data.twNumber);
-      setBreathAnalyserDone(res.data.breathAnalyserDone);
-      setSignInTime(res.data.signInTime); // 👈 IMPORTANT
-    } else {
-      const loc = await getLocationName();
-      setFromStation(loc);
-    }
-  });
-}, []);
-
-useEffect(() => {
-  if (!signInTime || !signedIn) return;
-
-  const interval = setInterval(() => {
-    const now = new Date();
-    const start = new Date(signInTime);
-
-    const diffMs = now - start;
-    const hrs = diffMs / (1000 * 60 * 60);
-
-    setHours(Number(hrs.toFixed(2)));
-  }, 60000); // update every 1 min
-
-  return () => clearInterval(interval);
-}, [signInTime, signedIn]);
+  useEffect(() => {
+    api.get("/driver/active-duty").then(async res => {
+      if (res.data.active) {
+        setSignedIn(true);
+        setFromStation(res.data.fromStation);
+        setTwNumber(res.data.twNumber);
+        setBreathAnalyserDone(res.data.breathAnalyserDone);
+        setSignInTime(res.data.signInTime);
+      } else {
+        const loc = await getLocationName();
+        setFromStation(loc);
+      }
+    });
+  }, []);
 
   /* ================= SIGN IN ================= */
   const signIn = async () => {
@@ -143,7 +127,6 @@ useEffect(() => {
         showConfirmButton: false
       });
 
-      // RESET
       setSignedIn(false);
       setTwNumber("");
       setKm("");
@@ -153,7 +136,6 @@ useEffect(() => {
       setFromStation(freshLoc);
 
     } catch (e) {
-      console.log(e)
       Swal.fire("Error", e.response?.data?.msg || "Failed", "error");
     } finally {
       setLoading(false);
@@ -167,7 +149,6 @@ useEffect(() => {
       <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6">
         <div className="max-w-4xl mx-auto space-y-8">
 
-          {/* HEADER */}
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-800">
               Mileage & Duty Log
@@ -177,7 +158,7 @@ useEffect(() => {
             </p>
           </div>
 
-          {/* SIGN ON CARD */}
+          {/* SIGN ON */}
           <SectionCard
             title="Sign ON"
             icon={<LogIn />}
@@ -190,23 +171,25 @@ useEffect(() => {
               value={fromStation}
             />
 
-            <Input
+            {/* UPDATED DROPDOWN */}
+            <SelectInput
               label="Tower Car Number"
               icon={<Hash />}
               value={twNumber}
               onChange={setTwNumber}
               disabled={signedIn}
+              options={towerCars}
             />
-<label className="flex items-center gap-3 mt-3 text-sm font-semibold text-gray-700">
+
+            <label className="flex items-center gap-3 mt-3 text-sm font-semibold text-gray-700">
               <input
                 type="checkbox"
                 checked={breathAnalyserinitial}
-                // disabled={signedIn}
-                onChange={e => setBreathAnalyserinitial(!breathAnalyserinitial)}
+                onChange={() => setBreathAnalyserinitial(!breathAnalyserinitial)}
               />
               Breath Analyser Test Done
             </label>
-         
+
             <ActionButton
               label={signedIn ? "Signed ON" : "Sign ON"}
               icon={<CheckCircle />}
@@ -217,7 +200,7 @@ useEffect(() => {
             />
           </SectionCard>
 
-          {/* SIGN OFF CARD */}
+          {/* SIGN OFF */}
           <SectionCard
             title="Sign OFF"
             icon={<LogOut />}
@@ -230,34 +213,32 @@ useEffect(() => {
               value={toStation}
             />
 
-          
             <Input
-              label="Kilometers"
+              label="Total Distance (KM)"
               icon={<Route />}
               value={km}
               onChange={setKm}
               disabled={!signedIn}
             />
-               <label className="flex items-center gap-3 mt-3 text-sm font-semibold text-gray-700">
+
+            <label className="flex items-center gap-3 mt-3 text-sm font-semibold text-gray-700">
               <input
                 type="checkbox"
                 checked={breathAnalyserDone}
-                // disabled={signedIn}
-                onChange={e => setBreathAnalyserDone(!breathAnalyserDone)}
+                onChange={() => setBreathAnalyserDone(!breathAnalyserDone)}
               />
               Breath Analyser Test Done
             </label>
 
-
-            {/* MILEAGE */}
+            {/* UPDATED CALCULATION DISPLAY */}
             <div className="mt-4 flex items-center gap-4 bg-indigo-50 border border-indigo-200 p-4 rounded-xl">
               <Gauge className="text-indigo-700" />
               <div>
                 <p className="text-xs text-gray-500">
-                  Calculated Mileage (Hrs × 20 + KM)
+                  Calculated Amount (Distance × 5.2)
                 </p>
                 <p className="text-2xl font-bold text-indigo-700">
-                  {mileage}
+                  ₹ {mileageAmount.toFixed(2)}
                 </p>
               </div>
             </div>
@@ -274,7 +255,7 @@ useEffect(() => {
 
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 }
@@ -315,6 +296,31 @@ function Input({ label, icon, value, onChange, disabled }) {
           onChange={e => onChange(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border rounded-lg disabled:bg-gray-100"
         />
+      </div>
+    </div>
+  );
+}
+
+/* NEW SELECT COMPONENT */
+function SelectInput({ label, icon, value, onChange, disabled, options }) {
+  return (
+    <div className="mb-3">
+      <label className="text-sm font-semibold">{label}</label>
+      <div className="relative">
+        <span className="absolute left-3 top-2.5 text-gray-400">
+          {icon}
+        </span>
+        <select
+          value={value}
+          disabled={disabled}
+          onChange={e => onChange(e.target.value)}
+          className="w-full pl-10 pr-4 py-2 border rounded-lg disabled:bg-gray-100"
+        >
+          <option value="">Select Tower Car</option>
+          {options.map(opt => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
       </div>
     </div>
   );

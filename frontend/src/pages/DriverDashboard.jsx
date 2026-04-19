@@ -18,6 +18,23 @@ export default function DriverDashboard() {
   const navigate = useNavigate();
   const [alerts, setAlerts] = useState([]);
 
+  // const checklistTemplate = [
+  //   "Check Diesel level",
+  //   "Drain water sediments fuel filter",
+  //   "Check engine oil level and top up if necessary",
+  //   "Check fuel, oil, water and exhaust leak",
+  //   "Check air cleaner oil level",
+  //   "Check air line leak",
+  //   "Fill radiator tank with treated water if necessary",
+  //   "Clean compressor breather",
+  //   "Drain air receiver tank and close drain cock",
+  //   "Clean crank case breather",
+  //   "Start engine and note oil pressure",
+  //   "Record oil pressure and brake pressure"
+  // ];
+
+const openTCardPopup = async () => {
+
   const checklistTemplate = [
     "Check Diesel level",
     "Drain water sediments fuel filter",
@@ -33,92 +50,135 @@ export default function DriverDashboard() {
     "Record oil pressure and brake pressure"
   ];
 
-  const openTCardPopup = async () => {
-    const items = checklistTemplate.map(d => ({
-      description: d,
-      checked: false,
-      remarks: ""
-    }));
+  const towerCars = ["RU 927/017",
+"SR 220035","SR 210018","SR 960025","SR 240063","RU 06878","SR 230022","SR 210067","RU 01896","RU 176019","SR 230059","RU 9516","RU 9514","RU 9496","RU 950021","LR","TRAINING"]
 
-    let tCarNo = "";
+  const items = checklistTemplate.map(d => ({
+    description: d,
+    checked: false,
+    remarks: "",
+    priority: "",
+    dieselLevel: null
+  }));
 
-    const { value } = await Swal.fire({
-      title: "Daily Tower Car Checklist",
-      width: window.innerWidth < 640 ? "90%" : 900,
-      showCancelButton: true,
-      confirmButtonText: "Submit Checklist",
-      customClass: {
-        popup: "rounded-xl",
-        htmlContainer: "text-left"
-      },
-      html: `
-        <input id="tcar" class="swal2-input"
-          style="margin-bottom:12px;font-size:11px"
-          placeholder="Tower Car No (e.g. PTJ / SR 210067)" />
+  const { value } = await Swal.fire({
+    title: "Daily Tower Car Checklist",
+    width: window.innerWidth < 640 ? "95%" : 900,
+    showCancelButton: true,
+    confirmButtonText: "Submit Checklist",
+    html: `
+      <select id="tcar" class="swal2-input" style="margin-bottom:12px">
+        <option value="">Select Tower Car</option>
+        ${towerCars.map(t => `<option value="${t}">${t}</option>`).join("")}
+      </select>
 
-        <div style="font-size:10px;
-          text-align:left;
-          max-height:${window.innerWidth < 640 ? "50vh" : "400px"};
-          overflow:auto;
-          padding-right:4px;
-        ">
-          ${items
-            .map(
-              (i, idx) => `
-            <div style="margin-bottom:12px;">
-              <label style="display:flex;gap:8px;align-items:flex-start;">
-                <input type="checkbox" id="chk${idx}" style="margin-top:4px"/>
-                <span style="font-weight:600">${i.description}</span>
-              </label>
-              <input id="rem${idx}" class="swal2-input"
-                style="margin-top:6px"
-                placeholder="Remarks (optional)" />
+      <div style="font-size:12px;text-align:left;max-height:400px;overflow:auto;">
+        ${items.map((i, idx) => `
+          <div style="margin-bottom:14px;">
+            <label style="display:flex;gap:8px;align-items:flex-start;">
+              <input type="checkbox" id="chk${idx}" style="margin-top:4px"/>
+              <span style="font-weight:600">${i.description}</span>
+            </label>
+
+            ${i.description === "Check Diesel level" ? `
+              <input 
+                type="number"
+                id="diesel${idx}"
+                class="swal2-input"
+                placeholder="Enter Diesel Level (Litres)"
+                min="0"
+              />
+            ` : ""}
+
+            <input id="rem${idx}" 
+              class="swal2-input"
+              placeholder="Remarks (optional)"
+              oninput="
+                const val = this.value.trim();
+                const priorityDiv = document.getElementById('priorityDiv${idx}');
+                if(val){
+                  priorityDiv.style.display = 'block';
+                } else {
+                  priorityDiv.style.display = 'none';
+                }
+              "
+            />
+
+            <div id="priorityDiv${idx}" style="display:none;margin-top:6px;">
+              <select id="priority${idx}" class="swal2-input">
+                <option value="">Select Priority</option>
+                <option value="HIGH">High Priority</option>
+                <option value="LOW">Less Priority</option>
+              </select>
             </div>
-          `
-            )
-            .join("")}
-        </div>
-      `,
-      preConfirm: () => {
-        tCarNo = document.getElementById("tcar").value.trim();
-        if (!tCarNo) {
-          Swal.showValidationMessage("T Car No is required");
-          return;
+          </div>
+        `).join("")}
+      </div>
+    `,
+    preConfirm: () => {
+
+      const tCarNo = document.getElementById("tcar").value;
+      if (!tCarNo) {
+        Swal.showValidationMessage("T Car No is required");
+        return;
+      }
+
+      const collected = items.map((i, idx) => {
+        const remarks = document.getElementById(`rem${idx}`).value.trim();
+        const priority = document.getElementById(`priority${idx}`)?.value || "";
+        const dieselInput = document.getElementById(`diesel${idx}`);
+
+        let dieselLevel = null;
+
+        if (dieselInput) {
+          dieselLevel = dieselInput.value ? Number(dieselInput.value) : null;
+          if (dieselLevel === null) {
+            Swal.showValidationMessage("Diesel Level is required");
+            return false;
+          }
         }
 
-        return items.map((i, idx) => ({
+        if (remarks && !priority) {
+          Swal.showValidationMessage("Select priority for all remarks");
+          return false;
+        }
+
+        return {
           description: i.description,
           checked: document.getElementById(`chk${idx}`).checked,
-          remarks: document.getElementById(`rem${idx}`).value
-        }));
-      }
+          remarks,
+          priority: remarks ? priority : null,
+          dieselLevel
+        };
+      });
+
+      if (collected.includes(false)) return;
+
+      return { tCarNo, items: collected };
+    }
+  });
+
+  if (!value) return;
+
+  try {
+    await api.post("/driver/tcard", value);
+
+    await Swal.fire({
+      icon: "success",
+      title: "Checklist Saved",
+      text: "Daily T-Card checklist submitted successfully",
+      timer: 1500,
+      showConfirmButton: false
     });
 
-    if (!value) return;
-
-    try {
-      await api.post("/driver/tcard", {
-        tCarNo,
-        items: value
-      });
-
-      await Swal.fire({
-        icon: "success",
-        title: "Checklist Saved",
-        text: "Daily T-Card checklist submitted successfully",
-        timer: 1500,
-        showConfirmButton: false
-      });
-    } catch (err) {
-      Swal.fire({
-        icon: "error",
-        title: "Submission Failed",
-        text:
-          err.response?.data?.msg ||
-          "Unable to save checklist. Please try again."
-      });
-    }
-  };
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "Submission Failed",
+      text: err.response?.data?.msg || "Unable to save checklist."
+    });
+  }
+};
 
   useEffect(() => {
     api.get("/driver/alerts").then(res => setAlerts(res.data));

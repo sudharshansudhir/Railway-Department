@@ -394,7 +394,7 @@ export default function AdminUserDetail() {
                       <th className="px-4 py-2 text-left">Sign OFF</th>
                       <th className="px-4 py-2 text-center">KM</th>
                       <th className="px-4 py-2 text-center">Breath Analyser</th>
-                      <th className="px-4 py-2 text-center">Hours</th>
+                      {/* <th className="px-4 py-2 text-center">Hours</th> */}
                       <th className="px-4 py-2 text-center">Mileage</th>
                     </tr>
                   </thead>
@@ -432,9 +432,9 @@ export default function AdminUserDetail() {
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-2 text-center">{log.hours?.toFixed(1) || "-"}</td>
+                        {/* <td className="px-4 py-2 text-center">{log.hours?.toFixed(1) || "-"}</td> */}
                         <td className="px-4 py-2 text-center font-semibold text-indigo-600">
-                          {log.mileage || "-"}
+                          {log.mileage*5.2 || "-"}
                         </td>
                       </tr>
                     ))}
@@ -519,23 +519,72 @@ export default function AdminUserDetail() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {card.items?.map((item, idx) => (
-                          <div key={idx} className="flex items-start gap-2 text-sm p-2 bg-white rounded-lg">
-                            <span className={item.checked ? "text-emerald-500" : "text-red-500"}>
-                              {item.checked ? "✓" : "✗"}
-                            </span>
-                            <div>
-                              <p className={item.checked ? "text-gray-700" : "text-red-700 font-medium"}>
-                                {item.description}
-                              </p>
-                              {item.remarks && (
-                                <p className="text-xs text-gray-400">
-                                  Remarks: {item.remarks}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                        {card.items?.map((item, idx) => {
+
+  const isDieselItem = item.description === "Check Diesel level";
+  const dieselThreshold = 500;
+  const isLowDiesel =
+    isDieselItem &&
+    item.dieselLevel !== null &&
+    item.dieselLevel < dieselThreshold;
+
+  return (
+    <div key={idx} className="flex items-start gap-2 text-sm p-2 bg-white rounded-lg">
+
+      <span className={item.checked ? "text-emerald-500" : "text-red-500"}>
+        {item.checked ? "✓" : "✗"}
+      </span>
+
+      <div className="flex-1">
+
+        <p className={item.checked ? "text-gray-700" : "text-red-700 font-medium"}>
+          {item.description}
+        </p>
+
+        {/* 🔥 Diesel Level Display */}
+        {isDieselItem && item.dieselLevel !== null && (
+          <div
+            className={`mt-1 inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold border
+              ${
+                isLowDiesel
+                  ? "bg-red-50 text-red-700 border-red-300"
+                  : "bg-emerald-50 text-emerald-700 border-emerald-300"
+              }
+            `}
+          >
+            Diesel Level: {item.dieselLevel} L
+            {isLowDiesel && " (Below Threshold)"}
+          </div>
+        )}
+
+        {/* 🔥 Remarks + Priority */}
+        {item.remarks && (
+          <div className="mt-1 flex items-center gap-2 flex-wrap">
+            <p className="text-xs text-gray-500">
+              Remarks: {item.remarks}
+            </p>
+
+            {item.priority && (
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold
+                  ${
+                    item.priority === "HIGH"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-amber-100 text-amber-700"
+                  }`}
+              >
+                {item.priority === "HIGH"
+                  ? "High Priority"
+                  : "Less Priority"}
+              </span>
+            )}
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+})}
                       </div>
                     </div>
                   ))}

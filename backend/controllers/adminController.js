@@ -5,21 +5,42 @@ import { generateCSV } from "../utils/reportExporter.js";
 import bcrypt from 'bcryptjs';
 import DriverProfile from "../models/DriverProfile.js";
 
+/* ======================================================
+   REGISTER USER (SUPER ADMIN ONLY)
+====================================================== */
+
 export const adminRegisterUser = async (req, res) => {
   try {
-    const { name, pfNo, role, depotName } = req.body;
+    const { name, pfNo, role, depotName, assignedDepots } = req.body;
 
     /* ---------- VALIDATION ---------- */
-    if (!name || !pfNo || !role || !depotName) {
+    if (!name || !pfNo || !role) {
       return res.status(400).json({
         msg: "All fields are required"
       });
     }
 
-    if (!["DRIVER", "DEPOT_MANAGER"].includes(role)) {
+    // 🔥 Allow ADEE also
+    if (!["DRIVER", "DEPOT_MANAGER", "ADEE"].includes(role)) {
       return res.status(400).json({
         msg: "Invalid role selection"
       });
+    }
+
+    // 🔥 Depot required only for DRIVER & DEPOT_MANAGER
+    if (["DRIVER", "DEPOT_MANAGER"].includes(role) && !depotName) {
+      return res.status(400).json({
+        msg: "Depot is required"
+      });
+    }
+
+    // 🔥 ADEE must have assigned depots
+    if (role === "ADEE") {
+      if (!assignedDepots || assignedDepots.length === 0) {
+        return res.status(400).json({
+          msg: "Assigned depots required for ADEE"
+        });
+      }
     }
 
     /* ---------- CHECK EXISTING ---------- */
@@ -39,15 +60,16 @@ export const adminRegisterUser = async (req, res) => {
       pfNo,
       password: hashedPassword,
       role,
-      depotName,
-      passwordChanged: false // Forces password change on first login
+      depotName: role === "ADEE" ? null : depotName,
+      assignedDepots: role === "ADEE" ? assignedDepots : [],
+      passwordChanged: false
     });
 
     /* ---------- CREATE EMPTY DRIVER PROFILE ---------- */
     if (role === "DRIVER") {
       await DriverProfile.create({
         userId: user._id,
-        hrmsId: pfNo // temporary default
+        hrmsId: pfNo
       });
     }
 
@@ -60,6 +82,10 @@ export const adminRegisterUser = async (req, res) => {
   }
 };
 
+/* ======================================================
+   DOWNLOAD REPORT (ADEE RESTRICTED)
+====================================================== */
+
 export const downloadAdminReport = async (req, res) => {
   const { from, to, depot } = req.query;
 
@@ -67,7 +93,14 @@ export const downloadAdminReport = async (req, res) => {
   const end = new Date(to);
   end.setHours(23, 59, 59, 999);
 
-  const filter = depot ? { depotName: depot } : {};
+  let filter = {};
+
+  if (req.user.role === "ADEE") {
+    filter.depotName = { $in: req.user.assignedDepots };
+  } else if (depot) {
+    filter.depotName = depot;
+  }
+
   const drivers = await User.find({ role: "DRIVER", ...filter });
 
   const rows = [];
@@ -97,23 +130,55 @@ export const downloadAdminReport = async (req, res) => {
   res.send(csv);
 };
 
+/* ======================================================
+   GET USERS (ADEE RESTRICTED)
+====================================================== */
 
 export const getAdminUsers = async (req, res) => {
-  const { depot } = req.query;
-  const filter = depot ? { depotName: depot } : {};
+  try {
+    const { depot } = req.query;
+    let filter = {};
 
-  const managers = await User.find({
-    role: "DEPOT_MANAGER",
-    ...filter
-  }).select("name email pfNo depotName");
+    if (req.user.role === "ADEE") {
+      const assigned = req.user.assignedDepots || [];
 
-  const drivers = await User.find({
-    role: "DRIVER",
-    ...filter
-  }).select("name pfNo depotName");
+      if (depot) {
+        // Ensure ADEE can only filter within assigned depots
+        if (!assigned.includes(depot)) {
+          return res.json({ managers: [], drivers: [],mini:[] });
+        }
+        filter.depotName = depot;
+      } else {
+        filter.depotName = { $in: assigned };
+      }
+    } else if (depot) {
+      filter.depotName = depot;
+    }
 
-  res.json({ managers, drivers });
+    const managers = await User.find({
+      role: "DEPOT_MANAGER",
+      ...filter
+    }).select("name pfNo depotName");
+
+    const drivers = await User.find({
+      role: "DRIVER",
+      ...filter
+    }).select("name pfNo depotName");
+    const mini = await User.find({
+      role: "ADEE",
+      ...filter
+    }).select("name pfNo assignedDepots");
+
+    res.json({ managers, drivers,mini });
+
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
 };
+
+/* ======================================================
+   GET REPORT (ADEE RESTRICTED)
+====================================================== */
 
 export const getAdminReport = async (req, res) => {
   const { from, to, depot } = req.query;
@@ -122,7 +187,14 @@ export const getAdminReport = async (req, res) => {
   const end = new Date(to);
   end.setHours(23, 59, 59, 999);
 
-  const filter = depot ? { depotName: depot } : {};
+  let filter = {};
+
+  if (req.user.role === "ADEE") {
+    filter.depotName = { $in: req.user.assignedDepots };
+  } else if (depot) {
+    filter.depotName = depot;
+  }
+
   const drivers = await User.find({ role: "DRIVER", ...filter });
 
   const report = [];
@@ -145,14 +217,22 @@ export const getAdminReport = async (req, res) => {
   res.json({ from, to, report });
 };
 
+/* ======================================================
+   DISTINCT DEPOTS (ADEE LIMITED)
+====================================================== */
 
 export const getDistinctDepots = async (req, res) => {
   try {
+    if (req.user.role === "ADEE") {
+      return res.json(req.user.assignedDepots || []);
+    }
+
     const depots = await User.distinct("depotName", {
       depotName: { $ne: null }
     });
 
     res.json(depots.sort());
+
   } catch (err) {
     res.status(500).json({ msg: "Failed to load depots" });
   }
