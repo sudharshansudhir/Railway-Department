@@ -689,26 +689,80 @@ function InfoItem({ label, value }) {
 function TrainingCard({ name, training }) {
   if (!training) return null;
 
-  const isOverdue = training.dueDate && new Date(training.dueDate) < new Date();
+  const today = new Date();
+
+  const dueDate = training.dueDate
+    ? new Date(training.dueDate)
+    : null;
+
+  // Difference in days
+  const diffDays = dueDate
+    ? Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24))
+    : null;
+
+  // Status Logic
+  const isOverdue = diffDays !== null && diffDays < 0;
+
+  const isExpiringSoon =
+    diffDays !== null &&
+    diffDays >= 0 &&
+    diffDays <= 15;
+
+  // Dynamic Colors
+  let cardClasses = "border-gray-200 bg-white";
+  let badgeClasses = "text-emerald-600";
+  let badgeText = "Valid";
+
+  if (isOverdue) {
+    cardClasses = "border-red-200 bg-red-50";
+    badgeClasses = "text-red-600";
+    badgeText = "Overdue";
+  } else if (isExpiringSoon) {
+    cardClasses = "border-amber-200 bg-amber-50";
+    badgeClasses = "text-amber-600";
+    badgeText = `Expiring in ${diffDays} day${diffDays !== 1 ? "s" : ""}`;
+  }
 
   return (
-    <div className={`p-4 rounded-lg border ${isOverdue ? "border-red-200 bg-red-50" : "border-gray-200"}`}>
+    <div className={`p-4 rounded-lg border ${cardClasses}`}>
       <div className="flex items-center justify-between mb-2">
-        <h4 className="font-semibold">{name.replace("_", "/")}</h4>
-        {isOverdue ? (
-          <span className="text-xs text-red-600 flex items-center gap-1">
-            <XCircle size={12} /> Overdue
-          </span>
-        ) : (
-          <span className="text-xs text-emerald-600 flex items-center gap-1">
-            <CheckCircle size={12} /> Valid
-          </span>
-        )}
+
+        <h4 className="font-semibold">
+          {name.replace("_", "/")}
+        </h4>
+
+        <span className={`text-xs flex items-center gap-1 ${badgeClasses}`}>
+          {isOverdue ? (
+            <XCircle size={12} />
+          ) : (
+            <CheckCircle size={12} />
+          )}
+
+          {badgeText}
+        </span>
+
       </div>
+
       <div className="text-sm text-gray-600 space-y-1">
-        <p>Done: {training.doneDate ? new Date(training.doneDate).toLocaleDateString() : "-"}</p>
-        <p>Due: {training.dueDate ? new Date(training.dueDate).toLocaleDateString() : "-"}</p>
-        <p className="text-xs text-gray-400">{training.schedule}</p>
+        <p>
+          Done: {
+            training.doneDate
+              ? new Date(training.doneDate).toLocaleDateString()
+              : "-"
+          }
+        </p>
+
+        <p>
+          Due: {
+            training.dueDate
+              ? new Date(training.dueDate).toLocaleDateString()
+              : "-"
+          }
+        </p>
+
+        <p className="text-xs text-gray-400">
+          {training.schedule}
+        </p>
       </div>
     </div>
   );

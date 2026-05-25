@@ -112,6 +112,7 @@ export default function DriverDetails() {
 
   const profile = data.profile || {};
   const lrList = profile.lrDetails || [];
+  const trainings = profile.trainings || {};
 
   return (
     <>
@@ -141,6 +142,137 @@ export default function DriverDetails() {
               <InfoCard label="Date of Entry as TWD" value={profile.dateOfEntryAsTWD?.substring(0, 10) || "-"} icon={<Calendar />} />
             </InfoGrid>
           </Card>
+
+
+{/* ================= TRAINING STATUS ================= */}
+{Object.keys(trainings).length > 0 && (
+  <Card>
+
+    <SectionHeader
+      icon={<FileText />}
+      title="Training Status"
+    />
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      {Object.entries(trainings).map(([key, training]) => {
+
+        if (!training) return null;
+
+        const today = new Date();
+
+        const dueDate = training.dueDate
+          ? new Date(training.dueDate)
+          : null;
+
+        const diffDays = dueDate
+          ? Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24))
+          : null;
+
+        const isOverdue =
+          diffDays !== null && diffDays < 0;
+
+        const isExpiringSoon =
+          diffDays !== null &&
+          diffDays >= 0 &&
+          diffDays <= 15;
+
+        // CARD COLORS
+        let cardClasses =
+          "border-gray-200 bg-white";
+
+        let statusClasses =
+          "text-emerald-600";
+
+        let statusText = "Valid";
+
+        if (isOverdue) {
+          cardClasses =
+            "border-red-200 bg-red-50";
+
+          statusClasses =
+            "text-red-600";
+
+          statusText = "Overdue";
+        }
+        else if (isExpiringSoon) {
+          cardClasses =
+            "border-amber-200 bg-amber-50";
+
+          statusClasses =
+            "text-amber-600";
+
+          statusText =
+            `Expiring in ${diffDays} day${diffDays !== 1 ? "s" : ""}`;
+        }
+
+        return (
+          <div
+            key={key}
+            className={`rounded-2xl border p-6 transition ${cardClasses}`}
+          >
+
+            {/* TOP */}
+            <div className="flex items-start justify-between mb-5">
+
+              <h3 className="text-2xl font-semibold text-gray-900">
+                {key.replace("_", "/")}
+              </h3>
+
+              <div className={`flex items-center gap-1 text-sm font-medium ${statusClasses}`}>
+
+                {isOverdue ? (
+                  <XCircle size={16} />
+                ) : isExpiringSoon ? (
+                  <AlertTriangle size={16} />
+                ) : (
+                  <CheckCircle size={16} />
+                )}
+
+                {statusText}
+              </div>
+            </div>
+
+            {/* DETAILS */}
+            <div className="space-y-3 text-gray-700">
+
+              <div className="flex items-center gap-2">
+                <span className="font-medium">
+                  Done:
+                </span>
+
+                <span>
+                  {training.doneDate
+                    ? new Date(training.doneDate).toLocaleDateString()
+                    : "-"}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-medium">
+                  Due:
+                </span>
+
+                <span>
+                  {training.dueDate
+                    ? new Date(training.dueDate).toLocaleDateString()
+                    : "-"}
+                </span>
+              </div>
+
+              <div className="text-gray-400 font-medium">
+                {training.schedule || "-"}
+              </div>
+
+            </div>
+          </div>
+        );
+      })}
+
+    </div>
+  </Card>
+)}
+
 
           {/* ================= DAILY LOGS ================= */}
           <Card>
@@ -200,7 +332,7 @@ export default function DriverDetails() {
                     </TableCell>
 
                     <TableCell center className="text-indigo-600 font-semibold">
-                      {log.mileage * 5.2 || "-"}
+                      {log.mileage || "-"}
                     </TableCell>
                   </tr>
                 ))}
@@ -209,45 +341,135 @@ export default function DriverDetails() {
           </Card>
 
           {/* ================= LR DETAILS ================= */}
-          {lrList.length > 0 && (
-            <Card>
-              <SectionHeader icon={<FileText />} title={`LR Details (${lrList.length})`} />
-              <TableWrapper>
-                <thead className="bg-slate-50">
-                  <tr>
-                    <TableHead>Section</TableHead>
-                    <TableHead>Done</TableHead>
-                    <TableHead>Due</TableHead>
-                    <TableHead>Status</TableHead>
-                  </tr>
-                </thead>
+        {/* ================= LR DETAILS ================= */}
+{lrList.length > 0 && (
+  <Card>
 
-                <tbody>
-                  {lrList.map((lr, i) => {
-                    const overdue = new Date(lr.dueDate) < new Date();
-                    return (
-                      <tr key={i} className="border-t">
-                        <TableCell>{lr.section}</TableCell>
-                        <TableCell>{lr.doneDate?.substring(0,10)}</TableCell>
-                        <TableCell>{lr.dueDate?.substring(0,10)}</TableCell>
-                        <TableCell>
-                          {overdue ? (
-                            <span className="text-red-600 flex items-center gap-1">
-                              <XCircle size={14}/> Overdue
-                            </span>
-                          ) : (
-                            <span className="text-emerald-600 flex items-center gap-1">
-                              <CheckCircle size={14}/> Valid
-                            </span>
-                          )}
-                        </TableCell>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </TableWrapper>
-            </Card>
-          )}
+    <SectionHeader
+      icon={<FileText />}
+      title={`LR Details (${lrList.length} sections)`}
+    />
+
+    <div className="overflow-x-auto rounded-2xl border border-gray-200">
+
+      <table className="w-full min-w-[700px]">
+
+        {/* HEADER */}
+        <thead className="bg-slate-100">
+          <tr>
+
+            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+              Section
+            </th>
+
+            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+              Done Date
+            </th>
+
+            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+              Due Date
+            </th>
+
+            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+              Status
+            </th>
+
+          </tr>
+        </thead>
+
+        {/* BODY */}
+        <tbody className="bg-white">
+
+          {lrList.map((lr, i) => {
+
+            const today = new Date();
+
+            const dueDate = lr.dueDate
+              ? new Date(lr.dueDate)
+              : null;
+
+            const diffDays = dueDate
+              ? Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24))
+              : null;
+
+            const isOverdue =
+              diffDays !== null && diffDays < 0;
+
+            const isExpiringSoon =
+              diffDays !== null &&
+              diffDays >= 0 &&
+              diffDays <= 15;
+
+            return (
+              <tr
+                key={i}
+                className="border-t border-gray-200 hover:bg-slate-50 transition"
+              >
+
+                {/* SECTION */}
+                <td className="px-6 py-5 font-semibold text-gray-800">
+                  {lr.section}
+                </td>
+
+                {/* DONE DATE */}
+                <td className="px-6 py-5 text-gray-700">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} className="text-indigo-500" />
+
+                    {lr.doneDate
+                      ? new Date(lr.doneDate).toLocaleDateString()
+                      : "-"}
+                  </div>
+                </td>
+
+                {/* DUE DATE */}
+                <td className="px-6 py-5 text-gray-700">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays size={16} className="text-rose-500" />
+
+                    {lr.dueDate
+                      ? new Date(lr.dueDate).toLocaleDateString()
+                      : "-"}
+                  </div>
+                </td>
+
+                {/* STATUS */}
+                <td className="px-6 py-5">
+
+                  {isOverdue ? (
+
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-semibold">
+                      <XCircle size={15} />
+                      Overdue
+                    </span>
+
+                  ) : isExpiringSoon ? (
+
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-sm font-semibold">
+                      <AlertTriangle size={15} />
+                      Expiring in {diffDays} day{diffDays !== 1 ? "s" : ""}
+                    </span>
+
+                  ) : (
+
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold">
+                      <CheckCircle size={15} />
+                      Valid
+                    </span>
+
+                  )}
+
+                </td>
+
+              </tr>
+            );
+          })}
+
+        </tbody>
+      </table>
+    </div>
+  </Card>
+)}
 
           {/* ================= T-CARD ================= */}
           {/* ================= T-CARD (ADMIN EXACT UI) ================= */}
