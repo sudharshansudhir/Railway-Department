@@ -29,6 +29,7 @@ export default function Navbar() {
   const role = localStorage.getItem("role");
 
   const [viewCircular, setViewCircular] = useState(null);
+  const [ackLoading, setAckLoading] = useState(false);
 
   useEffect(() => {
     if (role === "SUPER_ADMIN") return;
@@ -60,19 +61,9 @@ export default function Navbar() {
         });
 
         if (result.isConfirmed) {
-          setViewCircular(latest);
-
-          await api.post(`/admin/circulars/${latest._id}/acknowledge`);
-          localStorage.setItem("lastSeenCircularId", latest._id);
-
-          Swal.fire({
-            icon: "success",
-            title: "Acknowledged",
-            text: "Circular marked as read",
-            timer: 1200,
-            showConfirmButton: false
-          });
-        } else if (result.isDenied) {
+  setViewCircular(latest);
+}
+        else if (result.isDenied) {
           const link = document.createElement("a");
           link.href = latest.pdfUrl;
           link.download = latest.originalFilename || "circular.pdf";
@@ -88,7 +79,48 @@ export default function Navbar() {
     checkNewCircular();
   }, [role]);
 
+  const acknowledgeCircular = async () => {
+  try {
+    if (!viewCircular?._id) return;
+
+    setAckLoading(true);
+
+    await api.post(
+      `/admin/circulars/${viewCircular._id}/acknowledge`
+    );
+
+    localStorage.setItem(
+      "lastSeenCircularId",
+      viewCircular._id
+    );
+
+    setViewCircular(null);
+
+    Swal.fire({
+      icon: "success",
+      title: "Acknowledged",
+      text: "Circular marked as read",
+      timer: 1200,
+      showConfirmButton: false
+    });
+
+  } catch (err) {
+    console.error("Acknowledgement failed", err);
+
+    Swal.fire({
+      icon: "error",
+      title: "Failed",
+      text: "Unable to acknowledge circular"
+    });
+
+  } finally {
+    setAckLoading(false);
+  }
+};
+
   const logout = async () => {
+
+
     if (role === "DRIVER") {
       try {
         const res = await api.get("/driver/active-duty");
@@ -236,14 +268,29 @@ export default function Navbar() {
               </button>
             </div>
 
-            <div className="h-[calc(100%-56px)]">
-              <Worker workerUrl={PDFJS_WORKER_URL}>
-                <Viewer
-                  fileUrl={viewCircular.pdfUrl}
-                  defaultScale={SpecialZoomLevel.PageFit}
-                />
-              </Worker>
-            </div>
+            <div className="h-[calc(100%-120px)]">
+  <Worker workerUrl={PDFJS_WORKER_URL}>
+    <Viewer
+      fileUrl={viewCircular.pdfUrl}
+      defaultScale={SpecialZoomLevel.PageFit}
+    />
+  </Worker>
+</div>
+
+<div className="border-t p-4 flex justify-end bg-white">
+  <button
+    onClick={acknowledgeCircular}
+    disabled={ackLoading}
+    className={`px-5 py-2 rounded-lg font-medium text-white transition
+      ${
+        ackLoading
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-emerald-600 hover:bg-emerald-700"
+      }`}
+  >
+    {ackLoading ? "Processing..." : "I Acknowledge"}
+  </button>
+</div>
           </div>
         </div>
       )}
