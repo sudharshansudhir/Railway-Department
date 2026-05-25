@@ -434,7 +434,7 @@ export default function AdminUserDetail() {
                         </td>
                         {/* <td className="px-4 py-2 text-center">{log.hours?.toFixed(1) || "-"}</td> */}
                         <td className="px-4 py-2 text-center font-semibold text-indigo-600">
-                          {log.mileage*5.2 || "-"}
+                          {log.mileage?.toFixed(2) || "-"}
                         </td>
                       </tr>
                     ))}

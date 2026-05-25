@@ -204,7 +204,8 @@ export const driverSignOut = async (req, res) => {
     log.breathAnalyserDone = breathAnalyserDone;
 
     // Example mileage logic
-    log.mileage = log.hours * 20 + log.km;
+    // log.mileage = log.hours * 20 + log.km;
+    log.mileage = Number(km) * 5.2;
 
     await log.save();
 
