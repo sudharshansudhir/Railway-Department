@@ -51,7 +51,8 @@ const openTCardPopup = async () => {
   ];
 
   const towerCars = ["RU 927/017",
-"SR 220035","SR 210018","SR 960025","SR 240063","RU 06878","SR 230022","SR 210067","RU 01896","RU 176019","SR 230059","RU 9516","RU 9514","RU 9496","RU 950021","LR","TRAINING"]
+"SR 220035","SR 210018","SR 960025","SR 23025",
+"SR 240063","RU 06878","SR 230022","SR 210607","RU 01896","RU 176019","SR 230059","RU 9516","RU 9514","RU 9496","RU 950021","LR","TRAINING"]
 
   const items = checklistTemplate.map(d => ({
     description: d,
