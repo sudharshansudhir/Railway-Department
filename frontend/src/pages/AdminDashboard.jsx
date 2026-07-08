@@ -11,7 +11,8 @@ import {
   Filter,
   UserPlus,
   Eye,
-  Pencil
+  Pencil,
+  AlertTriangle
 } from "lucide-react";
 import Footer from "../components/Footer";
 import UserDetailModal from "../components/UserDetailModal";
@@ -120,13 +121,15 @@ export default function AdminDashboard() {
               />
 
               {/* ✅ NEW MINI ADMIN COUNT */}
-              <StatCard
+              {!isADEE && <StatCard
                 icon={<Users />}
                 label="Mini Admins"
                 value={miniAdmins.length}
-              />
+              />}
+              
 
               {!isADEE && (
+                <>
                 <button
                   onClick={() => navigate("/admin/register")}
                   className="flex items-center gap-2 px-4 py-2
@@ -136,7 +139,17 @@ export default function AdminDashboard() {
                   <UserPlus size={18} />
                   Add User
                 </button>
-              )}
+                
+                </>
+              )} <button
+    onClick={() => navigate("/admin/overdue-records")}
+    className="flex items-center gap-2 px-4 py-2
+               bg-red-600 text-white rounded-xl
+               hover:bg-red-700 transition shadow text-sm"
+>
+    <AlertTriangle size={18}/>
+    Overdue Records
+</button>
             </div>
           </div>
 
@@ -163,7 +176,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* ================= MINI ADMINS (NEW) ================= */}
-          <Section title="Mini Admins (ADEE)" icon={<Users />}>
+          {!isADEE  && <Section title="Mini Admins (ADEE)" icon={<Users />}>
             <Table
               headers={["Name", "PF No", "Depot", "Actions"]}
               loading={loading}
@@ -197,7 +210,8 @@ export default function AdminDashboard() {
                 </tr>
               ))}
             </Table>
-          </Section>
+          </Section> }
+          
 
           {/* ================= MANAGERS ================= */}
           <Section title="SSE/TRD" icon={<Users />}>

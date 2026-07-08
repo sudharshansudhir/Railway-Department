@@ -2,12 +2,152 @@ import User from "../models/User.js";
 import DailyLog from "../models/DailyLog.js";
 import Circular from "../models/Circular.js";
 import { generateCSV } from "../utils/reportExporter.js";
+
 import bcrypt from 'bcryptjs';
 import DriverProfile from "../models/DriverProfile.js";
 
 /* ======================================================
    REGISTER USER (SUPER ADMIN ONLY)
 ====================================================== */
+export const getOverdueRecords = async (req, res) => {
+  try {
+
+    const today = new Date();
+    const loggedInUser = await User.findById(req.user.id);
+
+if (!loggedInUser) {
+  return res.status(404).json({ msg: "User not found" });
+}
+
+   let driverFilter = {
+  role: "DRIVER"
+};
+
+// If logged-in user is ADEE,
+// only show drivers from assigned depots
+if (loggedInUser.role === "ADEE") {
+  driverFilter.depotName = {
+    $in: loggedInUser.assignedDepots || []
+  };
+}
+
+const users = await User.find(driverFilter)
+  .select("name pfNo depotName");
+
+    const overdueRecords = [];
+
+    for (const user of users) {
+
+      const profile = await DriverProfile.findOne({
+        userId: user._id
+      });
+
+      if (!profile) continue;
+
+      /* ===========================
+         HEALTH / TRAINING
+      =========================== */
+
+      if (profile.trainings) {
+
+        for (const [trainingName, training] of Object.entries(profile.trainings)) {
+
+          if (!training?.dueDate) continue;
+
+          const dueDate = new Date(training.dueDate);
+
+          if (dueDate < today) {
+
+            const overdueDays = Math.floor(
+              (today - dueDate) / (1000 * 60 * 60 * 24)
+            );
+
+            overdueRecords.push({
+
+              driverId: user._id,
+
+              driverName: user.name,
+
+              pfNo: user.pfNo,
+
+              depotName: user.depotName,
+
+              category: "Training Overdue",
+
+              item: trainingName.replace("_", "/"),
+
+              dueDate,
+
+              overdueDays
+
+            });
+
+          }
+        }
+      }
+
+      /* ===========================
+         LR DETAILS
+      =========================== */
+
+      if (profile.lrDetails?.length) {
+
+        for (const lr of profile.lrDetails) {
+
+          if (!lr?.dueDate) continue;
+
+          const dueDate = new Date(lr.dueDate);
+
+          if (dueDate < today) {
+
+            const overdueDays = Math.floor(
+              (today - dueDate) / (1000 * 60 * 60 * 24)
+            );
+
+            overdueRecords.push({
+
+              driverId: user._id,
+
+              driverName: user.name,
+
+              pfNo: user.pfNo,
+
+              depotName: user.depotName,
+
+              category: "LR Overdue",
+
+              item: lr.section,
+
+              dueDate,
+
+              overdueDays
+
+            });
+
+          }
+
+        }
+
+      }
+
+    }
+
+    overdueRecords.sort(
+      (a, b) => b.overdueDays - a.overdueDays
+    );
+
+    res.json(overdueRecords);
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      msg: "Failed to load overdue records"
+    });
+
+  }
+};
 
 export const adminRegisterUser = async (req, res) => {
   try {

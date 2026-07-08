@@ -12,7 +12,7 @@ const lrItemSchema = new mongoose.Schema({
   section: String,
   doneDate: Date,
   dueDate: Date,
-  schedule: String
+  schedule: String 
 }, { _id: false });
 
 /* ================= DRIVER PROFILE ================= */

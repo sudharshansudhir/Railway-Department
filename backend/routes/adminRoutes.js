@@ -10,7 +10,8 @@ import {
   getUserTCards,
   updateUser,
   deleteUser,
-  resetUserPassword
+  resetUserPassword,
+  getOverdueRecords
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -21,6 +22,13 @@ router.get(
   verifyToken,
   allowRoles("SUPER_ADMIN", "ADEE"),
   getAdminReport
+);
+
+router.get(
+   "/overdue-records",
+   verifyToken,
+   allowRoles("SUPER_ADMIN","ADEE"),
+   getOverdueRecords
 );
 
 /* ================= REGISTER USER ================= */

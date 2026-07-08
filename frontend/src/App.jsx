@@ -21,6 +21,7 @@ import CircularList from "./pages/CircularList";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRegister from "./pages/AdminRegister";
+import AdminOverdueRecords from "./pages/AdminOverdueRecords";
 
 export default function App() {
   return (
@@ -151,6 +152,11 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+    path="/admin/overdue-records"
+    element={<AdminOverdueRecords />}
+/>
 
       <Route
         path="/admin/user/:userId"
