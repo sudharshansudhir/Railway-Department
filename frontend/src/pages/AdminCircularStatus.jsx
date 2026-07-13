@@ -203,6 +203,71 @@ export default function AdminCircularStatus() {
               <SummaryCard icon={<FileText />} label="Completion" value={`${report.summary.percentComplete}%`} color="indigo" />
             </div>
           )}
+          <div className="bg-white rounded-xl shadow p-4 flex flex-wrap gap-4 items-center">
+
+  {/* Status */}
+
+  <div className="flex items-center gap-2">
+
+    <Filter size={18} className="text-gray-500" />
+
+    <select
+      value={filterStatus}
+      onChange={(e) => setFilterStatus(e.target.value)}
+      className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+    >
+      <option value="">All Status</option>
+
+      <option value="acknowledged">
+        Acknowledged
+      </option>
+
+      <option value="pending">
+        Pending
+      </option>
+
+    </select>
+
+  </div>
+
+  {/* Role */}
+
+  <select
+    value={filterRole}
+    onChange={(e) => setFilterRole(e.target.value)}
+    className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+  >
+    <option value="">All Roles</option>
+
+    <option value="DRIVER">Driver</option>
+
+    <option value="DEPOT_MANAGER">SSE/TRD</option>
+
+    <option value="ADEE">ADEE</option>
+
+  </select>
+
+  {/* Depot */}
+
+  <select
+    value={filterDepot}
+    onChange={(e) => setFilterDepot(e.target.value)}
+    className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+  >
+    <option value="">All Depots</option>
+
+    {uniqueDepots.map(depot => (
+      <option
+        key={depot}
+        value={depot}
+      >
+        {depot}
+      </option>
+    ))}
+
+  </select>
+
+</div>
 
           {/* USERS TABLE (unchanged below this) */}
           {/* ⬇ Your existing table code remains exactly same ⬇ */}

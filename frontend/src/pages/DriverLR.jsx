@@ -7,20 +7,34 @@ import Footer from "../components/Footer";
 
 /* ================= SCHEDULE CALCULATOR ================= */
 const calculateSchedule = (start, end) => {
-  console.log(start,end)
   if (!start || !end) return "";
 
   const startDate = new Date(start);
   const endDate = new Date(end);
-  console.log(startDate,endDate)
 
-  const months =
+  // ❌ End date must be after start date
+  if (endDate <= startDate) {
+    return "";
+  }
+
+  let months =
     (endDate.getFullYear() - startDate.getFullYear()) * 12 +
     (endDate.getMonth() - startDate.getMonth());
 
-  if (months === 12) return "1 year";
+  // Adjust if end day is earlier than start day
+  if (endDate.getDate() < startDate.getDate()) {
+    months--;
+  }
+
+  if (months < 1) return "1 Month";
+
+  if (months === 12) return "1 Year";
+
   if (months === 24) return "2 Years";
-  if (months % 12 === 0) return `${months / 12} Years`;
+
+  if (months % 12 === 0) {
+    return `${months / 12} Years`;
+  }
 
   return `${months} Months`;
 };
@@ -55,12 +69,159 @@ const [lr, setLr] = useState({
   const [saving, setSaving] = useState(false);
 
   /* ================= LOAD LR HISTORY ================= */
-  useEffect(() => {
-    api.get("/driver/profile").then(res => {
-      setLrList(res.data.profile?.lrDetails || []);
-    });
-  }, []);
+useEffect(() => {
 
+  const loadLR = async () => {
+
+    try {
+
+      const res = await api.get("/driver/profile");
+
+      const lrData = res.data.profile?.lrDetails || [];
+
+      setLrList(lrData);
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      const overdue = [];
+
+      const warning = [];
+
+      lrData.forEach(item => {
+
+        if (!item.dueDate) return;
+
+        const due = new Date(item.dueDate);
+
+        due.setHours(0,0,0,0);
+
+        const diffDays = Math.ceil(
+          (due - today) /
+          (1000 * 60 * 60 * 24)
+        );
+
+        if (diffDays < 0) {
+
+          overdue.push({
+            ...item,
+            days: Math.abs(diffDays)
+          });
+
+        }
+
+        else if (diffDays <= 3) {
+
+          warning.push({
+            ...item,
+            days: diffDays
+          });
+
+        }
+
+      });
+
+      // -----------------------
+      // OVERDUE ALERT
+      // -----------------------
+
+      if (overdue.length > 0) {
+
+        Swal.fire({
+
+          icon:"error",
+
+          title:"⚠️ LR Overdue",
+
+          html:`
+
+            <div style="text-align:left">
+
+            ${overdue.map(lr=>`
+
+              <p>
+
+              <b>${lr.section}</b><br>
+
+              Overdue by
+              <b>${lr.days} day(s)</b><br>
+
+              Due Date :
+              ${lr.dueDate.substring(0,10)}
+
+              </p>
+
+              <hr>
+
+            `).join("")}
+
+            </div>
+
+          `,
+
+          confirmButtonColor:"#dc2626"
+
+        });
+
+      }
+
+      // -----------------------
+      // WARNING ALERT
+      // -----------------------
+
+      else if (warning.length > 0) {
+
+        Swal.fire({
+
+          icon:"warning",
+
+          title:"⚠️ LR Expiring Soon",
+
+          html:`
+
+            <div style="text-align:left">
+
+            ${warning.map(lr=>`
+
+              <p>
+
+              <b>${lr.section}</b><br>
+
+              Expires in
+              <b>${lr.days} day(s)</b><br>
+
+              Due Date :
+              ${lr.dueDate.substring(0,10)}
+
+              </p>
+
+              <hr>
+
+            `).join("")}
+
+            </div>
+
+          `,
+
+          confirmButtonColor:"#f59e0b"
+
+        });
+
+      }
+
+    }
+
+    catch(err){
+
+      console.log(err);
+
+    }
+
+  };
+
+  loadLR();
+
+}, []);
   /* ================= SAVE NEW LR ================= */
   const save = async () => {
     if (

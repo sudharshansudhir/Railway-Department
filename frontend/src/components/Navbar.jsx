@@ -24,6 +24,9 @@ const PDFJS_WORKER_URL =
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const WAIT_TIME = 15;
+
+const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -31,6 +34,23 @@ export default function Navbar() {
 
   const [viewCircular, setViewCircular] = useState(null);
   const [ackLoading, setAckLoading] = useState(false);
+  useEffect(() => {
+  if (!viewCircular) return;
+
+  setSecondsLeft(WAIT_TIME);
+
+  const timer = setInterval(() => {
+    setSecondsLeft(prev => {
+      if (prev <= 1) {
+        clearInterval(timer);
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, [viewCircular]);
 
   useEffect(() => {
     if (role === "SUPER_ADMIN") return;
@@ -327,17 +347,21 @@ export default function Navbar() {
 
 <div className="border-t p-4 flex justify-end bg-white">
   <button
-    onClick={acknowledgeCircular}
-    disabled={ackLoading}
-    className={`px-5 py-2 rounded-lg font-medium text-white transition
-      ${
-        ackLoading
-          ? "bg-gray-400 cursor-not-allowed"
-          : "bg-emerald-600 hover:bg-emerald-700"
-      }`}
-  >
-    {ackLoading ? "Processing..." : "I Acknowledge"}
-  </button>
+  onClick={acknowledgeCircular}
+  disabled={ackLoading || secondsLeft > 0}
+  className={`px-5 py-2 rounded-lg font-medium text-white transition
+    ${
+      ackLoading || secondsLeft > 0
+        ? "bg-gray-400 cursor-not-allowed"
+        : "bg-emerald-600 hover:bg-emerald-700"
+    }`}
+>
+  {ackLoading
+    ? "Processing..."
+    : secondsLeft > 0
+    ? `Wait ${secondsLeft}s`
+    : "I Acknowledge"}
+</button>
 </div>
           </div>
         </div>
