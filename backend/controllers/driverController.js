@@ -2,9 +2,13 @@ import User from "../models/User.js";
 import DriverProfile from "../models/DriverProfile.js";
 import DailyLog from "../models/DailyLog.js";
 
+// import CompleteEngine from "../models/Engins.js"
 /* ======================================================
-   PROFILE
+    PROFILE
 ====================================================== */
+
+
+
 
 /* VIEW OWN PROFILE */
 export const getDriverProfile = async (req, res) => {
@@ -87,41 +91,55 @@ export const updateLR = async (req, res) => {
   }
 
   try {
-    // Normalize section (trim + uppercase for safety)
-    const sectionName = lrDetails.section.trim();
 
-    // 1️⃣ Remove existing LR with same section
-    await DriverProfile.findOneAndUpdate(
-      { userId: req.user.id },
+    const profile = await DriverProfile.findOneAndUpdate(
       {
-        $pull: {
-          lrDetails: {
-            section: sectionName
-          }
-        }
+        userId: req.user.id
+      },
+      {},
+      {
+        new: true,
+        upsert: true
       }
     );
 
-    // 2️⃣ Push new LR entry
-    const updated = await DriverProfile.findOneAndUpdate(
-      { userId: req.user.id },
-      {
-        $push: {
-          lrDetails: lrDetails
-        }
-      },
-      { new: true, upsert: true }
-    );
+    const existingIndex =
+      profile.lrDetails.findIndex(
+        lr =>
+          lr.section.trim().toUpperCase() ===
+          lrDetails.section.trim().toUpperCase()
+      );
+
+    if (existingIndex !== -1) {
+
+      profile.lrDetails[existingIndex] = {
+        ...profile.lrDetails[existingIndex].toObject(),
+        ...lrDetails
+      };
+
+    } else {
+
+      profile.lrDetails.push(lrDetails);
+
+    }
+
+    await profile.save();
 
     res.json({
-      msg: "LR entry saved successfully",
-      lrDetails: updated.lrDetails
+      msg: "LR updated successfully",
+      lrDetails: profile.lrDetails
     });
 
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
+  } catch (err) { 
+
+    console.error(err);
+
+    res.status(500).json({
+      msg: err.message
+    });
+
   }
-};
+};``
 
 
 /* ======================================================

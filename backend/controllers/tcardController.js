@@ -63,12 +63,38 @@ const today = new Date(
     });
   }
 
-  await TCardChecklist.create({
-    driverId: req.user.id,
-    tCarNo,
-    items,
-    date: today 
-  });
+const hasIssue = items.some(item =>
+  item.priority === "HIGH" &&
+  item.remarks &&
+  (item.remarks || "").trim() !== ""
+);
 
+// ==========================================
+// SAVE CHECKLIST
+// ==========================================
+
+await TCardChecklist.create({
+
+  driverId: req.user.id,
+
+  tCarNo,
+
+  items,
+
+  date: today,
+
+  issue: {
+
+    isIssue: hasIssue,
+
+    status: hasIssue ? "Pending" : null,
+
+    resolvedBy: null,
+
+    resolvedAt: null
+
+  }
+
+});
   res.json({ msg: "Daily T-Card checklist saved" });
 };

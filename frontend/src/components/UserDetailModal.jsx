@@ -293,6 +293,7 @@ export default function UserDetailModal({ userId, onClose, isAdmin = false }) {
                         {user.summary.driversInDepot !== undefined && (
                           <StatCard label="Drivers in Depot" value={user.summary.driversInDepot} />
                         )}
+                        
                       </div>
                     </div>
                   )}

@@ -12,20 +12,26 @@ import {
   UserPlus,
   Eye,
   Pencil,
-  AlertTriangle
+  AlertTriangle,
+  ClipboardList
 } from "lucide-react";
 import Footer from "../components/Footer";
 import UserDetailModal from "../components/UserDetailModal";
 import EditUserModal from "../components/EditUserModal";
+import IssueDashboard from "./IssueDashboard";
+import AbnormalityDashboard from "../components/AbnormalityDashboard";
 
 export default function AdminDashboard() {
   const [depot, setDepot] = useState("");
+  const [issues, setIssues] = useState([]);
+const [abnormalities, setAbnormalities] = useState([]);
   const [depots, setDepots] = useState([]);
 
   const [managers, setManagers] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [miniAdmins, setMiniAdmins] = useState([]); // ✅ NEW
-
+const [overdues, setOverdues] = useState([]);
+const [loadingOverdues, setLoadingOverdues] = useState(true);
   const [loading, setLoading] = useState(true);
 
   const role = localStorage.getItem("role");
@@ -35,6 +41,43 @@ export default function AdminDashboard() {
   const [editUserId, setEditUserId] = useState(null);
 
   const navigate = useNavigate();
+
+  /* ================= OVERDUE SUMMARY ================= */
+
+const totalOverdues = overdues.length;
+
+const trainingOverdues = overdues.filter(
+  item => item.category === "Training Overdue"
+).length;
+
+const lrOverdues = overdues.filter(
+  item => item.category === "LR Overdue"
+).length;
+
+const overdueDrivers = new Set(
+  overdues.map(item => item.driverId)
+).size;
+/* ================= ISSUES SUMMARY ================= */
+
+const issueTotal = issues.length;
+
+const issuePending =
+  issues.filter(i => i.status === "Pending").length;
+
+const issueResolved =
+  issues.filter(i => i.status === "Resolved").length;
+
+/* ================= ABNORMALITY SUMMARY ================= */
+
+const abnormalityTotal = abnormalities.length;
+
+const abnormalityPending =
+  abnormalities.filter(a => a.status === "Pending").length;
+
+const abnormalityResolved =
+  abnormalities.filter(
+    a => a.status === "Action Taken"
+  ).length;
 
   /* ================= LOAD DEPOTS ================= */
   const loadDepots = async () => {
@@ -65,6 +108,53 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   };
+const loadOverdues = async () => {
+  try {
+
+    setLoadingOverdues(true);
+
+    const res = await api.get(
+      `/admin/overdue-records${depot ? `?depot=${depot}` : ""}`
+    );
+
+    setOverdues(res.data);
+
+  } catch (err) {
+
+    console.log(err);
+
+  } finally {
+
+    setLoadingOverdues(false);
+
+  }
+};
+
+const loadIssues = async () => {
+  try {
+    const res = await api.get(
+      `/issues${depot ? `?depot=${depot}` : ""}`
+    );
+
+    setIssues(res.data);
+
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const loadAbnormalities = async () => {
+  try {
+    const res = await api.get(
+      `/abnormalities${depot ? `?depot=${depot}` : ""}`
+    );
+
+    setAbnormalities(res.data);
+
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   const viewDriverDetails = (userId) => {
     navigate(`/admin/user/${userId}`);
@@ -84,6 +174,11 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadUsers();
+  loadOverdues();
+
+  loadIssues();
+
+  loadAbnormalities();
   }, [depot]);
 
   return (
@@ -94,64 +189,149 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto space-y-6">
 
           {/* ================= HEADER ================= */}
-          <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <Shield className="text-indigo-600" />
-                {isADEE ? "ADEE Dashboard" : "Sr.DEE/TRD/SA Dashboard"}
-              </h2>
-              <p className="text-sm text-gray-500">
-                {isADEE
-                  ? "Access limited to assigned depots"
-                  : "Global visibility across all depots"}
-              </p>
-            </div>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-              <StatCard
-                icon={<UserCog />}
-                label="SSE/TRD"
-                value={managers.length}
-              />
+  {/* LEFT */}
 
-              <StatCard
-                icon={<Train />}
-                label="Drivers"
-                value={drivers.length}
-              />
+  <div className="flex items-start gap-4">
 
-              {/* ✅ NEW MINI ADMIN COUNT */}
-              {!isADEE && <StatCard
-                icon={<Users />}
-                label="Mini Admins"
-                value={miniAdmins.length}
-              />}
-              
+    <Shield className="text-indigo-600 mt-1" size={30} />
 
-              {!isADEE && (
-                <>
-                <button
-                  onClick={() => navigate("/admin/register")}
-                  className="flex items-center gap-2 px-4 py-2
-                             bg-indigo-600 text-white rounded-xl
-                             hover:bg-indigo-700 transition shadow text-sm"
-                >
-                  <UserPlus size={18} />
-                  Add User
-                </button>
-                
-                </>
-              )} <button
-    onClick={() => navigate("/admin/overdue-records")}
-    className="flex items-center gap-2 px-4 py-2
-               bg-red-600 text-white rounded-xl
-               hover:bg-red-700 transition shadow text-sm"
->
-    <AlertTriangle size={18}/>
-    Overdue Records
-</button>
-            </div>
-          </div>
+    <div>
+
+      <h2 className="text-4xl font-bold text-slate-800">
+
+        {isADEE
+          ? "ADEE/TRD Dashboard"
+          : "Sr.DEE/TRD/SA Dashboard"}
+
+      </h2>
+
+      <p className="text-gray-500">
+
+        {isADEE
+          ? "Visibility across assigned depots"
+          : "Global visibility across all depots"}
+
+      </p>
+
+    </div>
+
+  </div>
+
+  {/* RIGHT */}
+
+  {!isADEE && (
+
+    <button
+      onClick={() => navigate("/admin/register")}
+      className="bg-indigo-600 hover:bg-indigo-700
+      text-white rounded-xl
+      px-6 py-3
+      flex items-center gap-2
+      shadow-lg transition"
+    >
+
+      <UserPlus size={20} />
+
+      Add User
+
+    </button>
+
+  )}
+
+
+</div>
+           {/* ================= TOP ROW ================= */}
+
+<div className="space-y-4">
+
+  {/* ---------- Row 1 ---------- */}
+
+  <div className="flex flex-wrap gap-4">
+
+    <div className="flex-1 min-w-[220px]">
+      <StatCard
+        icon={<UserCog />}
+        label="SSE/TRD"
+        value={managers.length}
+      />
+    </div>
+
+    <div className="flex-1 min-w-[220px]">
+      <StatCard
+        icon={<Train />}
+        label="Drivers"
+        value={drivers.length}
+      />
+    </div>
+
+    {!isADEE && (
+      <div className="flex-1 min-w-[220px]">
+        <StatCard
+          icon={<Users />}
+          label="Mini Admins"
+          value={miniAdmins.length}
+        />
+      </div>
+    )}
+
+    <div className="flex-1 min-w-[220px]">
+      <StatCard
+        icon={<AlertTriangle />}
+        label="Overdues"
+        value={totalOverdues}
+      />
+    </div>
+
+  </div>
+
+  {/* ---------- Row 2 ---------- */}
+
+  <div className="flex flex-wrap gap-4">
+
+    <div className="flex-1 min-w-[220px]">
+      <StatCard
+        icon={<ClipboardList />}
+        label="Training Due"
+        value={trainingOverdues}
+      />
+    </div>
+
+    <div className="flex-1 min-w-[220px]">
+      <StatCard
+        icon={<Shield />}
+        label="LR Due"
+        value={lrOverdues}
+      />
+    </div>
+
+    <div className="flex-1 min-w-[220px]">
+      <StatCard
+        icon={<AlertTriangle />}
+        label="High Issues"
+        value={issueTotal}
+      />
+    </div>
+
+    <div className="flex-1 min-w-[220px]">
+      <StatCard
+        icon={<ClipboardList />}
+        label="Abnormalities"
+        value={abnormalityTotal}
+      />
+    </div>
+
+  </div>
+
+</div>
+{/* ================= SECOND ROW ================= */}
+
+
+
+
+{/* </div> */}
+      
 
           {/* ================= FILTER ================= */}
           <div className="bg-white p-4 rounded-xl shadow flex flex-col sm:flex-row gap-4 items-start sm:items-center">
@@ -174,6 +354,79 @@ export default function AdminDashboard() {
               ))}
             </select>
           </div>
+            <IssueDashboard selectedDepot={depot}/>
+<AbnormalityDashboard
+    selectedDepot={depot}
+/>
+
+          <Section
+  title="Overdue Records"
+  icon={<AlertTriangle className="text-red-600" />}
+>
+  <Table
+    headers={[
+      "Driver",
+      "PF No",
+      "Depot",
+      "Category",
+      "Item",
+      "Due Date",
+      "Overdue",
+      "Action"
+    ]}
+    loading={loadingOverdues}
+    emptyText="No overdue records"
+  >
+    {overdues.map((record, index) => (
+      <tr
+        key={`${record.driverId}-${index}`}
+        className="hover:bg-slate-50"
+      >
+        <td className="px-4 py-3">
+          {record.driverName}
+        </td>
+
+        <td className="px-4 py-3">
+          {record.pfNo}
+        </td>
+
+        <td className="px-4 py-3">
+          <Badge>{record.depotName}</Badge>
+        </td>
+
+        <td className="px-4 py-3">
+          {record.category}
+        </td>
+
+        <td className="px-4 py-3">
+          {record.item}
+        </td>
+
+        <td className="px-4 py-3">
+          {new Date(record.dueDate).toLocaleDateString()}
+        </td>
+
+        <td className="px-4 py-3">
+          <span className="text-red-600 font-semibold">
+            {record.overdueDays} Days
+          </span>
+        </td>
+
+        <td className="px-4 py-3">
+          <button
+            onClick={() =>
+              navigate(`/admin/user/${record.driverId}`)
+            }
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            <Eye size={14} />
+            View
+          </button>
+        </td>
+      </tr>
+    ))}
+  </Table>
+</Section>
 
           {/* ================= MINI ADMINS (NEW) ================= */}
           {!isADEE  && <Section title="Mini Admins (ADEE)" icon={<Users />}>

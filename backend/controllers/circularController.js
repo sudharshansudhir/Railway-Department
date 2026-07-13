@@ -116,51 +116,153 @@ export const getCircularAcknowledgementReport = async (req, res) => {
     }
 
     const circular = await Circular.findById(circularId);
+
     if (!circular) {
       return res.status(404).json({ msg: "Circular not found" });
     }
 
-    // Fetch all users except admins if needed
-    const users = await User.find({
-      role: { $ne: "SUPER_ADMIN" }
-    }).select("name pfNo role depotName lastAcknowledgedCircularId lastAcknowledgedAt");
+    const loggedUser = await User.findById(req.user.id);
+
+    let userFilter = {};
+
+    // ===========================
+    // SUPER ADMIN
+    // ===========================
+
+    if (loggedUser.role === "SUPER_ADMIN") {
+
+      userFilter = {
+        role: { $ne: "SUPER_ADMIN" }
+      };
+
+    }
+
+    // ===========================
+    // ADEE
+    // ===========================
+
+    else if (loggedUser.role === "ADEE") {
+
+      userFilter = {
+        $or: [
+
+          // Drivers in allocated depots
+          {
+            role: "DRIVER",
+            depotName: {
+              $in: loggedUser.assignedDepots || []
+            }
+          },
+
+          // Depot Managers in allocated depots
+          {
+            role: "DEPOT_MANAGER",
+            depotName: {
+              $in: loggedUser.assignedDepots || []
+            }
+          }
+
+        ]
+      };
+
+    }
+
+    // ===========================
+    // DEPOT MANAGER
+    // ===========================
+
+    else if (loggedUser.role === "DEPOT_MANAGER") {
+
+      userFilter = {
+        role: "DRIVER",
+        depotName: loggedUser.depotName
+      };
+
+    }
+
+    else {
+
+      return res.status(403).json({
+        msg: "Access denied"
+      });
+
+    }
+
+    const users = await User.find(userFilter)
+      .select(
+        "name pfNo role depotName lastAcknowledgedCircularId lastAcknowledgedAt"
+      );
 
     const reportUsers = users.map(user => {
+
       const acknowledged =
-        user.lastAcknowledgedCircularId?.toString() === circularId;
+        user.lastAcknowledgedCircularId?.toString() ===
+        circularId;
 
       return {
+
         _id: user._id,
+
         name: user.name,
+
         pfNo: user.pfNo,
+
         role: user.role,
+
         depotName: user.depotName,
+
         acknowledged,
-        acknowledgedAt: acknowledged ? user.lastAcknowledgedAt : null
+
+        acknowledgedAt: acknowledged
+          ? user.lastAcknowledgedAt
+          : null
+
       };
+
     });
 
-    const acknowledgedCount = reportUsers.filter(u => u.acknowledged).length;
-    const total = reportUsers.length;
+    const acknowledgedCount =
+      reportUsers.filter(u => u.acknowledged).length;
 
     res.json({
+
       circular: {
+
         _id: circular._id,
+
         title: circular.title
+
       },
+
       summary: {
-        total,
+
+        total: reportUsers.length,
+
         acknowledged: acknowledgedCount,
-        pending: total - acknowledgedCount,
-        percentComplete: total === 0
-          ? 0
-          : Math.round((acknowledgedCount / total) * 100)
+
+        pending: reportUsers.length - acknowledgedCount,
+
+        percentComplete:
+          reportUsers.length === 0
+            ? 0
+            : Math.round(
+                (acknowledgedCount /
+                  reportUsers.length) * 100
+              )
+
       },
+
       users: reportUsers
+
     });
 
   } catch (err) {
-    console.error("Ack report error:", err);
-    res.status(500).json({ msg: "Server error" });
+
+    console.error(err);
+
+    res.status(500).json({
+      msg: "Server error"
+    });
+
   }
 };

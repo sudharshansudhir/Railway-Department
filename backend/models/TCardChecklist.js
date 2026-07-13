@@ -40,6 +40,21 @@ const tCardChecklistSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  issue: {
+    isIssue: Boolean,
+
+    status: {
+        type: String,
+        default: "Pending"
+    },
+
+    resolvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
+
+    resolvedAt: Date
+},
 
   items: [checklistItemSchema]
 

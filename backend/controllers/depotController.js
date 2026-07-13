@@ -11,7 +11,7 @@ export const getDriverFullProfile = async (req, res) => {
   try {
     const { driverId } = req.params;
     const depotName = req.user.depotName;
-
+ 
     const user = await User.findOne({
       _id: driverId,
       role: "DRIVER",
@@ -51,15 +51,112 @@ export const getDriverFullProfile = async (req, res) => {
     }
 
     // Calculate summary
-    const totalLogs = await DailyLog.countDocuments({ driverId });
-    const kmAgg = await DailyLog.aggregate([
-      { $match: { driverId: user._id } },
-      { $group: { _id: null, total: { $sum: "$km" } } }
-    ]);
-    const hoursAgg = await DailyLog.aggregate([
-      { $match: { driverId: user._id } },
-      { $group: { _id: null, total: { $sum: "$hours" } } }
-    ]);
+const totalLogs = await DailyLog.countDocuments({
+  driverId
+});
+
+// Total KM
+const kmAgg = await DailyLog.aggregate([
+  {
+    $match: {
+      driverId: user._id
+    }
+  },
+  {
+    $group: {
+      _id: null,
+      total: {
+        $sum: "$km"
+      }
+    }
+  }
+]);
+
+const totalKmValue = kmAgg[0]?.total || 0;
+
+// Total Hours
+const hoursAgg = await DailyLog.aggregate([
+  {
+    $match: {
+      driverId: user._id
+    }
+  },
+  {
+    $group: {
+      _id: null,
+      total: {
+        $sum: "$hours"
+      }
+    }
+  }
+]);
+
+const totalHoursValue = hoursAgg[0]?.total || 0;
+
+// ==============================
+// LAST 7 DUTIES AVERAGE
+// ==============================
+
+const last7Logs = await DailyLog.find({
+  driverId,
+  signOutTime: { $ne: null }
+})
+.sort({ signOutTime: -1 })
+.limit(7);
+
+let last7Km = 0;
+let last7Hours = 0;
+
+last7Logs.forEach(log => {
+
+  last7Km += Number(log.km || 0);
+
+  last7Hours += Number(log.hours || 0);
+
+});
+
+const avgKmPerDay =
+  last7Logs.length
+    ? last7Km / last7Logs.length
+    : 0;
+
+const avgHoursPerDay =
+  last7Logs.length
+    ? last7Hours / last7Logs.length
+    : 0;
+
+// ==============================
+// >=9 / <9 HOURS
+// ==============================
+
+const allLogs = await DailyLog.find({
+  driverId
+});
+
+let daysAbove9Hours = 0;
+let daysBelow9Hours = 0;
+
+allLogs.forEach(log => {
+
+  let hours = Number(log.hours || 0);
+
+  if (
+    (!hours || hours <= 0) &&
+    log.signInTime &&
+    log.signOutTime
+  ) {
+    hours =
+      (new Date(log.signOutTime) -
+        new Date(log.signInTime))
+      / (1000 * 60 * 60);
+  }
+
+  if (hours > 9)
+    daysAbove9Hours++;
+  else
+    daysBelow9Hours++;
+
+});
 
     res.json({
       ...user,
@@ -67,10 +164,22 @@ export const getDriverFullProfile = async (req, res) => {
       logs,
       circularStatus,
       summary: {
-        totalDutyLogs: totalLogs,
-        totalKm: kmAgg[0]?.total || 0,
-        totalHours: hoursAgg[0]?.total || 0
-      }
+
+  totalDutyLogs: totalLogs,
+
+  totalKm: Number(totalKmValue.toFixed(2)),
+
+  totalHours: Number(totalHoursValue.toFixed(2)),
+
+  avgKmPerDay: Number(avgKmPerDay.toFixed(2)),
+
+  avgHoursPerDay: Number(avgHoursPerDay.toFixed(2)),
+
+  daysAbove9Hours,
+
+  daysBelow9Hours
+
+}
     });
   } catch (err) {
     res.status(500).json({ msg: err.message });

@@ -31,6 +31,7 @@ export default function Login() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
       localStorage.setItem("passwordChanged", res.data.passwordChanged ? "true" : "false");
+      localStorage.setItem("depotName", res.data.depotName || "");
 
       // Check if first login (password not changed)
       if (!res.data.passwordChanged) {

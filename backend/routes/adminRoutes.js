@@ -27,7 +27,7 @@ router.get(
 router.get(
    "/overdue-records",
    verifyToken,
-   allowRoles("SUPER_ADMIN","ADEE"),
+   allowRoles("SUPER_ADMIN","ADEE","DEPOT_MANAGER"),
    getOverdueRecords
 );
 

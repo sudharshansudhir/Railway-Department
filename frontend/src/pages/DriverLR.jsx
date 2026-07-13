@@ -28,11 +28,30 @@ const calculateSchedule = (start, end) => {
 
 export default function DriverLR() {
   const [lrList, setLrList] = useState([]);
-  const [lr, setLr] = useState({
-    section: "",
-    doneDate: "",
-    dueDate: ""
-  });
+  
+  const DEPOTS = [
+  "PTJ",
+  "PGT",
+  "POY",
+  "ED",
+  "CBE",
+  "MTP",
+  "SA",
+  "JTJ",
+  "KRR",
+  "TPJ",
+  "DG",
+  "MTDM",
+  "VRI",
+  "DPJ"
+];
+
+const [lr, setLr] = useState({
+  startDepot: "",
+  endDepot: "",
+  doneDate: "",
+  dueDate: ""
+});
   const [saving, setSaving] = useState(false);
 
   /* ================= LOAD LR HISTORY ================= */
@@ -44,7 +63,12 @@ export default function DriverLR() {
 
   /* ================= SAVE NEW LR ================= */
   const save = async () => {
-    if (!lr.section || !lr.doneDate || !lr.dueDate) {
+    if (
+  !lr.startDepot ||
+  !lr.endDepot ||
+  !lr.doneDate ||
+  !lr.dueDate
+){
       Swal.fire("Missing Info", "Section, Done & Due Date required", "warning");
       return;
     }
@@ -59,18 +83,24 @@ export default function DriverLR() {
 
     try {
       setSaving(true);
-
-      const payload = {
-        ...lr,
-        schedule
-      };
+const payload = {
+  section: `${lr.startDepot}-${lr.endDepot}`,
+  doneDate: lr.doneDate,
+  dueDate: lr.dueDate,
+  schedule
+};
 
       const res = await api.put("/driver/profile/lr", {
         lrDetails: payload
       });
 
       setLrList(res.data.lrDetails);
-      setLr({ section: "", doneDate: "", dueDate: "" });
+      setLr({
+  startDepot: "",
+  endDepot: "",
+  doneDate: "",
+  dueDate: ""
+});
 
       Swal.fire("Saved", "LR entry added successfully", "success");
     } catch (err) {
@@ -111,13 +141,67 @@ export default function DriverLR() {
 
           {/* 🔥 ADD NEW LR */}
           <div className="space-y-4 mt-6">
-            <Input
-              label="Section"
-              value={lr.section}
-              onChange={v =>
-                setLr(prev => ({ ...prev, section: v }))
-              }
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+  <div>
+    <label className="text-sm font-semibold">
+      Start station
+    </label>
+
+    <select
+      value={lr.startDepot}
+      onChange={(e) =>
+        setLr(prev => ({
+          ...prev,
+          startDepot: e.target.value
+        }))
+      }
+      className="w-full border rounded-lg px-4 py-2"
+    >
+      <option value="">
+        Select Start station
+      </option>
+
+      {DEPOTS.map(d => (
+        <option key={d}>
+          {d}
+        </option>
+      ))}
+
+    </select>
+  </div>
+
+  <div>
+
+    <label className="text-sm font-semibold">
+      End Station
+    </label>
+
+    <select
+      value={lr.endDepot}
+      onChange={(e) =>
+        setLr(prev => ({
+          ...prev,
+          endDepot: e.target.value
+        }))
+      }
+      className="w-full border rounded-lg px-4 py-2"
+    >
+      <option value="">
+        Select End Station
+      </option>
+
+      {DEPOTS.map(d => (
+        <option key={d}>
+          {d}
+        </option>
+      ))}
+
+    </select>
+
+  </div>
+
+</div>
 
             <DateField
               label="Done Date"

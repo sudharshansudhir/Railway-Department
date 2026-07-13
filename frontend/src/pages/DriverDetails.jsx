@@ -140,6 +140,23 @@ export default function DriverDetails() {
               <InfoCard label="Basic Pay" value={profile.basicPay || "-"} icon={<BadgeIndianRupee />} />
               <InfoCard label="Date of Appointment" value={profile.dateOfAppointment?.substring(0, 10) || "-"} icon={<Calendar />} />
               <InfoCard label="Date of Entry as TWD" value={profile.dateOfEntryAsTWD?.substring(0, 10) || "-"} icon={<Calendar />} />
+              <InfoCard
+  label="Avg KM / Day"
+  value={data.summary?.avgKmPerDay ?? 0}
+  icon={<Activity />}
+/>
+
+<InfoCard
+  label="Duty ≥ 9 Hours"
+  value={data.summary?.daysAbove9Hours ?? 0}
+  icon={<CheckCircle className="text-green-600" />}
+/>
+
+<InfoCard
+  label="Duty < 9 Hours"
+  value={data.summary?.daysBelow9Hours ?? 0}
+  icon={<XCircle className="text-red-600" />}
+/>
             </InfoGrid>
           </Card>
 

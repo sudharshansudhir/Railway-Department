@@ -10,7 +10,7 @@ import DriverLR from "./pages/DriverLR";
 import ADEEDashboard from "./pages/ADEEDashboard";
 import DepotManagerDashboard from "./pages/DepotManagerDashboard";
 import DriverDetails from "./pages/DriverDetails";
-
+import DriverAbnormality from "./pages/DriverAbnormality";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCircularUpload from "./pages/AdminCircularUpload";
 import AdminCircularStatus from "./pages/AdminCircularStatus";
@@ -22,7 +22,7 @@ import CircularList from "./pages/CircularList";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRegister from "./pages/AdminRegister";
 import AdminOverdueRecords from "./pages/AdminOverdueRecords";
-
+import EnginePage from "./pages/EnginePage";
 export default function App() {
   return (
     <Routes>
@@ -42,11 +42,43 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+  path="/driver/abnormalities"
+  element={<DriverAbnormality />}
+/>
+
+      <Route
+  path="/driver/engine"
+  element={
+    <ProtectedRoute role="DRIVER">
+      <EnginePage />
+    </ProtectedRoute>
+  }
+/>
       <Route
   path="/adee"
   element={
-    <ProtectedRoute role="SUPER_ADMIN">
+    <ProtectedRoute role="ADEE">
       <ADEEDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/admin/engine"
+  element={
+    <ProtectedRoute role="SUPER_ADMIN">
+      <EnginePage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/adee/engine"
+  element={
+    <ProtectedRoute role="ADEE">
+      <EnginePage />
     </ProtectedRoute>
   }
 />
@@ -116,6 +148,16 @@ export default function App() {
         }
       />
 
+
+      <Route
+  path="/manager/engine"
+  element={
+    <ProtectedRoute role="DEPOT_MANAGER">
+      <EnginePage />
+    </ProtectedRoute>
+  }
+/>
+
       {/* ================= SUPER ADMIN ================= */}
       <Route
         path="/admin"
@@ -138,9 +180,9 @@ export default function App() {
       <Route
         path="/admin/circular-status"
         element={
-          <ProtectedRoute role="SUPER_ADMIN">
+          // <ProtectedRoute role={["SUPER_ADMIN","DEPOT_MANAGER"]}>
             <AdminCircularStatus />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         }
       />
 
@@ -152,10 +194,13 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-
-      <Route
-    path="/admin/overdue-records"
-    element={<AdminOverdueRecords />}
+<Route
+  path="/admin/overdue-records"
+  element={
+    <ProtectedRoute role="SUPER_ADMIN">
+      <AdminOverdueRecords />
+    </ProtectedRoute>
+  }
 />
 
       <Route

@@ -90,7 +90,8 @@ export const login = async (req, res) => {
     res.json({
       token,
       role: user.role,
-      passwordChanged: user.passwordChanged || false
+      passwordChanged: user.passwordChanged || false,
+      depotName:user.depotName
     });
 
   } catch {

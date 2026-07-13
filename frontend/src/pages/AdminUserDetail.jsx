@@ -242,29 +242,62 @@ export default function AdminUserDetail() {
 
           {/* Summary Stats (for Drivers) */}
           {isDriver && user.summary && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <StatCard
-                icon={<Activity />}
-                label="Total Duty Logs"
-                value={user.summary.totalDutyLogs}
-              />
-              <StatCard
-                icon={<MapPin />}
-                label="Total KM"
-                value={user.summary.totalKm?.toLocaleString() || 0}
-              />
-              <StatCard
-                icon={<Clock />}
-                label="Total Hours"
-                value={user.summary.totalHours?.toFixed(1) || 0}
-              />
-              <StatCard
-                icon={<ClipboardCheck />}
-                label="T-Cards"
-                value={user.summary.totalTCards}
-              />
-            </div>
-          )}
+
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+  <StatCard
+    icon={<Activity />}
+    label="Total Duty Logs"
+    value={user.summary.totalDutyLogs}
+  />
+
+  <StatCard
+    icon={<MapPin />}
+    label="Total KM"
+    value={user.summary.totalKm?.toLocaleString() || 0}
+  />
+
+  <StatCard
+    icon={<Clock />}
+    label="Total Hours"
+    value={user.summary.totalHours?.toFixed(1) || 0}
+  />
+
+  <StatCard
+    icon={<ClipboardCheck />}
+    label="T-Cards"
+    value={user.summary.totalTCards}
+  />
+
+  {/* NEW */}
+
+  <StatCard
+    icon={<CalendarDays />}
+    label="Avg KM / Day"
+   value={`${Number(user.summary.avgKmPerDay || 0).toFixed(1)} km`}
+  />
+
+  {/* <StatCard
+    icon={<Clock />}
+    label="Avg Hours / Day"
+    value={`${Number(user.summary.avgHoursPerDay || 0).toFixed(1)} hrs`}
+  /> */}
+
+  <StatCard
+    icon={<AlertTriangle />}
+    label="> 9 Hours"
+    value={`${user.summary.daysAbove9Hours || 0} Days`}
+  />
+
+  <StatCard
+    icon={<CheckCircle />}
+    label="≤ 9 Hours"
+    value={`${user.summary.daysBelow9Hours || 0} Days`}
+  />
+
+</div>
+
+)}
 
           {/* Summary Stats (for Managers) */}
           {isManager && user.summary && (

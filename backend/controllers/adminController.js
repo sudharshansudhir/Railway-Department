@@ -13,27 +13,76 @@ export const getOverdueRecords = async (req, res) => {
   try {
 
     const today = new Date();
+    const { depot } = req.query;
     const loggedInUser = await User.findById(req.user.id);
 
 if (!loggedInUser) {
   return res.status(404).json({ msg: "User not found" });
 }
 
-   let driverFilter = {
+ const filter = {
   role: "DRIVER"
 };
 
-// If logged-in user is ADEE,
-// only show drivers from assigned depots
-if (loggedInUser.role === "ADEE") {
-  driverFilter.depotName = {
-    $in: loggedInUser.assignedDepots || []
-  };
+/* SUPER ADMIN
+   -> All depots
+*/
+
+if (loggedInUser.role === "SUPER_ADMIN") {
+  // no additional filter
 }
 
-const users = await User.find(driverFilter)
-  .select("name pfNo depotName");
+/* ADEE
+   -> Only assigned depots
+*/
 
+else if (loggedInUser.role === "ADEE") {
+
+  filter.depotName = {
+    $in: loggedInUser.assignedDepots || []
+  };
+
+}
+
+/* DEPOT MANAGER
+   -> Only own depot
+*/
+
+else if (loggedInUser.role === "DEPOT_MANAGER") {
+
+  filter.depotName = loggedInUser.depotName;
+
+}
+
+/* Optional dropdown filter */
+
+if (depot) {
+
+  // SUPER ADMIN can filter any depot
+
+  if (loggedInUser.role === "SUPER_ADMIN") {
+
+    filter.depotName = depot;
+
+  }
+
+  // ADEE can filter only inside assigned depots
+
+  else if (
+    loggedInUser.role === "ADEE" &&
+    loggedInUser.assignedDepots.includes(depot)
+  ) {
+
+    filter.depotName = depot;
+
+  }
+
+  // Depot Manager always remains restricted
+
+}
+
+const users = await User.find(filter)
+  .select("name pfNo depotName");
     const overdueRecords = [];
 
     for (const user of users) {
@@ -276,43 +325,96 @@ export const downloadAdminReport = async (req, res) => {
 
 export const getAdminUsers = async (req, res) => {
   try {
+
     const { depot } = req.query;
-    let filter = {};
+
+    // ==========================
+    // DRIVER / MANAGER FILTER
+    // ==========================
+
+    let depotFilter = {};
 
     if (req.user.role === "ADEE") {
+
       const assigned = req.user.assignedDepots || [];
 
       if (depot) {
-        // Ensure ADEE can only filter within assigned depots
+
         if (!assigned.includes(depot)) {
-          return res.json({ managers: [], drivers: [],mini:[] });
+          return res.json({
+            managers: [],
+            drivers: [],
+            mini: []
+          });
         }
-        filter.depotName = depot;
+
+        depotFilter.depotName = depot;
+
       } else {
-        filter.depotName = { $in: assigned };
+
+        depotFilter.depotName = {
+          $in: assigned
+        };
+
       }
+
     } else if (depot) {
-      filter.depotName = depot;
+
+      depotFilter.depotName = depot;
+
     }
+
+    // ==========================
+    // DEPOT MANAGERS
+    // ==========================
 
     const managers = await User.find({
       role: "DEPOT_MANAGER",
-      ...filter
+      ...depotFilter
     }).select("name pfNo depotName");
+
+    // ==========================
+    // DRIVERS
+    // ==========================
 
     const drivers = await User.find({
       role: "DRIVER",
-      ...filter
+      ...depotFilter
     }).select("name pfNo depotName");
-    const mini = await User.find({
-      role: "ADEE",
-      ...filter
-    }).select("name pfNo assignedDepots");
 
-    res.json({ managers, drivers,mini });
+    // ==========================
+    // ADEE
+    // ==========================
+
+    let adeeFilter = {
+      role: "ADEE"
+    };
+
+    if (depot) {
+
+      adeeFilter.assignedDepots = {
+        $in: [depot]
+      };
+
+    }
+
+    const mini = await User.find(adeeFilter)
+      .select("name pfNo assignedDepots");
+
+    res.json({
+      managers,
+      drivers,
+      mini
+    });
 
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+
+    console.error(err);
+
+    res.status(500).json({
+      msg: err.message
+    });
+
   }
 };
 
@@ -423,44 +525,198 @@ export const getUserDetails = async (req, res) => {
     }
 
     // For drivers, fetch additional profile and logs
-    if (user.role === "DRIVER") {
-      const profile = await DriverProfile.findOne({ userId })
-        .lean();
+if (user.role === "DRIVER") {
 
-      const logs = await DailyLog.find({ driverId: userId })
-        .sort({ logDate: -1 })
-        .limit(30)
-        .lean();
+  const profile = await DriverProfile.findOne({ userId }).lean();
 
-      // Get T-Card data
-      const TCardChecklist = (await import("../models/TCardChecklist.js")).default;
-      const tcards = await TCardChecklist.find({ driverId: userId })
-        .sort({ date: -1 })
-        .limit(10)
-        .lean();
+  const logs = await DailyLog.find({ driverId: userId })
+    .sort({ logDate: -1 })
+    .limit(30)
+    .lean();
 
-      response.profile = profile;
-      response.logs = logs;
-      response.tcards = tcards;
+  // ===========================
+  // T-CARDS
+  // ===========================
 
-      // Calculate summary stats
-      const totalLogs = await DailyLog.countDocuments({ driverId: userId });
-      const totalKm = await DailyLog.aggregate([
-        { $match: { driverId: user._id } },
-        { $group: { _id: null, total: { $sum: "$km" } } }
-      ]);
-      const totalHours = await DailyLog.aggregate([
-        { $match: { driverId: user._id } },
-        { $group: { _id: null, total: { $sum: "$hours" } } }
-      ]);
+  const TCardChecklist = (
+    await import("../models/TCardChecklist.js")
+  ).default;
 
-      response.summary = {
-        totalDutyLogs: totalLogs,
-        totalKm: totalKm[0]?.total || 0,
-        totalHours: totalHours[0]?.total || 0,
-        totalTCards: await TCardChecklist.countDocuments({ driverId: userId })
-      };
+  const tcards = await TCardChecklist.find({
+    driverId: userId
+  })
+    .sort({ date: -1 })
+    .limit(10)
+    .lean();
+
+  response.profile = profile;
+  response.logs = logs;
+  response.tcards = tcards;
+
+  // ===========================
+  // TOTAL DUTY LOGS
+  // ===========================
+
+  const totalLogs = await DailyLog.countDocuments({
+    driverId: userId
+  });
+
+  // ===========================
+  // TOTAL KM
+  // ===========================
+
+  const totalKm = await DailyLog.aggregate([
+    {
+      $match: {
+        driverId: user._id
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        total: {
+          $sum: "$km"
+        }
+      }
     }
+  ]);
+
+  const totalKmValue =
+    totalKm[0]?.total || 0;
+
+  // ===========================
+  // TOTAL HOURS
+  // ===========================
+
+  const totalHours = await DailyLog.aggregate([
+    {
+      $match: {
+        driverId: user._id
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        total: {
+          $sum: "$hours"
+        }
+      }
+    }
+  ]);
+
+  const totalHoursValue =
+    totalHours[0]?.total || 0;
+
+  // ===========================
+  // LAST 7 DUTIES AVERAGE
+  // ===========================
+
+  const last7Logs = await DailyLog.find({
+    driverId: userId,
+    signOutTime: { $ne: null }
+  })
+    .sort({ signOutTime: -1 })
+    .limit(5);
+
+  let last7Km = 0;
+  let last7Hours = 0;
+
+  last7Logs.forEach(log => {
+
+    last7Km += Number(log.km || 0);
+
+    last7Hours += Number(log.hours || 0);
+
+  });
+
+  const avgKmPerDay =
+    last7Logs.length
+      ? last7Km / last7Logs.length
+      : 0;
+
+  const avgHoursPerDay =
+    last7Logs.length
+      ? last7Hours / last7Logs.length
+      : 0;
+
+  // ===========================
+  // >9 HOURS / <=9 HOURS
+  // ===========================
+
+  const allLogs = await DailyLog.find({
+    driverId: userId
+  });
+
+  let daysAbove9Hours = 0;
+
+  let daysBelow9Hours = 0;
+
+  allLogs.forEach(log => {
+
+    let hours = Number(log.hours || 0);
+
+    if (
+      (!hours || hours <= 0) &&
+      log.signInTime &&
+      log.signOutTime
+    ) {
+
+      hours =
+        (new Date(log.signOutTime) -
+          new Date(log.signInTime))
+        / (1000 * 60 * 60);
+
+    }
+
+    // If invalid hours treat as <=9
+    // so Above + Below = Total Logs
+
+    if (hours > 9)
+
+      daysAbove9Hours++;
+
+    else
+
+      daysBelow9Hours++;
+
+  });
+
+  // ===========================
+  // SUMMARY
+  // ===========================
+
+  response.summary = {
+
+    totalDutyLogs: totalLogs,
+
+    totalKm: Number(
+      totalKmValue.toFixed(2)
+    ),
+
+    totalHours: Number(
+      totalHoursValue.toFixed(2)
+    ),
+
+    totalTCards:
+      await TCardChecklist.countDocuments({
+        driverId: userId
+      }),
+
+    avgKmPerDay: Number(
+      avgKmPerDay.toFixed(2)
+    ),
+
+    avgHoursPerDay: Number(
+      avgHoursPerDay.toFixed(2)
+    ),
+
+    daysAbove9Hours,
+
+    daysBelow9Hours
+
+  };
+
+}
 
     // For managers, get driver count in their depot
     if (user.role === "DEPOT_MANAGER") {

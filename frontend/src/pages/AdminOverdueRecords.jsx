@@ -65,7 +65,7 @@ const filtered = useMemo(() => {
     // console.log(
     //   record.driverName,
     //   "|",
-    //   record.category,
+    //   record.category, 
     //   "| Match:",
     //   categoryMatch
     // );

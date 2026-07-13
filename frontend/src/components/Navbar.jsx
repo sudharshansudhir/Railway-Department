@@ -12,7 +12,8 @@ import {
   Shield,
   Users,
   FileText,
-  CheckSquare
+  CheckSquare,
+  AlertTriangle
 } from "lucide-react";
 
 import { Worker, Viewer, SpecialZoomLevel } from "@react-pdf-viewer/core";
@@ -179,6 +180,16 @@ export default function Navbar() {
         <>
           <NavButton to="/driver" icon={<User />} label="Dashboard" />
           <NavButton to="/driver/daily" icon={<ClipboardList />} label="Mileage Details" />
+          <NavButton
+  to="/driver/abnormalities"
+  icon={<AlertTriangle />}
+  label="Abnormalities"
+/>
+          <NavButton
+      to="/driver/engine"
+      icon={<Train />}
+      label="Engines"
+    />
           <NavButton to="/circulars" icon={<FileText />} label="Circulars" />
         </>
       )}
@@ -186,6 +197,13 @@ export default function Navbar() {
       {role === "DEPOT_MANAGER" && (
         <>
           <NavButton to="/manager" icon={<Users />} label="Drivers" />
+           <NavButton
+      to="/manager/engine"
+      icon={<Train />}
+      label="Engines"
+    />
+    
+          <NavButton to="/admin/circular-status" icon={<CheckSquare />} label="Circular Status" />
           <NavButton to="/circulars" icon={<FileText />} label="Circulars" />
         </>
       )}
@@ -193,11 +211,41 @@ export default function Navbar() {
       {role === "SUPER_ADMIN" && (
         <>
           <NavButton to="/admin" icon={<Shield />} label="Dashboard" />
+
+    <NavButton
+      to="/admin/engine"
+      icon={<Train />}
+      label="Engines"
+    />
+
           <NavButton to="/admin/circular-upload" icon={<FileText />} label="Upload Circular" />
           <NavButton to="/admin/circular-status" icon={<CheckSquare />} label="Circular Status" />
           <NavButton to="/admin/report-download" icon={<ClipboardList />} label="Reports" />
         </>
       )}
+
+      {role === "ADEE" && (
+  <>
+    <NavButton
+      to="/adee"
+      icon={<Shield />}
+      label="Dashboard"
+    />
+
+    <NavButton
+      to="/adee/engine"
+      icon={<Train />}
+      label="Engines"
+    />
+
+          <NavButton to="/admin/circular-status" icon={<CheckSquare />} label="Circular Status" />
+    <NavButton
+      to="/circulars"
+      icon={<FileText />}
+      label="Circulars"
+    />
+  </>
+)}
     </>
   );
 
