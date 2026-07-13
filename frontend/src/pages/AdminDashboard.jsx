@@ -26,7 +26,11 @@ export default function AdminDashboard() {
   const [issues, setIssues] = useState([]);
 const [abnormalities, setAbnormalities] = useState([]);
   const [depots, setDepots] = useState([]);
+const [showIssues, setShowIssues] = useState(false);
 
+const [showOverdues, setShowOverdues] = useState(false);
+
+const [showAbnormalities, setShowAbnormalities] = useState(false);
   const [managers, setManagers] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [miniAdmins, setMiniAdmins] = useState([]); // ✅ NEW
@@ -52,6 +56,10 @@ const trainingOverdues = overdues.filter(
 
 const lrOverdues = overdues.filter(
   item => item.category === "LR Overdue"
+).length;
+
+const circularPending = drivers.filter(
+  d => !d.lastAcknowledgedCircularId
 ).length;
 
 const overdueDrivers = new Set(
@@ -244,85 +252,73 @@ const loadAbnormalities = async () => {
 </div>
            {/* ================= TOP ROW ================= */}
 
-<div className="space-y-4">
+{/* ROW 1 */}
 
-  {/* ---------- Row 1 ---------- */}
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-  <div className="flex flex-wrap gap-4">
+  <StatCard
+    icon={<UserCog />}
+    label="SSE / TRD"
+    value={managers.length}
+  />
 
-    <div className="flex-1 min-w-[220px]">
-      <StatCard
-        icon={<UserCog />}
-        label="SSE/TRD"
-        value={managers.length}
-      />
-    </div>
+  <StatCard
+    icon={<Train />}
+    label="Drivers"
+    value={drivers.length}
+  />
 
-    <div className="flex-1 min-w-[220px]">
-      <StatCard
-        icon={<Train />}
-        label="Drivers"
-        value={drivers.length}
-      />
-    </div>
+  {!isADEE && (
 
-    {!isADEE && (
-      <div className="flex-1 min-w-[220px]">
-        <StatCard
-          icon={<Users />}
-          label="Mini Admins"
-          value={miniAdmins.length}
-        />
-      </div>
-    )}
+    <StatCard
+      icon={<Users />}
+      label="Mini Admins"
+      value={miniAdmins.length}
+    />
 
-    <div className="flex-1 min-w-[220px]">
-      <StatCard
-        icon={<AlertTriangle />}
-        label="Overdues"
-        value={totalOverdues}
-      />
-    </div>
+  )}
 
-  </div>
+</div>
 
-  {/* ---------- Row 2 ---------- */}
+{/* ROW 2 */}
 
-  <div className="flex flex-wrap gap-4">
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-    <div className="flex-1 min-w-[220px]">
-      <StatCard
-        icon={<ClipboardList />}
-        label="Training Due"
-        value={trainingOverdues}
-      />
-    </div>
+  <StatCard
+    icon={<ClipboardList />}
+    label="Training Due"
+    value={trainingOverdues}
+  />
 
-    <div className="flex-1 min-w-[220px]">
-      <StatCard
-        icon={<Shield />}
-        label="LR Due"
-        value={lrOverdues}
-      />
-    </div>
+  <StatCard
+    icon={<Shield />}
+    label="LR Due"
+    value={lrOverdues}
+  />
 
-    <div className="flex-1 min-w-[220px]">
-      <StatCard
-        icon={<AlertTriangle />}
-        label="High Issues"
-        value={issueTotal}
-      />
-    </div>
+  <StatCard
+    icon={<AlertTriangle />}
+    label="Circular Pending"
+    value={circularPending}
+  />
 
-    <div className="flex-1 min-w-[220px]">
-      <StatCard
-        icon={<ClipboardList />}
-        label="Abnormalities"
-        value={abnormalityTotal}
-      />
-    </div>
+</div>
 
-  </div>
+{/* ROW 3 */}
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+  <StatCard
+    icon={<AlertTriangle />}
+    label="TW High Issues"
+    value={issueTotal}
+  />
+
+  <StatCard
+    icon={<AlertTriangle />}
+    label="Track Abnormalities"
+    value={abnormalityTotal}
+  />
 
 </div>
 {/* ================= SECOND ROW ================= */}
@@ -354,10 +350,104 @@ const loadAbnormalities = async () => {
               ))}
             </select>
           </div>
-            <IssueDashboard selectedDepot={depot}/>
+            <div className="bg-white rounded-xl shadow">
+
+  <button
+    onClick={() => setShowIssues(!showIssues)}
+    className="w-full flex items-center justify-between
+               px-6 py-4 text-left font-semibold"
+  >
+
+    <span>TW High Issues</span>
+
+    <span>
+
+      {showIssues ? "▲" : "▼"}
+
+    </span>
+
+  </button>
+
+  {showIssues && (
+
+    <IssueDashboard selectedDepot={depot} />
+
+  )}
+
+</div>
+
+
+<div className="bg-white rounded-xl shadow">
+
+<button
+onClick={() =>
+setShowAbnormalities(
+!showAbnormalities
+)
+}
+className="w-full
+flex
+justify-between
+px-6
+py-4
+font-semibold"
+>
+
+<span>
+
+Track Abnormalities
+
+</span>
+
+<span>
+
+{showAbnormalities ? "▲" : "▼"}
+
+</span>
+
+</button>
+
+{showAbnormalities && (
+
 <AbnormalityDashboard
-    selectedDepot={depot}
+selectedDepot={depot}
 />
+
+)}
+
+</div>
+
+
+
+<div className="bg-white rounded-xl shadow">
+
+<button
+onClick={() =>
+setShowOverdues(!showOverdues)
+}
+className="w-full
+flex
+justify-between
+px-6
+py-4
+font-semibold"
+>
+
+<span>
+
+Overdue Records
+
+</span>
+
+<span>
+
+{showOverdues ? "▲" : "▼"}
+
+</span>
+
+</button>
+
+{showOverdues && (
 
           <Section
   title="Overdue Records"
@@ -427,6 +517,9 @@ const loadAbnormalities = async () => {
     ))}
   </Table>
 </Section>
+)}
+
+</div>
 
           {/* ================= MINI ADMINS (NEW) ================= */}
           {!isADEE  && <Section title="Mini Admins (ADEE)" icon={<Users />}>

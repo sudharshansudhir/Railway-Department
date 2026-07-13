@@ -24,7 +24,7 @@ const PDFJS_WORKER_URL =
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const WAIT_TIME = 15;
+  const WAIT_TIME = 60;
 
 const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
   const location = useLocation();
@@ -198,18 +198,19 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
     <>
       {role === "DRIVER" && (
         <>
-          <NavButton to="/driver" icon={<User />} label="Dashboard" />
+          <NavButton to="/driver" icon={<User />} label="Driver Dashboard" />
+          <NavButton
+      to="/driver/engine"
+      icon={<Train />}
+      label="TW Dashboard"
+    />
           <NavButton to="/driver/daily" icon={<ClipboardList />} label="Mileage Details" />
           <NavButton
   to="/driver/abnormalities"
   icon={<AlertTriangle />}
   label="Abnormalities"
 />
-          <NavButton
-      to="/driver/engine"
-      icon={<Train />}
-      label="Engines"
-    />
+          
           <NavButton to="/circulars" icon={<FileText />} label="Circulars" />
         </>
       )}
@@ -220,7 +221,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
            <NavButton
       to="/manager/engine"
       icon={<Train />}
-      label="Engines"
+      label="TW Dashboard"
     />
     
           <NavButton to="/admin/circular-status" icon={<CheckSquare />} label="Circular Status" />
@@ -235,7 +236,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
     <NavButton
       to="/admin/engine"
       icon={<Train />}
-      label="Engines"
+      label="TW Dashboard"
     />
 
           <NavButton to="/admin/circular-upload" icon={<FileText />} label="Upload Circular" />
@@ -255,7 +256,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
     <NavButton
       to="/adee/engine"
       icon={<Train />}
-      label="Engines"
+      label="TW Dashboard"
     />
 
           <NavButton to="/admin/circular-status" icon={<CheckSquare />} label="Circular Status" />
