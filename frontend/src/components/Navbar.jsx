@@ -185,8 +185,8 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
       className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition md:w-auto
         ${
           location.pathname === to
-            ? "bg-[#0B3C5D] text-white"
-            : "text-[#64748B] hover:bg-[#F7FAFD] hover:text-[#0B3C5D]"
+            ? "bg-[#0b659a] text-white"
+            : "text-gray-700 hover:bg-[#0b659a] hover:text-white"
         }`}
     >
       <span className="inline-flex shrink-0 items-center justify-center">{icon}</span>
@@ -238,13 +238,14 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
 
   return (
     <>
-      <nav className="sticky top-0 z-[1000] border-b border-[#E5E7EB] bg-white shadow-sm">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <Train className="text-[#0B3C5D]" size={22} />
-              <span className="text-sm font-bold text-[#0B3C5D] md:text-base">
-                Tower Wagon Driver Management System
+      <nav className="bg-white shadow-md sticky top-0 z-[1000]">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+
+            <div className="flex items-center gap-2">
+              <Train className="text-[#0b659a]" />
+              <span className="font-bold text-sm md:text-lg text-gray-800">
+                Tower Wagon Driver Management system
               </span>
             </div>
 
@@ -269,7 +270,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
             {/* Mobile Toggle */}
             <button
               onClick={() => setOpen(!open)}
-              className="rounded-lg p-2 hover:bg-slate-100 md:hidden"
+              className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-[#0b659a] hover:text-white transition"
             >
               {open ? <X /> : <Menu />}
             </button>

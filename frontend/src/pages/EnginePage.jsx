@@ -259,158 +259,81 @@ export default function EnginePage() {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-slate-100 px-4 py-6">
+      <div className="min-h-screen bg-[#F8FAFC] px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto space-y-8">
 
-        <div className="max-w-7xl mx-auto">
-
-          {/* HEADER */}
-
-          <div className="flex items-center justify-between mb-6">
-
-            <div className="flex items-center gap-3">
-
-              {role === "DRIVER" && <BackButton />}
-
-              <Settings
-                className="text-indigo-600"
-                size={32}
-              />
-
-              <div>
-
-                <h2 className="text-2xl font-bold">
-
-                  Engine Management
-
-                </h2>
-
-                <p className="text-gray-500 text-sm">
-
-                  View and manage Tower Car engine records
-
-                </p>
-
+          {/* ================= HEADER ================= */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            {/* LEFT */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-slate-100 rounded-xl text-[#0b659a] flex-shrink-0">
+                  <Settings size={28} />
+                </div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">
+                    Engine Management
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1 font-medium">
+                    View and manage Tower Car engine records
+                  </p>
+                </div>
               </div>
-
             </div>
 
+            {/* RIGHT */}
             {canCreate && (
-
               <button
                 onClick={() => {
                   setIsEdit(false);
                   setFormData(emptyEngine);
                   setShowModal(true);
                 }}
-                className="flex items-center gap-2
-             bg-indigo-600
-             text-white
-             px-4
-             py-2
-             rounded-lg
-             hover:bg-indigo-700"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
               >
                 <Plus size={18} />
                 New Engine
               </button>
-
             )}
-
           </div>
 
           {/* FILTERS */}
-
-          <div className="bg-white rounded-xl shadow p-5 mb-6">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* DEPOT */}
-
               <div>
-
-                <label className="block text-sm font-semibold mb-2">
-
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Depot
-
                 </label>
-
                 <select
                   value={selectedDepot}
                   onChange={(e) => setSelectedDepot(e.target.value)}
-                  className="w-full border rounded-lg px-4 py-2"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer"
                 >
-
-                  <option value="">
-
-                    Select Depot
-
-                  </option>
-
-                  {DEPOTS.map(depot => (
-
-                    <option
-                      key={depot}
-                      value={depot}
-                    >
-
-                      {depot}
-
-                    </option>
-
+                  <option value="">Select Depot</option>
+                  {DEPOTS.map(depot=>(
+                    <option key={depot} value={depot}>{depot}</option>
                   ))}
-
                 </select>
-
               </div>
 
               {/* TOWER CAR */}
-
               <div>
-
-                <label className="block text-sm font-semibold mb-2">
-
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Tower Car
-
                 </label>
-
                 <select
-
                   value={selectedEngine}
-
-                  onChange={(e) => setSelectedEngine(e.target.value)}
-
-                  className="w-full border rounded-lg px-4 py-2"
-
+                  onChange={(e)=>setSelectedEngine(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer"
                 >
-
-                  <option value="">
-
-                    Select Tower Car
-
-                  </option>
-
-                  {engineList.map(item => (
-
-                    <option
-
-                      key={item._id}
-
-                      value={item._id}
-
-                    >
-
-                      {item.towerCarNumber}
-
-                    </option>
-
+                  <option value="">Select Tower Car</option>
+                  {engineList.map(item=>(
+                    <option key={item._id} value={item._id}>{item.towerCarNumber}</option>
                   ))}
-
                 </select>
-
               </div>
-
             </div>
-
           </div>
           {loading && (
 

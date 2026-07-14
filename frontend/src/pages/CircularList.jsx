@@ -47,56 +47,90 @@ export default function CircularList() {
   return (
     <>
       <Navbar />
-      <div className="rail-page">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <BackButton />
+
+      <div className="min-h-screen bg-[#F8FAFC] px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+
+          {/* ================= HEADER ================= */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            {/* LEFT */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-slate-100 rounded-xl text-[#0b659a] flex-shrink-0">
+                  <FileText size={28} />
+                </div>
                 <div>
-                  <h2 className="rail-page-title">Official Circulars</h2>
-                  <p className="rail-page-subtitle">Latest circulars issued by the administration</p>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">
+                    Official Circulars
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1 font-medium">
+                    Latest circulars issued by the administration
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
           {loading && (
-            <div className="rail-card flex flex-col items-center justify-center p-8 text-center">
-              <Loader2 className="mb-3 h-8 w-8 animate-spin text-[#0B3C5D]" />
-              <p className="text-[#6B7280]">Loading circulars...</p>
+            <div className="bg-white py-16 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-slate-500">
+              <Loader2 size={36} className="animate-spin mb-4 text-indigo-600" />
+              <p className="font-medium text-lg">Loading circulars...</p>
             </div>
           )}
 
           {!loading && circulars.length === 0 && (
-            <div className="rail-card flex flex-col items-center justify-center p-8 text-center text-[#6B7280]">
-              <FileText className="mb-3 h-12 w-12 text-[#D1D5DB]" />
-              <p className="font-semibold text-[#1F2937]">No circulars available</p>
-              <p className="mt-1 text-sm">New official notices will appear here.</p>
+            <div className="bg-white py-16 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-500 flex flex-col items-center">
+              <div className="p-4 bg-slate-50 rounded-full mb-4">
+                <FileText size={48} className="text-slate-300" />
+              </div>
+              <p className="font-medium text-lg text-slate-600">No circulars available</p>
             </div>
           )}
 
           <div className="space-y-4">
-            {circulars.map(c => (
-              <div key={c._id} className="rail-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E8EEF5] text-[#0B3C5D]">
+            {circulars.map((c) => (
+              <div
+                key={c._id}
+                className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm
+                           hover:shadow-md hover:-translate-y-1 transition-all duration-250
+                           flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+              >
+                {/* LEFT */}
+                <div className="flex items-start gap-4">
+                  <div className="p-2.5 bg-slate-100 rounded-xl text-[#0b659a] flex-shrink-0">
                     <FileText size={20} />
                   </div>
                   <div>
-                    <p className="font-semibold text-[#1F2937]">{c.title}</p>
-                    <p className="text-sm text-[#6B7280]">
-                      Posted on {new Date(c.createdAt).toLocaleDateString()}
-                      {c.originalFilename && <span className="ml-2">• {c.originalFilename}</span>}
+                    <p className="font-bold text-slate-800 text-base">{c.title}</p>
+                    <p className="text-sm text-slate-500 mt-1 font-medium">
+                      Posted on{" "}
+                      {new Date(c.createdAt).toLocaleDateString()}
+                      {c.originalFilename && (
+                        <span className="ml-2 text-slate-400">
+                          • {c.originalFilename}
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button onClick={() => openViewer(c)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#D1D5DB] bg-white px-4 py-2 text-sm font-semibold text-[#0B3C5D] transition hover:bg-[#E8EEF5]">
-                    <Eye size={16} /> View
+                {/* RIGHT - ACTION BUTTONS */}
+                <div className="flex items-center gap-3">
+                  {/* VIEW */}
+                  <button
+                    onClick={() => openViewer(c)}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium bg-white border border-slate-200 text-[#0b659a] rounded-xl hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
+                  >
+                    <Eye size={16} />
+                    View
                   </button>
-                  <a href={`${import.meta.env.VITE_API_URI}/admin/circulars/${c._id}/pdf`} download className="inline-flex items-center justify-center rounded-xl border border-[#D1D5DB] bg-white p-2.5 text-[#1F2937] transition hover:bg-[#E8EEF5]">
+
+                  {/* DOWNLOAD */}
+                  <a
+                    href={`${import.meta.env.VITE_API_URI}/admin/circulars/${c._id}/pdf`}
+                    download
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-700 hover:text-white hover:border-slate-700 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
+                  >
                     <Download size={16} />
                   </a>
                 </div>

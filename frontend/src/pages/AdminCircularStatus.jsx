@@ -114,84 +114,101 @@ export default function AdminCircularStatus() {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-slate-100 px-4 py-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="min-h-screen bg-[#F8FAFC] px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto space-y-8">
 
-          {/* HEADER */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <FileText className="text-indigo-600" />
-                Circular Acknowledgement Status
-              </h2>
-              <p className="text-sm text-gray-500">
-                Monitor who has read and acknowledged circulars
-              </p>
+          {/* ================= HEADER ================= */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            {/* LEFT */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-slate-100 rounded-xl text-[#0b659a] flex-shrink-0">
+                  <FileText size={28} />
+                </div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">
+                    Circular Acknowledgement
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1 font-medium">
+                    Monitor who has read and acknowledged circulars
+                  </p>
+                </div>
+              </div>
             </div>
 
+            {/* RIGHT */}
             <button
               onClick={refreshReport}
               disabled={loading || !selectedCircular}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition disabled:opacity-50"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
               Refresh
             </button>
           </div>
 
-          {/* DATE FILTER */}
-          <div className="bg-white p-4 rounded-xl shadow flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <div className="flex items-center gap-2 text-gray-700 font-medium">
-              <CalendarDays size={18} />
-              Filter by Date:
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* DATE FILTER */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center">
+              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                <div className="p-1.5 bg-slate-100 rounded-lg text-[#0b659a]">
+                  <CalendarDays size={16} />
+                </div>
+                Filter by Date
+              </label>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full sm:w-auto px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all"
+                />
+
+                {selectedDate && (
+                  <button
+                    onClick={() => setSelectedDate("")}
+                    className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+                  >
+                    Clear Filter
+                  </button>
+                )}
+              </div>
             </div>
 
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
+            {/* CIRCULAR SELECTOR */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center">
+              <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                <div className="p-1.5 bg-slate-100 rounded-lg text-[#0b659a]">
+                  <FileText size={16} />
+                </div>
+                Select Circular
+              </label>
 
-            {selectedDate && (
-              <button
-                onClick={() => setSelectedDate("")}
-                className="text-sm text-indigo-600 hover:underline"
-              >
-                Clear Date Filter
-              </button>
-            )}
-          </div>
-
-          {/* CIRCULAR SELECTOR */}
-          <div className="bg-white p-4 rounded-xl shadow">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Circular
-            </label>
-
-            {loadingCirculars ? (
-              <div className="flex items-center gap-2 text-gray-500">
-                <Loader2 size={18} className="animate-spin" />
-                Loading circulars...
-              </div>
-            ) : circulars.length === 0 ? (
-              <div className="text-amber-600 flex items-center gap-2">
-                <AlertTriangle size={18} />
-                No circulars found for selected date.
-              </div>
-            ) : (
-              <select
-                value={selectedCircular}
-                onChange={(e) => setSelectedCircular(e.target.value)}
-                className="w-full sm:w-auto px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              >
-                {circulars.map((c) => (
-                  <option key={c._id} value={c._id}>
-                    {c.title} ({new Date(c.circularDate).toLocaleDateString()})
-                  </option>
-                ))}
-              </select>
-            )}
+              {loadingCirculars ? (
+                <div className="flex items-center gap-2 text-slate-500 py-2">
+                  <Loader2 size={18} className="animate-spin text-indigo-600" />
+                  <span className="font-medium">Loading circulars...</span>
+                </div>
+              ) : circulars.length === 0 ? (
+                <div className="text-amber-600 flex items-center gap-2 bg-amber-50 px-4 py-2.5 rounded-xl border border-amber-100 font-medium">
+                  <AlertTriangle size={18} />
+                  No circulars found for selected date.
+                </div>
+              ) : (
+                <select
+                  value={selectedCircular}
+                  onChange={(e) => setSelectedCircular(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer"
+                >
+                  {circulars.map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {c.title} ({new Date(c.circularDate).toLocaleDateString()})
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           </div>
 
           {/* SUMMARY CARDS */}
@@ -203,119 +220,103 @@ export default function AdminCircularStatus() {
               <SummaryCard icon={<FileText />} label="Completion" value={`${report.summary.percentComplete}%`} color="indigo" />
             </div>
           )}
-          <div className="bg-white rounded-xl shadow p-4 flex flex-wrap gap-4 items-center">
+          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex items-center gap-3 text-slate-700 font-bold mr-2">
+              <div className="p-2 bg-slate-100 rounded-lg text-[#0b659a]">
+                <Filter size={20} />
+              </div>
+              <span className="text-base">Filters</span>
+            </div>
 
-  {/* Status */}
+            {/* Status */}
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full sm:w-auto px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer"
+            >
+              <option value="">All Status</option>
+              <option value="acknowledged">Acknowledged</option>
+              <option value="pending">Pending</option>
+            </select>
 
-  <div className="flex items-center gap-2">
+            {/* Role */}
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="w-full sm:w-auto px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer"
+            >
+              <option value="">All Roles</option>
+              <option value="DRIVER">Driver</option>
+              <option value="DEPOT_MANAGER">SSE/TRD</option>
+              <option value="ADEE">ADEE</option>
+            </select>
 
-    <Filter size={18} className="text-gray-500" />
-
-    <select
-      value={filterStatus}
-      onChange={(e) => setFilterStatus(e.target.value)}
-      className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-    >
-      <option value="">All Status</option>
-
-      <option value="acknowledged">
-        Acknowledged
-      </option>
-
-      <option value="pending">
-        Pending
-      </option>
-
-    </select>
-
-  </div>
-
-  {/* Role */}
-
-  <select
-    value={filterRole}
-    onChange={(e) => setFilterRole(e.target.value)}
-    className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-  >
-    <option value="">All Roles</option>
-
-    <option value="DRIVER">Driver</option>
-
-    <option value="DEPOT_MANAGER">SSE/TRD</option>
-
-    <option value="ADEE">ADEE</option>
-
-  </select>
-
-  {/* Depot */}
-
-  <select
-    value={filterDepot}
-    onChange={(e) => setFilterDepot(e.target.value)}
-    className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-  >
-    <option value="">All Depots</option>
-
-    {uniqueDepots.map(depot => (
-      <option
-        key={depot}
-        value={depot}
-      >
-        {depot}
-      </option>
-    ))}
-
-  </select>
-
-</div>
+            {/* Depot */}
+            <select
+              value={filterDepot}
+              onChange={(e) => setFilterDepot(e.target.value)}
+              className="w-full sm:w-auto px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer"
+            >
+              <option value="">All Depots</option>
+              {uniqueDepots.map(depot => (
+                <option key={depot} value={depot}>{depot}</option>
+              ))}
+            </select>
+          </div>
 
           {/* USERS TABLE (unchanged below this) */}
           {/* ⬇ Your existing table code remains exactly same ⬇ */}
 
           {/* USERS TABLE */}
-          <div className="bg-white rounded-xl shadow overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
             {loading ? (
-              <div className="py-12 flex flex-col items-center justify-center text-gray-500">
-                <Loader2 size={32} className="animate-spin mb-3" />
-                <p>Loading acknowledgement data...</p>
+              <div className="py-16 flex flex-col items-center justify-center text-slate-500">
+                <Loader2 size={36} className="animate-spin mb-4 text-indigo-600" />
+                <p className="font-medium text-lg">Loading acknowledgement data...</p>
               </div>
             ) : !report || report.users.length === 0 ? (
-              <div className="py-12 text-center text-gray-500">
-                <FileText size={48} className="mx-auto mb-3 opacity-50" />
-                <p>No users found or no circular selected</p>
+              <div className="py-16 text-center text-slate-500 flex flex-col items-center">
+                <div className="p-4 bg-slate-50 rounded-full mb-4">
+                  <FileText size={48} className="text-slate-300" />
+                </div>
+                <p className="font-medium text-lg text-slate-600">No users found or no circular selected</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-slate-100 text-gray-700">
+                <table className="w-full text-sm text-left whitespace-nowrap">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
                     <tr>
-                      <th className="px-4 py-3 text-left">Status</th>
-                      <th className="px-4 py-3 text-left">Name</th>
-                      <th className="px-4 py-3 text-left">PF No</th>
-                      <th className="px-4 py-3 text-left">Role</th>
-                      <th className="px-4 py-3 text-left">Depot</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Name</th>
+                      <th className="px-6 py-4">PF No</th>
+                      <th className="px-6 py-4">Role</th>
+                      <th className="px-6 py-4">Depot</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100">
                     {filteredUsers.map((user) => (
-                      <tr key={user._id} className="border-t hover:bg-slate-50">
-                        <td className="px-4 py-3">
+                      <tr key={user._id} className="hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0">
+                        <td className="px-6 py-4">
                           {user.acknowledged ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-emerald-100 text-emerald-700 rounded-full">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-lg">
                               <CheckCircle size={14} />
                               Acknowledged
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-red-50 text-red-700 border border-red-100 rounded-lg">
                               <XCircle size={14} />
                               Pending
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 font-medium">{user.name}</td>
-                        <td className="px-4 py-3">{user.pfNo}</td>
-                        <td className="px-4 py-3">{user.role}</td>
-                        <td className="px-4 py-3">{user.depotName || "-"}</td>
+                        <td className="px-6 py-4 font-medium text-slate-800">{user.name}</td>
+                        <td className="px-6 py-4 text-slate-600">{user.pfNo}</td>
+                        <td className="px-6 py-4 text-slate-600">{user.role}</td>
+                        <td className="px-6 py-4">
+                          <span className="px-3 py-1 text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-lg">
+                            {user.depotName || "-"}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -336,20 +337,20 @@ export default function AdminCircularStatus() {
 
 function SummaryCard({ icon, label, value, color }) {
   const colorClasses = {
-    slate: "bg-slate-100 text-slate-700",
-    emerald: "bg-emerald-100 text-emerald-700",
-    red: "bg-red-100 text-red-700",
-    indigo: "bg-indigo-100 text-indigo-700"
+    slate: "bg-slate-50 text-[#0b659a] border border-slate-100",
+    emerald: "bg-emerald-50 text-emerald-600 border border-emerald-100",
+    red: "bg-red-50 text-red-600 border border-red-100",
+    indigo: "bg-slate-100 text-[#0b659a] border border-slate-200"
   };
 
   return (
-    <div className="bg-white rounded-xl shadow p-4 flex items-center gap-3">
-      <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
+    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-250 flex items-center gap-5">
+      <div className={`p-4 rounded-2xl flex-shrink-0 ${colorClasses[color]}`}>
         {icon}
       </div>
       <div>
-        <p className="text-xs text-gray-500">{label}</p>
-        <p className="text-xl font-bold text-gray-800">{value}</p>
+        <p className="text-sm font-semibold text-slate-500 tracking-wide mb-1 uppercase">{label}</p>
+        <p className="text-3xl font-bold text-slate-800">{value}</p>
       </div>
     </div>
   );
