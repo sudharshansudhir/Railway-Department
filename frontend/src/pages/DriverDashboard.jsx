@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import api from "../api/axios";
 import {
   User,
@@ -9,7 +10,10 @@ import {
   ClipboardList,
   AlertTriangle,
   CheckSquare,
-  ScrollText
+  ScrollText,
+  Train,
+  ShieldCheck,
+  BellRing
 } from "lucide-react";
 import Swal from "sweetalert2";
 import Footer from "../components/Footer";
@@ -18,168 +22,148 @@ export default function DriverDashboard() {
   const navigate = useNavigate();
   const [alerts, setAlerts] = useState([]);
 
-  // const checklistTemplate = [
-  //   "Check Diesel level",
-  //   "Drain water sediments fuel filter",
-  //   "Check engine oil level and top up if necessary",
-  //   "Check fuel, oil, water and exhaust leak",
-  //   "Check air cleaner oil level",
-  //   "Check air line leak",
-  //   "Fill radiator tank with treated water if necessary",
-  //   "Clean compressor breather",
-  //   "Drain air receiver tank and close drain cock",
-  //   "Clean crank case breather",
-  //   "Start engine and note oil pressure",
-  //   "Record oil pressure and brake pressure"
-  // ];
+  const openTCardPopup = async () => {
+    const checklistTemplate = [
+      "Check Diesel level",
+      "Drain water sediments fuel filter",
+      "Check engine oil level and top up if necessary",
+      "Check fuel, oil, water and exhaust leak",
+      "Check air cleaner oil level",
+      "Check air line leak",
+      "Fill radiator tank with treated water if necessary",
+      "Clean compressor breather",
+      "Drain air receiver tank and close drain cock",
+      "Clean crank case breather",
+      "Start engine and note oil pressure",
+      "Record oil pressure and brake pressure"
+    ];
 
-const openTCardPopup = async () => {
+    const towerCars = ["RU 927/017", "SR 220035", "SR 210018", "SR 960025", "SR 23025", "SR 240063", "RU 06878", "SR 230022", "SR 210067", "RU 01896", "RU 176019", "SR 230059", "RU 9516", "RU 9514", "RU 9496", "RU 950021", "LR", "TRAINING"];
 
-  const checklistTemplate = [
-    "Check Diesel level",
-    "Drain water sediments fuel filter",
-    "Check engine oil level and top up if necessary",
-    "Check fuel, oil, water and exhaust leak",
-    "Check air cleaner oil level",
-    "Check air line leak",
-    "Fill radiator tank with treated water if necessary",
-    "Clean compressor breather",
-    "Drain air receiver tank and close drain cock",
-    "Clean crank case breather",
-    "Start engine and note oil pressure",
-    "Record oil pressure and brake pressure"
-  ];
+    const items = checklistTemplate.map(d => ({
+      description: d,
+      checked: false,
+      remarks: "",
+      priority: "",
+      dieselLevel: null
+    }));
 
-  const towerCars = ["RU 927/017",
-"SR 220035","SR 210018","SR 960025","SR 23025",
-"SR 240063","RU 06878","SR 230022","SR 210067","RU 01896","RU 176019","SR 230059","RU 9516","RU 9514","RU 9496","RU 950021","LR","TRAINING"]
+    const { value } = await Swal.fire({
+      title: "Daily Tower Car Checklist",
+      width: window.innerWidth < 640 ? "95%" : 900,
+      showCancelButton: true,
+      confirmButtonText: "Submit Checklist",
+      html: `
+        <select id="tcar" class="swal2-input" style="margin-bottom:12px">
+          <option value="">Select Tower Car</option>
+          ${towerCars.map(t => `<option value="${t}">${t}</option>`).join("")}
+        </select>
 
-  const items = checklistTemplate.map(d => ({
-    description: d,
-    checked: false,
-    remarks: "",
-    priority: "",
-    dieselLevel: null
-  }));
+        <div style="font-size:12px;text-align:left;max-height:400px;overflow:auto;">
+          ${items.map((i, idx) => `
+            <div style="margin-bottom:14px;">
+              <label style="display:flex;gap:8px;align-items:flex-start;">
+                <input type="checkbox" id="chk${idx}" style="margin-top:4px"/>
+                <span style="font-weight:600">${i.description}</span>
+              </label>
 
-  const { value } = await Swal.fire({
-    title: "Daily Tower Car Checklist",
-    width: window.innerWidth < 640 ? "95%" : 900,
-    showCancelButton: true,
-    confirmButtonText: "Submit Checklist",
-    html: `
-      <select id="tcar" class="swal2-input" style="margin-bottom:12px">
-        <option value="">Select Tower Car</option>
-        ${towerCars.map(t => `<option value="${t}">${t}</option>`).join("")}
-      </select>
+              ${i.description === "Check Diesel level" ? `
+                <input
+                  type="number"
+                  id="diesel${idx}"
+                  class="swal2-input"
+                  placeholder="Enter Diesel Level (Litres)"
+                  min="0"
+                />
+              ` : ""}
 
-      <div style="font-size:12px;text-align:left;max-height:400px;overflow:auto;">
-        ${items.map((i, idx) => `
-          <div style="margin-bottom:14px;">
-            <label style="display:flex;gap:8px;align-items:flex-start;">
-              <input type="checkbox" id="chk${idx}" style="margin-top:4px"/>
-              <span style="font-weight:600">${i.description}</span>
-            </label>
-
-            ${i.description === "Check Diesel level" ? `
-              <input 
-                type="number"
-                id="diesel${idx}"
+              <input id="rem${idx}"
                 class="swal2-input"
-                placeholder="Enter Diesel Level (Litres)"
-                min="0"
+                placeholder="Remarks (optional)"
+                oninput="
+                  const val = this.value.trim();
+                  const priorityDiv = document.getElementById('priorityDiv${idx}');
+                  if(val){
+                    priorityDiv.style.display = 'block';
+                  } else {
+                    priorityDiv.style.display = 'none';
+                  }
+                "
               />
-            ` : ""}
 
-            <input id="rem${idx}" 
-              class="swal2-input"
-              placeholder="Remarks (optional)"
-              oninput="
-                const val = this.value.trim();
-                const priorityDiv = document.getElementById('priorityDiv${idx}');
-                if(val){
-                  priorityDiv.style.display = 'block';
-                } else {
-                  priorityDiv.style.display = 'none';
-                }
-              "
-            />
-
-            <div id="priorityDiv${idx}" style="display:none;margin-top:6px;">
-              <select id="priority${idx}" class="swal2-input">
-                <option value="">Select Priority</option>
-                <option value="HIGH">High Priority</option>
-                <option value="LOW">Less Priority</option>
-              </select>
+              <div id="priorityDiv${idx}" style="display:none;margin-top:6px;">
+                <select id="priority${idx}" class="swal2-input">
+                  <option value="">Select Priority</option>
+                  <option value="HIGH">High Priority</option>
+                  <option value="LOW">Less Priority</option>
+                </select>
+              </div>
             </div>
-          </div>
-        `).join("")}
-      </div>
-    `,
-    preConfirm: () => {
+          `).join("")}
+        </div>
+      `,
+      preConfirm: () => {
+        const tCarNo = document.getElementById("tcar").value;
+        if (!tCarNo) {
+          Swal.showValidationMessage("T Car No is required");
+          return;
+        }
 
-      const tCarNo = document.getElementById("tcar").value;
-      if (!tCarNo) {
-        Swal.showValidationMessage("T Car No is required");
-        return;
-      }
+        const collected = items.map((i, idx) => {
+          const remarks = document.getElementById(`rem${idx}`).value.trim();
+          const priority = document.getElementById(`priority${idx}`)?.value || "";
+          const dieselInput = document.getElementById(`diesel${idx}`);
 
-      const collected = items.map((i, idx) => {
-        const remarks = document.getElementById(`rem${idx}`).value.trim();
-        const priority = document.getElementById(`priority${idx}`)?.value || "";
-        const dieselInput = document.getElementById(`diesel${idx}`);
+          let dieselLevel = null;
 
-        let dieselLevel = null;
+          if (dieselInput) {
+            dieselLevel = dieselInput.value ? Number(dieselInput.value) : null;
+            if (dieselLevel === null) {
+              Swal.showValidationMessage("Diesel Level is required");
+              return false;
+            }
+          }
 
-        if (dieselInput) {
-          dieselLevel = dieselInput.value ? Number(dieselInput.value) : null;
-          if (dieselLevel === null) {
-            Swal.showValidationMessage("Diesel Level is required");
+          if (remarks && !priority) {
+            Swal.showValidationMessage("Select priority for all remarks");
             return false;
           }
-        }
 
-        if (remarks && !priority) {
-          Swal.showValidationMessage("Select priority for all remarks");
-          return false;
-        }
+          return {
+            description: i.description,
+            checked: document.getElementById(`chk${idx}`).checked,
+            remarks,
+            priority: remarks ? priority : null,
+            dieselLevel
+          };
+        });
 
-        return {
-          description: i.description,
-          checked: document.getElementById(`chk${idx}`).checked,
-          remarks,
-          priority: remarks ? priority : null,
-          dieselLevel
-        };
+        if (collected.includes(false)) return;
+
+        return { tCarNo, items: collected };
+      }
+    });
+
+    if (!value) return;
+
+    try {
+      await api.post("/driver/tcard", value);
+
+      await Swal.fire({
+        icon: "success",
+        title: "Checklist Saved",
+        text: "Daily T-Card checklist submitted successfully",
+        timer: 1500,
+        showConfirmButton: false
       });
-
-      if (collected.includes(false)) return;
-
-      return { tCarNo, items: collected };
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Submission Failed",
+        text: err.response?.data?.msg || "Unable to save checklist."
+      });
     }
-  });
-
-  if (!value) return;
-
-  try {
-    await api.post("/driver/tcard", value);
-
-    await Swal.fire({
-      icon: "success",
-      title: "Checklist Saved",
-      text: "Daily T-Card checklist submitted successfully",
-      timer: 1500,
-      showConfirmButton: false
-    });
-
-  } catch (err) {
-    Swal.fire({
-      icon: "error",
-      title: "Submission Failed",
-      text: err.response?.data?.msg || "Unable to save checklist."
-    });
-  }
-};
+  };
 
   useEffect(() => {
     api.get("/driver/alerts").then(res => setAlerts(res.data));
@@ -192,7 +176,7 @@ const openTCardPopup = async () => {
           icon: "warning",
           title: "Previous Duty Not Completed",
           text: "Please complete sign-out or contact supervisor.",
-          confirmButtonColor: "#dc2626"
+          confirmButtonColor: "#C8102E"
         });
       }
 
@@ -211,62 +195,42 @@ const openTCardPopup = async () => {
   const hasTrainingAlert = alerts.some(a => a.type === "TRAINING");
   const hasLRAlert = alerts.some(a => a.type === "LR");
 
+  const featureCards = [
+    { title: "Bio Data", description: "Review profile details and personal records", icon: <User size={20} />, onClick: () => navigate("/driver/profile") },
+    { title: "Health / Training", description: "Check medical and training compliance", icon: <HeartPulse size={20} />, onClick: () => navigate("/driver/health") },
+    { title: "LR Details", description: "Monitor route learning record history", icon: <FileText size={20} />, onClick: () => navigate("/driver/lr") },
+    { title: "Mileage Details", description: "Access duty and mileage records", icon: <ClipboardList size={20} />, onClick: () => navigate("/driver/daily") },
+    { title: "Daily Tower Car Checklist", description: "Submit the daily operating checklist", icon: <CheckSquare size={20} />, onClick: openTCardPopup },
+    { title: "Circulars", description: "Open official circulars and notices", icon: <ScrollText size={20} />, onClick: () => navigate("/circulars") },
+    { title: "TW Dashboard", description: "View tower wagon operational status", icon: <Train size={20} />, onClick: () => navigate("/driver/engine") },
+    { title: "Abnormalities", description: "Report and track operational issues", icon: <AlertTriangle size={20} />, onClick: () => navigate("/driver/abnormalities") }
+  ];
+
   return (
     <>
       <Navbar />
-
-      <div className="min-h-screen bg-slate-100 px-3 sm:px-4 py-4 sm:py-6">
-        <div className="max-w-6xl mx-auto">
-
-          <h2 className="text-xl sm:text-2xl font-bold mb-1">
-            Tower Wagon Driver Dashboard
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
-            Duty, compliance & safety checklist overview
-          </p>
-
-          {/* STATUS */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <StatusCard
-              title="Training"
-              status={hasTrainingAlert ? "Overdue" : "Valid"}
-              color={hasTrainingAlert ? "red" : "green"}
-            />
-            <StatusCard
-              title="LR"
-              status={hasLRAlert ? "Overdue" : "Valid"}
-              color={hasLRAlert ? "red" : "green"}
-            />
-            <div className="bg-white p-4 rounded-xl shadow flex gap-3 items-center">
-              <AlertTriangle className="text-yellow-500 shrink-0" />
+      <div className="rail-page">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8 flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <BackButton />
               <div>
-                <p className="text-sm text-gray-500">Alerts</p>
-                <p className="font-semibold">
-                  {alerts.length || "No"} Active
-                </p>
+                <h2 className="rail-page-title">Driver Dashboard</h2>
+                <p className="rail-page-subtitle">Compliance, duty records and operational access</p>
               </div>
             </div>
           </div>
 
-          {/* CARDS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="mb-8 grid gap-4 lg:grid-cols-3">
+            <StatusCard title="Training" status={hasTrainingAlert ? "Overdue" : "Valid"} tone={hasTrainingAlert ? "danger" : "valid"} icon={<ShieldCheck size={18} />} />
+            <StatusCard title="LR" status={hasLRAlert ? "Overdue" : "Valid"} tone={hasLRAlert ? "danger" : "valid"} icon={<FileText size={18} />} />
+            <StatusCard title="Alerts" status={alerts.length ? `${alerts.length} Active` : "No Active Alerts"} tone={alerts.length ? "warning" : "info"} icon={<BellRing size={18} />} />
+          </div>
 
-            <Card title="Bio Data" icon={<User />} onClick={() => navigate("/driver/profile")} />
-            <Card title="Health / Training" icon={<HeartPulse />} onClick={() => navigate("/driver/health")} />
-            <Card title="LR Details" icon={<FileText />} onClick={() => navigate("/driver/lr")} />
-            <Card title="Mileage Details" icon={<ClipboardList />} onClick={() => navigate("/driver/daily")} />
-
-            <Card
-              title="Daily Tower Car Checklist"
-              icon={<CheckSquare />}
-              onClick={openTCardPopup}
-            />
-
-            <Card
-              title="Circulars"
-              icon={<ScrollText />}
-              onClick={() => navigate("/circulars")}
-            />
+          <div className="grid gap-3 grid-cols-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {featureCards.map(card => (
+              <Card key={card.title} title={card.title} description={card.description} icon={card.icon} onClick={card.onClick} />
+            ))}
           </div>
         </div>
       </div>
@@ -275,29 +239,38 @@ const openTCardPopup = async () => {
   );
 }
 
-/* COMPONENTS */
+function StatusCard({ title, status, tone, icon }) {
+  const toneClasses = {
+    valid: "rail-status-valid",
+    warning: "rail-status-warning",
+    danger: "rail-status-danger",
+    info: "rail-status-info"
+  };
 
-function StatusCard({ title, status, color }) {
   return (
-    <div className={`bg-white p-4 rounded-xl shadow border-l-4 border-${color}-600`}>
-      <p className="text-sm text-gray-500">{title}</p>
-      <p className={`font-semibold text-${color}-700`}>{status}</p>
+    <div className={`rail-status-widget ${tone}`}>
+      <div className={`rail-status-icon ${tone}`}>{icon}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-[#64748B]">{title}</p>
+        <p className="mt-1 font-semibold text-[#1F2937]">{status}</p>
+      </div>
+      <span className={`rail-badge ${toneClasses[tone]}`}>{tone === "danger" ? "Needs attention" : tone === "warning" ? "Monitor" : "Ready"}</span>
     </div>
   );
 }
 
-function Card({ title, icon, onClick }) {
+function Card({ title, description, icon, onClick }) {
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      className="cursor-pointer bg-white p-4 sm:p-6 rounded-2xl shadow
-                 hover:shadow-xl hover:-translate-y-1 transition active:scale-[0.98]"
+      className="group flex flex-col items-center justify-center gap-2 rounded-2xl border border-[#D6DEE8] bg-white p-4 text-center transition duration-200 hover:border-[#2563EB] hover:shadow-lg md:gap-3 md:p-5"
     >
-      <div className="w-11 h-11 sm:w-12 sm:h-12 bg-blue-100 text-blue-700
-                      flex items-center justify-center rounded-xl">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#E8F1F8] text-[#0B3C5D] transition group-hover:bg-[#0B3C5D] group-hover:text-white md:h-14 md:w-14">
         {icon}
       </div>
-      <h3 className="mt-3 font-semibold text-sm sm:text-base">{title}</h3>
-    </div>
+      <h3 className="text-xs font-semibold text-[#1F2937] md:text-sm">{title}</h3>
+      <p className="hidden text-xs text-[#64748B] md:block md:text-sm">{description}</p>
+    </button>
   );
 }
