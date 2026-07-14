@@ -74,6 +74,34 @@ textarea {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
 }
 
+.rail-input-with-icon {
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+  padding-right: 0.95rem;
+  padding-left: 2.875rem;
+}
+
+.rail-input-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6b7280;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.rail-input-icon > svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
 .rail-badge {
   display: inline-flex;
   align-items: center;

@@ -59,10 +59,6 @@ export default function CircularList() {
                 </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-[#D1D5DB] bg-[#E8EEF5] px-4 py-3 text-sm text-[#0B3C5D]">
-              <p className="font-semibold">Public notices</p>
-              <p className="text-[#1F6F8B]">Review and download circulars</p>
-            </div>
           </div>
 
           {loading && (

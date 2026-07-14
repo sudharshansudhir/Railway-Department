@@ -143,15 +143,11 @@ export default function DailyActivity() {
                 </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-[#D1D5DB] bg-[#E8EEF5] px-4 py-3 text-sm text-[#0B3C5D]">
-              <p className="font-semibold">Daily operations</p>
-              <p className="text-[#1F6F8B]">Official duty workflow</p>
-            </div>
           </div>
 
           <SectionCard title="Sign ON" icon={<LogIn />} status={signedIn ? "Completed" : "Pending"} tone={signedIn ? "valid" : "warning"}>
-            <ReadOnlyInput label="From Station" icon={<MapPin />} value={fromStation} />
-            <SelectInput label="Tower Car Number" icon={<Hash />} value={twNumber} onChange={setTwNumber} disabled={signedIn} options={towerCars} />
+            <ReadOnlyInput label="From Station" icon={<MapPin size={18} />} value={fromStation} />
+            <SelectInput label="Tower Car Number" icon={<Hash size={18} />} value={twNumber} onChange={setTwNumber} disabled={signedIn} options={towerCars} />
             <label className="mt-3 flex items-center gap-3 text-sm font-semibold text-[#1F2937]">
               <input type="checkbox" checked={breathAnalyserinitial} onChange={() => setBreathAnalyserinitial(!breathAnalyserinitial)} className="h-4 w-4 rounded border-[#D1D5DB]" />
               Breath Analyser Test Done
@@ -160,8 +156,8 @@ export default function DailyActivity() {
           </SectionCard>
 
           <SectionCard title="Sign OFF" icon={<LogOut />} status={signedIn ? "Pending" : "Disabled"} tone={signedIn ? "danger" : "info"}>
-            <ReadOnlyInput label="To Station (Auto detected)" icon={<MapPin />} value={toStation} />
-            <Input label="Total Distance (KM)" icon={<Route />} value={km} onChange={setKm} disabled={!signedIn} />
+            <ReadOnlyInput label="To Station (Auto detected)" icon={<MapPin size={18} />} value={toStation} />
+            <Input label="Total Distance (KM)" icon={<Route size={18} />} value={km} onChange={setKm} disabled={!signedIn} />
             <label className="mt-3 flex items-center gap-3 text-sm font-semibold text-[#1F2937]">
               <input type="checkbox" checked={breathAnalyserDone} onChange={() => setBreathAnalyserDone(!breathAnalyserDone)} className="h-4 w-4 rounded border-[#D1D5DB]" />
               Breath Analyser Test Done
@@ -209,8 +205,8 @@ function Input({ label, icon, value, onChange, disabled }) {
     <div className="mb-3">
       <label className="mb-2 block text-sm font-semibold text-[#1F2937]">{label}</label>
       <div className="relative">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">{icon}</span>
-        <input value={value} disabled={disabled} onChange={e => onChange(e.target.value)} className="rail-input pl-10 disabled:bg-[#F3F4F6]" />
+        <span className="rail-input-icon">{icon}</span>
+        <input value={value} disabled={disabled} onChange={e => onChange(e.target.value)} className="rail-input rail-input-with-icon disabled:bg-[#F3F4F6]" />
       </div>
     </div>
   );
@@ -221,8 +217,8 @@ function SelectInput({ label, icon, value, onChange, disabled, options }) {
     <div className="mb-3">
       <label className="mb-2 block text-sm font-semibold text-[#1F2937]">{label}</label>
       <div className="relative">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">{icon}</span>
-        <select value={value} disabled={disabled} onChange={e => onChange(e.target.value)} className="rail-input pl-10 disabled:bg-[#F3F4F6]">
+        <span className="rail-input-icon">{icon}</span>
+        <select value={value} disabled={disabled} onChange={e => onChange(e.target.value)} className="rail-input rail-input-with-icon disabled:bg-[#F3F4F6]">
           <option value="">Select Tower Car</option>
           {options.map(opt => (
             <option key={opt} value={opt}>{opt}</option>
@@ -238,8 +234,8 @@ function ReadOnlyInput({ label, icon, value }) {
     <div className="mb-3">
       <label className="mb-2 block text-sm font-semibold text-[#1F2937]">{label}</label>
       <div className="relative">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">{icon}</span>
-        <input value={value} readOnly className="rail-input pl-10 bg-[#F9FBFC]" />
+        <span className="rail-input-icon">{icon}</span>
+        <input value={value} readOnly title={value} className="rail-input rail-input-with-icon truncate bg-[#F9FBFC]" />
       </div>
     </div>
   );

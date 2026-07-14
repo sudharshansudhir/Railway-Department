@@ -182,15 +182,15 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
         navigate(to);
         setOpen(false);
       }}
-      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition
+      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition md:w-auto
         ${
           location.pathname === to
             ? "bg-[#0B3C5D] text-white"
             : "text-[#64748B] hover:bg-[#F7FAFD] hover:text-[#0B3C5D]"
         }`}
     >
-      {icon}
-      <span className="hidden sm:inline">{label}</span>
+      <span className="inline-flex shrink-0 items-center justify-center">{icon}</span>
+      <span>{label}</span>
     </button>
   );
 
@@ -279,13 +279,15 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
         {/* Mobile Menu */}
         {open && (
           <div className="border-t border-[#E5E7EB] bg-white px-4 py-3 shadow-lg md:hidden">
-            <div className="space-y-2">
+            <div className="space-y-1">
               <RoleButtons />
               <button
                 onClick={logout}
-                className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#C8102E] transition hover:bg-red-50"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-[#C8102E] transition hover:bg-red-50"
               >
-                <LogOut size={18} />
+                <span className="inline-flex shrink-0 items-center justify-center">
+                  <LogOut size={18} />
+                </span>
                 Logout
               </button>
             </div>

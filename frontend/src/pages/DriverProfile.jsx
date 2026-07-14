@@ -105,9 +105,9 @@ export default function DriverProfile() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Input label="HRMS ID" icon={<IdCard size={16} />} value={form.hrmsId} onChange={v => setForm({ ...form, hrmsId: v })} />
-              <Input label="Designation" icon={<User size={16} />} value={form.designation} onChange={v => setForm({ ...form, designation: v })} />
-              <Input label="Basic Pay" type="number" icon={<BadgeIndianRupee size={16} />} value={form.basicPay} onChange={v => setForm({ ...form, basicPay: v })} />
+              <Input label="HRMS ID" icon={<IdCard size={18} />} value={form.hrmsId} onChange={v => setForm({ ...form, hrmsId: v })} />
+              <Input label="Designation" icon={<User size={18} />} value={form.designation} onChange={v => setForm({ ...form, designation: v })} />
+              <Input label="Basic Pay" type="number" icon={<BadgeIndianRupee size={18} />} value={form.basicPay} onChange={v => setForm({ ...form, basicPay: v })} />
               <DateInput label="Date of Appointment" value={form.dateOfAppointment} onChange={v => setForm({ ...form, dateOfAppointment: v })} />
               <DateInput label="Date of Entry as TWD" value={form.dateOfEntryAsTWD} onChange={v => setForm({ ...form, dateOfEntryAsTWD: v })} />
             </div>
@@ -143,12 +143,12 @@ function Input({ label, value, onChange, icon, type = "text" }) {
     <div>
       <label className="mb-2 block text-sm font-semibold text-[#1F2937]">{label}</label>
       <div className="relative">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">{icon}</span>
+        <span className="rail-input-icon">{icon}</span>
         <input
           type={type}
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="rail-input pl-10"
+          className="rail-input rail-input-with-icon"
         />
       </div>
     </div>
@@ -160,14 +160,14 @@ function DateInput({ label, value, onChange }) {
     <div>
       <label className="mb-2 block text-sm font-semibold text-[#1F2937]">{label}</label>
       <div className="relative">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">
-          <Calendar size={16} />
+        <span className="rail-input-icon">
+          <Calendar size={18} />
         </span>
         <input
           type="date"
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="rail-input pl-10"
+          className="rail-input rail-input-with-icon"
         />
       </div>
     </div>

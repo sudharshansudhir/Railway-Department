@@ -80,10 +80,6 @@ export default function DriverAbnormality() {
                 </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-[#D1D5DB] bg-[#E8EEF5] px-4 py-3 text-sm text-[#0B3C5D]">
-              <p className="font-semibold">Safety reporting</p>
-              <p className="text-[#1F6F8B]">Maintain track-side compliance</p>
-            </div>
           </div>
 
           <div className="rail-panel p-4 sm:p-6 md:p-8">

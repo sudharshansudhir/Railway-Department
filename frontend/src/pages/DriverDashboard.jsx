@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import BackButton from "../components/BackButton";
 import api from "../api/axios";
 import {
   User,
@@ -212,12 +211,9 @@ export default function DriverDashboard() {
       <div className="rail-page">
         <div className="mx-auto max-w-7xl">
           <div className="mb-8 flex flex-col gap-2">
-            <div className="flex items-center gap-3">
-              <BackButton />
-              <div>
-                <h2 className="rail-page-title">Driver Dashboard</h2>
-                <p className="rail-page-subtitle">Compliance, duty records and operational access</p>
-              </div>
+            <div>
+              <h2 className="rail-page-title">Driver Dashboard</h2>
+              <p className="rail-page-subtitle">Compliance, duty records and operational access</p>
             </div>
           </div>
 
