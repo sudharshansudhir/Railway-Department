@@ -295,14 +295,14 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
 
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-[#0b659a] to-[#084d78] text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg">
               <User size={24} />
             </div>
             <div>
               <h2 className="text-lg font-bold">Edit User</h2>
-              <p className="text-sm text-indigo-200">
+              <p className="text-sm text-white/80">
                 {loading ? "Loading..." : `${formData.name} • ${formData.pfNo}`}
               </p>
             </div>
@@ -315,7 +315,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
         {/* Loading */}
         {loading && (
           <div className="flex-1 flex items-center justify-center py-20">
-            <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+            <Loader2 className="w-10 h-10 animate-spin text-[#0b659a]" />
           </div>
         )}
 
@@ -340,7 +340,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition
                     ${activeTab === tab.id
-                      ? "text-indigo-600 border-b-2 border-indigo-600 bg-white"
+                      ? "text-[#0b659a] border-b-2 border-[#0b659a] bg-white"
                       : "text-gray-500 hover:text-gray-700"
                     }`}
                 >
@@ -367,7 +367,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                         type="text"
                         value={formData.name}
                         onChange={(e) => handleChange("name", e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0b659a]/40 focus:border-[#0b659a] transition"
                         placeholder="Enter full name"
                       />
                     </div>
@@ -395,7 +395,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                       <select
                         value={formData.depotName}
                         onChange={(e) => handleChange("depotName", e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0b659a]/40 focus:border-[#0b659a] transition"
                       >
                         <option value="">Select Depot</option>
                         {depots.map(d => (
@@ -412,7 +412,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                       <select
                         value={formData.role}
                         onChange={(e) => handleChange("role", e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0b659a]/40 focus:border-[#0b659a] transition"
                       >
                         <option value="DRIVER">Tower Wagon Driver (TWD)</option>
                         <option value="DEPOT_MANAGER">SSE/TRD (Depot Manager)</option>
@@ -460,7 +460,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                         type="text"
                         value={formData.hrmsId}
                         onChange={(e) => handleChange("hrmsId", e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0b659a]/40 focus:border-[#0b659a] transition"
                         placeholder="Enter HRMS ID"
                       />
                     </div>
@@ -474,7 +474,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                         type="text"
                         value={formData.designation}
                         onChange={(e) => handleChange("designation", e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0b659a]/40 focus:border-[#0b659a] transition"
                         placeholder="e.g., TWD/PTJ (Tech-I/OHE/PTJ)"
                       />
                     </div>
@@ -489,7 +489,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                         type="number"
                         value={formData.basicPay}
                         onChange={(e) => handleChange("basicPay", e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0b659a]/40 focus:border-[#0b659a] transition"
                         placeholder="Enter basic pay"
                       />
                     </div>
@@ -504,7 +504,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                         type="date"
                         value={formData.dateOfAppointment}
                         onChange={(e) => handleChange("dateOfAppointment", e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0b659a]/40 focus:border-[#0b659a] transition"
                       />
                     </div>
 
@@ -518,7 +518,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                         type="date"
                         value={formData.dateOfEntryAsTWD}
                         onChange={(e) => handleChange("dateOfEntryAsTWD", e.target.value)}
-                        className="w-full md:w-1/2 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                        className="w-full md:w-1/2 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0b659a]/40 focus:border-[#0b659a] transition"
                       />
                     </div>
                   </div>
@@ -531,7 +531,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                   {["PME", "GRS_RC", "TR4", "OC"].map((type) => (
                     <div key={type} className="bg-slate-50 rounded-xl p-4 border border-slate-200">
                       <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                        <GraduationCap size={18} className="text-indigo-600" />
+                        <GraduationCap size={18} className="text-[#0b659a]" />
                         {type.replace("_", "/")} Training
                         <span className="text-xs font-normal text-gray-500 ml-2">
                           ({formData.trainings[type].schedule})
@@ -544,7 +544,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                             type="date"
                             value={formData.trainings[type].doneDate}
                             onChange={(e) => handleTrainingChange(type, "doneDate", e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0b659a]/40 focus:border-[#0b659a] transition text-sm"
                           />
                         </div>
                         <div>
@@ -553,7 +553,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                             type="date"
                             value={formData.trainings[type].dueDate}
                             onChange={(e) => handleTrainingChange(type, "dueDate", e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0b659a]/40 focus:border-[#0b659a] transition text-sm"
                           />
                         </div>
                       </div>
@@ -574,7 +574,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 transition"
+                className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[#0b659a] rounded-lg hover:bg-[#084d78] disabled:bg-[#0b659a]/60 transition"
               >
                 {saving ? (
                   <>

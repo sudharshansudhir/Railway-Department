@@ -149,7 +149,7 @@ export default function AdminUserDetail() {
         <Navbar />
         <div className="min-h-screen bg-slate-100 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-12 h-12 border-4 border-[#0b659a] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-gray-600">Loading user details...</p>
           </div>
         </div>
@@ -198,17 +198,17 @@ export default function AdminUserDetail() {
           {/* Header Card */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="p-4 bg-indigo-100 rounded-full">
+              <div className="p-4 bg-[#0b659a]/10 rounded-full">
                 {isDriver ? (
-                  <Train className="text-indigo-600" size={32} />
+                  <Train className="text-[#0b659a]" size={32} />
                 ) : (
-                  <User className="text-indigo-600" size={32} />
+                  <User className="text-[#0b659a]" size={32} />
                 )}
               </div>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-gray-800">{user.name}</h1>
                 <div className="flex flex-wrap items-center gap-3 mt-2">
-                  <Badge color="indigo">{user.role.replace("_", " ")}</Badge>
+                  <Badge color="brand">{user.role.replace("_", " ")}</Badge>
                   <span className="text-gray-500 text-sm flex items-center gap-1">
                     <Building2 size={14} />
                     {user.depotName}
@@ -466,7 +466,7 @@ export default function AdminUserDetail() {
                           )}
                         </td>
                         {/* <td className="px-4 py-2 text-center">{log.hours?.toFixed(1) || "-"}</td> */}
-                        <td className="px-4 py-2 text-center font-semibold text-indigo-600">
+                        <td className="px-4 py-2 text-center font-semibold text-[#0b659a]">
                           {log.mileage?.toFixed(2) || "-"}
                         </td>
                       </tr>
@@ -507,12 +507,12 @@ export default function AdminUserDetail() {
 
                     {/* Date Picker */}
                     <div className="relative">
-                      <CalendarDays size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500" />
+                      <CalendarDays size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#0b659a]" />
                       <input
                         type="date"
                         value={tcardSelectedDate}
                         onChange={(e) => setTcardSelectedDate(e.target.value)}
-                        className="pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none min-w-[160px]"
+                        className="pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:ring-2 focus:ring-[#0b659a]/40 focus:border-[#0b659a] focus:outline-none min-w-[160px]"
                       />
                     </div>
 
@@ -532,7 +532,7 @@ export default function AdminUserDetail() {
               {/* Loading State */}
               {tcardLoading && (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 size={32} className="animate-spin text-indigo-600" />
+                  <Loader2 size={32} className="animate-spin text-[#0b659a]" />
                   <span className="ml-3 text-gray-500">Loading checklist...</span>
                 </div>
               )}
@@ -681,7 +681,8 @@ export default function AdminUserDetail() {
 function Badge({ children, color = "gray" }) {
   const colors = {
     gray: "bg-gray-100 text-gray-700",
-    indigo: "bg-indigo-100 text-indigo-700",
+    indigo: "bg-[#0b659a]/10 text-[#0b659a]",
+    brand: "bg-[#0b659a]/10 text-[#0b659a]",
     emerald: "bg-emerald-100 text-emerald-700",
     amber: "bg-amber-100 text-amber-700",
     red: "bg-red-100 text-red-700"
@@ -698,7 +699,7 @@ function StatCard({ icon, label, value, isText = false }) {
   return (
     <div className="bg-white rounded-xl shadow-md p-4">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+        <div className="p-2 bg-[#0b659a]/10 rounded-lg text-[#0b659a]">
           {icon}
         </div>
         <div>

@@ -24,7 +24,7 @@ export default function AbnormalityDashboard({ depot = "" }) {
 
   const [search, setSearch] = useState("");
 
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("Pending");
 
   const [actionTaken, setActionTaken] = useState({});
 
@@ -192,62 +192,21 @@ export default function AbnormalityDashboard({ depot = "" }) {
       {/* Filters */}
 
       <div className="bg-white rounded-xl shadow p-4 flex flex-wrap gap-3">
-
         <div className="relative">
-
           <Search
             size={18}
             className="absolute left-3 top-3 text-gray-400"
           />
 
           <input
-
             placeholder="Search Driver"
-
             value={search}
-
             onChange={(e)=>
               setSearch(e.target.value)
             }
-
             className="border rounded-lg pl-10 pr-4 py-2"
-
           />
-
         </div>
-
-        <select
-
-          value={status}
-
-          onChange={(e)=>
-            setStatus(e.target.value)
-          }
-
-          className="border rounded-lg px-3 py-2"
-
-        >
-
-          <option value="">
-
-            All Status
-
-          </option>
-
-          <option value="Pending">
-
-            Pending
-
-          </option>
-
-          <option value="Action Taken">
-
-            Action Taken
-
-          </option>
-
-        </select>
-
       </div>
             {/* TABLE */}
 
@@ -384,7 +343,7 @@ export default function AbnormalityDashboard({ depot = "" }) {
                         )
                       }
 
-                      className="inline-flex items-center gap-1 bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700"
+                      className="inline-flex items-center gap-1 bg-[#0b659a] text-white px-3 py-1 rounded-lg hover:bg-[#084d78] transition"
 
                     >
 
@@ -425,7 +384,7 @@ export default function AbnormalityDashboard({ depot = "" }) {
                               className="bg-white border rounded-xl p-4"
                             >
 
-                              <h4 className="font-semibold text-indigo-700">
+                              <h4 className="font-semibold text-[#0b659a]">
                                 {item.type}
                               </h4>
 
