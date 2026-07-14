@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import Swal from "sweetalert2";
 import {
   User,
@@ -24,8 +25,6 @@ export default function DriverProfile() {
 
   const [saving, setSaving] = useState(false);
 
-  /* ================= LOAD PROFILE ================= */
-
   useEffect(() => {
     api.get("/driver/profile").then(res => {
       setUser(res.data.user);
@@ -41,8 +40,6 @@ export default function DriverProfile() {
       });
     });
   }, []);
-
-  /* ================= SAVE ================= */
 
   const save = async () => {
     if (!form.hrmsId || !form.designation || !form.basicPay) {
@@ -72,115 +69,86 @@ export default function DriverProfile() {
   };
 
   if (!user) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <>
+        <Navbar />
+        <div className="rail-page flex items-center justify-center">
+          <div className="rail-card px-8 py-6 text-[#6B7280]">Loading profile details...</div>
+        </div>
+        <Footer />
+      </>
+    );
   }
 
   return (
     <>
       <Navbar />
-
-      <div className="min-h-screen bg-slate-100 p-6">
-        <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow">
-
-          <h2 className="text-xl font-bold mb-4">Driver Bio Data</h2>
-
-          {/* ================= READ-ONLY USER INFO ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-
-            <ReadOnly
-              label="Driver Name"
-              value={user.name}
-              icon={<User />}
-            />
-
-            <ReadOnly
-              label="PF Number"
-              value={user.pfNo}
-              icon={<IdCard />}
-            />
-
-            <ReadOnly
-              label="Depot"
-              value={user.depotName}
-              icon={<Building2 />}
-            />
+      <div className="rail-page">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-6 flex flex-col gap-3">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <BackButton />
+                <div>
+                  <h2 className="rail-page-title">Driver Bio Data</h2>
+                  <p className="rail-page-subtitle">Maintain official profile information</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* ================= EDITABLE PROFILE ================= */}
+          <div className="rail-panel p-4 sm:p-6 md:p-8">
+            <div className="mb-6 grid gap-4 md:grid-cols-3">
+              <ReadOnly label="Driver Name" value={user.name} icon={<User size={16} />} />
+              <ReadOnly label="PF Number" value={user.pfNo} icon={<IdCard size={16} />} />
+              <ReadOnly label="Depot" value={user.depotName} icon={<Building2 size={16} />} />
+            </div>
 
-          <Input
-            label="HRMS ID"
-            icon={<IdCard />}
-            value={form.hrmsId}
-            onChange={v => setForm({ ...form, hrmsId: v })}
-          />
+            <div className="grid gap-4 md:grid-cols-2">
+              <Input label="HRMS ID" icon={<IdCard size={16} />} value={form.hrmsId} onChange={v => setForm({ ...form, hrmsId: v })} />
+              <Input label="Designation" icon={<User size={16} />} value={form.designation} onChange={v => setForm({ ...form, designation: v })} />
+              <Input label="Basic Pay" type="number" icon={<BadgeIndianRupee size={16} />} value={form.basicPay} onChange={v => setForm({ ...form, basicPay: v })} />
+              <DateInput label="Date of Appointment" value={form.dateOfAppointment} onChange={v => setForm({ ...form, dateOfAppointment: v })} />
+              <DateInput label="Date of Entry as TWD" value={form.dateOfEntryAsTWD} onChange={v => setForm({ ...form, dateOfEntryAsTWD: v })} />
+            </div>
 
-          <Input
-            label="Designation"
-            icon={<User />}
-            value={form.designation}
-            onChange={v => setForm({ ...form, designation: v })}
-          />
-
-          <Input
-            label="Basic Pay"
-            type="number"
-            icon={<BadgeIndianRupee />}
-            value={form.basicPay}
-            onChange={v => setForm({ ...form, basicPay: v })}
-          />
-
-          <DateInput
-            label="Date of Appointment"
-            value={form.dateOfAppointment}
-            onChange={v => setForm({ ...form, dateOfAppointment: v })}
-          />
-
-          <DateInput
-            label="Date of Entry as TWD"
-            value={form.dateOfEntryAsTWD}
-            onChange={v => setForm({ ...form, dateOfEntryAsTWD: v })}
-          />
-
-          <button
-            onClick={save}
-            disabled={saving}
-            className="w-full mt-4 bg-green-600 text-white py-2 rounded"
-          >
-            {saving ? "Saving..." : "Save Bio Data"}
-          </button>
-
+            <button
+              onClick={save}
+              disabled={saving}
+              className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-[#2E7D32] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#256b28] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {saving ? "Saving..." : "Save Bio Data"}
+            </button>
+          </div>
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 }
 
-/* ================= UI COMPONENTS ================= */
-
 function ReadOnly({ label, value, icon }) {
   return (
-    <div className="bg-slate-50 border rounded-lg p-3">
-      <p className="text-xs text-gray-500 flex items-center gap-1">
+    <div className="rounded-2xl border border-[#D1D5DB] bg-[#F9FBFC] p-4">
+      <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#6B7280]">
         {icon} {label}
       </p>
-      <p className="font-semibold text-gray-800">{value}</p>
+      <p className="font-semibold text-[#1F2937]">{value}</p>
     </div>
   );
 }
 
 function Input({ label, value, onChange, icon, type = "text" }) {
   return (
-    <div className="mb-4">
-      <label className="text-sm font-semibold">{label}</label>
+    <div>
+      <label className="mb-2 block text-sm font-semibold text-[#1F2937]">{label}</label>
       <div className="relative">
-        <span className="absolute left-3 top-2.5 text-gray-400">{icon}</span>
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">{icon}</span>
         <input
           type={type}
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-full pl-10 p-2 border rounded"
+          className="rail-input pl-10"
         />
       </div>
     </div>
@@ -189,17 +157,17 @@ function Input({ label, value, onChange, icon, type = "text" }) {
 
 function DateInput({ label, value, onChange }) {
   return (
-    <div className="mb-4">
-      <label className="text-sm font-semibold">{label}</label>
+    <div>
+      <label className="mb-2 block text-sm font-semibold text-[#1F2937]">{label}</label>
       <div className="relative">
-        <span className="absolute left-3 top-2.5 text-gray-400">
-          <Calendar />
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">
+          <Calendar size={16} />
         </span>
         <input
           type="date"
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-full pl-10 p-2 border rounded"
+          className="rail-input pl-10"
         />
       </div>
     </div>
