@@ -193,135 +193,87 @@ const loadAbnormalities = async () => {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-slate-100 px-4 py-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="min-h-screen bg-[#F8FAFC] px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto space-y-8">
 
           {/* ================= HEADER ================= */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
 
-  {/* LEFT */}
+            {/* LEFT */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-slate-100 rounded-xl text-[#0b659a] flex-shrink-0">
+                  <Shield size={28} />
+                </div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">
+                    {isADEE ? "ADEE/TRD Dashboard" : "Sr.DEE/TRD/SA Dashboard"}
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1 font-medium">
+                    {isADEE ? "Visibility across assigned depots" : "Global visibility across all depots"}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-  <div className="flex items-start gap-4">
-
-    <Shield className="text-indigo-600 mt-1" size={30} />
-
-    <div>
-
-      <h2 className="text-4xl font-bold text-slate-800">
-
-        {isADEE
-          ? "ADEE/TRD Dashboard"
-          : "Sr.DEE/TRD/SA Dashboard"}
-
-      </h2>
-
-      <p className="text-gray-500">
-
-        {isADEE
-          ? "Visibility across assigned depots"
-          : "Global visibility across all depots"}
-
-      </p>
-
-    </div>
-
-  </div>
-
-  {/* RIGHT */}
-
-  {!isADEE && (
-
-    <button
-      onClick={() => navigate("/admin/register")}
-      className="bg-indigo-600 hover:bg-indigo-700
-      text-white rounded-xl
-      px-6 py-3
-      flex items-center gap-2
-      shadow-lg transition"
-    >
-
-      <UserPlus size={20} />
-
-      Add User
-
-    </button>
-
-  )}
-
-
-</div>
-           {/* ================= TOP ROW ================= */}
-
-{/* ROW 1 */}
-
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-  <StatCard
-    icon={<UserCog />}
-    label="SSE / TRD"
-    value={managers.length}
-  />
-
-  <StatCard
-    icon={<Train />}
-    label="Drivers"
-    value={drivers.length}
-  />
-
-  {!isADEE && (
-
-    <StatCard
-      icon={<Users />}
-      label="Mini Admins"
-      value={miniAdmins.length}
-    />
-
-  )}
-
-</div>
-
-{/* ROW 2 */}
-
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-  <StatCard
-    icon={<ClipboardList />}
-    label="Training Due"
-    value={trainingOverdues}
-  />
-
-  <StatCard
-    icon={<Shield />}
-    label="LR Due"
-    value={lrOverdues}
-  />
-
-  <StatCard
-    icon={<AlertTriangle />}
-    label="Circular Pending"
-    value={circularPending}
-  />
-
-</div>
-
-{/* ROW 3 */}
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-  <StatCard
-    icon={<AlertTriangle />}
-    label="TW High Issues"
-    value={issueTotal}
-  />
-
-  <StatCard
-    icon={<AlertTriangle />}
-    label="Track Abnormalities"
-    value={abnormalityTotal}
-  />
-
-</div>
-{/* ================= SECOND ROW ================= */}
+            {/* RIGHT */}
+            {!isADEE && (
+              <button
+                onClick={() => navigate("/admin/register")}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+              >
+                <UserPlus size={18} />
+                Add User
+              </button>
+            )}
+          </div>
+            {/* ================= STAT CARDS GRID ================= */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                icon={<UserCog />}
+                label="SSE / TRD"
+                value={managers.length}
+              />
+              <StatCard
+                icon={<Train />}
+                label="Drivers"
+                value={drivers.length}
+              />
+              {!isADEE && (
+                <StatCard
+                  icon={<Users />}
+                  label="Mini Admins"
+                  value={miniAdmins.length}
+                />
+              )}
+              <StatCard
+                icon={<ClipboardList />}
+                label="Training Due"
+                value={trainingOverdues}
+              />
+              <StatCard
+                icon={<Shield />}
+                label="LR Due"
+                value={lrOverdues}
+              />
+              <StatCard
+                icon={<AlertTriangle />}
+                label="Circular Pending"
+                value={circularPending}
+              />
+              <StatCard
+                icon={<AlertTriangle />}
+                label="TW High Issues"
+                value={issueTotal}
+                colorClass="bg-amber-50 text-amber-600"
+              />
+              <StatCard
+                icon={<AlertTriangle />}
+                label="Track Abnormalities"
+                value={abnormalityTotal}
+                colorClass="bg-red-50 text-red-600"
+              />
+            </div>
 
 
 
@@ -330,17 +282,18 @@ const loadAbnormalities = async () => {
       
 
           {/* ================= FILTER ================= */}
-          <div className="bg-white p-4 rounded-xl shadow flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <div className="flex items-center gap-2 text-gray-700 font-semibold">
-              <Filter size={18} />
-              Filter by Depot
+          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex items-center gap-3 text-slate-700 font-bold">
+              <div className="p-2 bg-slate-100 rounded-lg text-[#0b659a]">
+                <Filter size={20} />
+              </div>
+              <span className="text-base">Filter by Depot</span>
             </div>
 
             <select
               value={depot}
               onChange={e => setDepot(e.target.value)}
-              className="px-4 py-2 border rounded-lg
-                         focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full sm:w-64 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer"
             >
               <option value="">All Depots</option>
               {depots.map(d => (
@@ -350,176 +303,102 @@ const loadAbnormalities = async () => {
               ))}
             </select>
           </div>
-            <div className="bg-white rounded-xl shadow">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card">
+              <button
+                onClick={() => setShowIssues(!showIssues)}
+                className="w-full flex items-center justify-between px-6 py-5 bg-white transition-colors duration-300 text-left"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-2.5 bg-amber-50 group-hover/card:bg-[#0b659a] rounded-xl text-amber-600 group-hover/card:text-white transition-colors duration-300">
+                    <AlertTriangle size={20} />
+                  </div>
+                  <span className="text-lg font-bold text-slate-800 transition-colors duration-300">TW High Issues</span>
+                </div>
+                <span className={`text-slate-400 transition-transform duration-300 ${showIssues ? "rotate-180" : ""}`}>
+                  ▼
+                </span>
+              </button>
+              {showIssues && (
+                <div className="p-6 border-t border-slate-100 bg-slate-50/30">
+                  <IssueDashboard selectedDepot={depot} />
+                </div>
+              )}
+            </div>
 
-  <button
-    onClick={() => setShowIssues(!showIssues)}
-    className="w-full flex items-center justify-between
-               px-6 py-4 text-left font-semibold"
-  >
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card">
+              <button
+                onClick={() => setShowAbnormalities(!showAbnormalities)}
+                className="w-full flex items-center justify-between px-6 py-5 bg-white transition-colors duration-300 text-left"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-2.5 bg-red-50 group-hover/card:bg-[#0b659a] rounded-xl text-red-600 group-hover/card:text-white transition-colors duration-300">
+                    <AlertTriangle size={20} />
+                  </div>
+                  <span className="text-lg font-bold text-slate-800 transition-colors duration-300">Track Abnormalities</span>
+                </div>
+                <span className={`text-slate-400 transition-transform duration-300 ${showAbnormalities ? "rotate-180" : ""}`}>
+                  ▼
+                </span>
+              </button>
+              {showAbnormalities && (
+                <div className="p-6 border-t border-slate-100 bg-slate-50/30">
+                  <AbnormalityDashboard selectedDepot={depot} />
+                </div>
+              )}
+            </div>
 
-    <span>TW High Issues</span>
-
-    <span>
-
-      {showIssues ? "▲" : "▼"}
-
-    </span>
-
-  </button>
-
-  {showIssues && (
-
-    <IssueDashboard selectedDepot={depot} />
-
-  )}
-
-</div>
-
-
-<div className="bg-white rounded-xl shadow">
-
-<button
-onClick={() =>
-setShowAbnormalities(
-!showAbnormalities
-)
-}
-className="w-full
-flex
-justify-between
-px-6
-py-4
-font-semibold"
->
-
-<span>
-
-Track Abnormalities
-
-</span>
-
-<span>
-
-{showAbnormalities ? "▲" : "▼"}
-
-</span>
-
-</button>
-
-{showAbnormalities && (
-
-<AbnormalityDashboard
-selectedDepot={depot}
-/>
-
-)}
-
-</div>
-
-
-
-<div className="bg-white rounded-xl shadow">
-
-<button
-onClick={() =>
-setShowOverdues(!showOverdues)
-}
-className="w-full
-flex
-justify-between
-px-6
-py-4
-font-semibold"
->
-
-<span>
-
-Overdue Records
-
-</span>
-
-<span>
-
-{showOverdues ? "▲" : "▼"}
-
-</span>
-
-</button>
-
-{showOverdues && (
-
-          <Section
-  title="Overdue Records"
-  icon={<AlertTriangle className="text-red-600" />}
->
-  <Table
-    headers={[
-      "Driver",
-      "PF No",
-      "Depot",
-      "Category",
-      "Item",
-      "Due Date",
-      "Overdue",
-      "Action"
-    ]}
-    loading={loadingOverdues}
-    emptyText="No overdue records"
-  >
-    {overdues.map((record, index) => (
-      <tr
-        key={`${record.driverId}-${index}`}
-        className="hover:bg-slate-50"
-      >
-        <td className="px-4 py-3">
-          {record.driverName}
-        </td>
-
-        <td className="px-4 py-3">
-          {record.pfNo}
-        </td>
-
-        <td className="px-4 py-3">
-          <Badge>{record.depotName}</Badge>
-        </td>
-
-        <td className="px-4 py-3">
-          {record.category}
-        </td>
-
-        <td className="px-4 py-3">
-          {record.item}
-        </td>
-
-        <td className="px-4 py-3">
-          {new Date(record.dueDate).toLocaleDateString()}
-        </td>
-
-        <td className="px-4 py-3">
-          <span className="text-red-600 font-semibold">
-            {record.overdueDays} Days
-          </span>
-        </td>
-
-        <td className="px-4 py-3">
-          <button
-            onClick={() =>
-              navigate(`/admin/user/${record.driverId}`)
-            }
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            <Eye size={14} />
-            View
-          </button>
-        </td>
-      </tr>
-    ))}
-  </Table>
-</Section>
-)}
-
-</div>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card">
+              <button
+                onClick={() => setShowOverdues(!showOverdues)}
+                className="w-full flex items-center justify-between px-6 py-5 bg-white transition-colors duration-300 text-left"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-2.5 bg-indigo-50 group-hover/card:bg-[#0b659a] rounded-xl text-indigo-600 group-hover/card:text-white transition-colors duration-300">
+                    <ClipboardList size={20} />
+                  </div>
+                  <span className="text-lg font-bold text-slate-800 transition-colors duration-300">Overdue Records</span>
+                </div>
+                <span className={`text-slate-400 transition-transform duration-300 ${showOverdues ? "rotate-180" : ""}`}>
+                  ▼
+                </span>
+              </button>
+              {showOverdues && (
+                <div className="p-6 border-t border-slate-100 bg-slate-50/30">
+                  <Section title="Overdue Records Details" icon={<ClipboardList />}>
+                    <Table
+                      headers={["Driver", "PF No", "Depot", "Category", "Item", "Due Date", "Overdue", "Action"]}
+                      loading={loadingOverdues}
+                      emptyText="No overdue records"
+                    >
+                      {overdues.map((record, index) => (
+                        <tr key={`${record.driverId}-${index}`} className="hover:bg-slate-50 transition-colors group">
+                          <td className="px-5 py-4 font-medium text-slate-800">{record.driverName}</td>
+                          <td className="px-5 py-4 text-slate-600">{record.pfNo}</td>
+                          <td className="px-5 py-4"><Badge>{record.depotName}</Badge></td>
+                          <td className="px-5 py-4 text-slate-600">{record.category}</td>
+                          <td className="px-5 py-4 text-slate-600">{record.item}</td>
+                          <td className="px-5 py-4 text-slate-600">{new Date(record.dueDate).toLocaleDateString()}</td>
+                          <td className="px-5 py-4">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-100">
+                              {record.overdueDays} Days
+                            </span>
+                          </td>
+                          <td className="px-5 py-4">
+                            <button
+                              onClick={() => navigate(`/admin/user/${record.driverId}`)}
+                              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
+                            >
+                              <Eye size={14} />
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </Table>
+                  </Section>
+                </div>
+              )}
+            </div>
 
           {/* ================= MINI ADMINS (NEW) ================= */}
           {!isADEE  && <Section title="Mini Admins (ADEE)" icon={<Users />}>
@@ -529,24 +408,24 @@ Overdue Records
               emptyText="No mini admins found"
             >
               {miniAdmins.map(m => (
-                <tr key={m._id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3">{m.name}</td>
-                  <td className="px-4 py-3">{m.pfNo || "-"}</td>
-                  <td className="px-4 py-3">
+                <tr key={m._id} className="hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0">
+                  <td className="px-5 py-4 font-medium text-slate-800">{m.name}</td>
+                  <td className="px-5 py-4 text-slate-600">{m.pfNo || "-"}</td>
+                  <td className="px-5 py-4">
                     <Badge>{m.assignedDepots.join("/")}</Badge>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => viewMiniAdminDetails(m._id)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
                       >
                         <Eye size={14} />
                         View
                       </button>
                       <button
                         onClick={() => setEditUserId(m._id)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
                       >
                         <Pencil size={14} />
                         Edit
@@ -563,24 +442,24 @@ Overdue Records
           <Section title="SSE/TRD" icon={<Users />}>
             <Table headers={["Name", "PF No", "Depot", "Actions"]} loading={loading} emptyText="No managers found">
               {managers.map(m => (
-                <tr key={m._id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3">{m.name}</td>
-                  <td className="px-4 py-3">{m.pfNo || "-"}</td>
-                  <td className="px-4 py-3">
+                <tr key={m._id} className="hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0">
+                  <td className="px-5 py-4 font-medium text-slate-800">{m.name}</td>
+                  <td className="px-5 py-4 text-slate-600">{m.pfNo || "-"}</td>
+                  <td className="px-5 py-4">
                     <Badge>SSE/TRD/{m.depotName}</Badge>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => viewManagerDetails(m._id)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
                       >
                         <Eye size={14} />
                         View
                       </button>
                       <button
                         onClick={() => setEditUserId(m._id)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
                       >
                         <Pencil size={14} />
                         Edit
@@ -596,24 +475,24 @@ Overdue Records
           <Section title="Drivers" icon={<Train />}>
             <Table headers={["PF No", "Name", "Depot", "Actions"]} loading={loading} emptyText="No drivers found">
               {drivers.map(d => (
-                <tr key={d._id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3">{d.pfNo}</td>
-                  <td className="px-4 py-3">{d.name}</td>
-                  <td className="px-4 py-3">
+                <tr key={d._id} className="hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0">
+                  <td className="px-5 py-4 text-slate-600">{d.pfNo}</td>
+                  <td className="px-5 py-4 font-medium text-slate-800">{d.name}</td>
+                  <td className="px-5 py-4">
                     <Badge>{d.depotName}</Badge>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => viewDriverDetails(d._id)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
                       >
                         <Eye size={14} />
                         View
                       </button>
                       <button
                         onClick={() => setEditUserId(d._id)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
                       >
                         <Pencil size={14} />
                         Edit
@@ -651,15 +530,16 @@ Overdue Records
 
 /* ================= COMPONENTS ================= */
 
-function StatCard({ icon, label, value }) {
+function StatCard({ icon, label, value, colorClass }) {
+  const iconStyle = colorClass || "bg-slate-100 text-[#0b659a]";
   return (
-    <div className="bg-white px-4 py-3 rounded-xl shadow flex items-center gap-3">
-      <div className="p-2 bg-slate-100 rounded-full text-indigo-600">
+    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-[#0b659a] hover:-translate-y-1 group transition-all duration-300 flex items-center gap-5">
+      <div className={`p-4 ${iconStyle} group-hover:bg-[#0b659a] group-hover:text-white rounded-2xl flex-shrink-0 transition-colors duration-300`}>
         {icon}
       </div>
       <div>
-        <p className="text-xs text-gray-500">{label}</p>
-        <p className="font-bold">{value}</p>
+        <p className="text-sm font-semibold text-slate-500 tracking-wide mb-1 uppercase transition-colors duration-300">{label}</p>
+        <p className="text-3xl font-bold text-slate-800 transition-colors duration-300">{value}</p>
       </div>
     </div>
   );
@@ -667,52 +547,61 @@ function StatCard({ icon, label, value }) {
 
 function Section({ title, icon, children }) {
   return (
-    <div className="bg-white rounded-xl shadow p-5">
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        {icon} {title}
-      </h3>
-      {children}
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-6 flex flex-col group/section transition-all duration-300 hover:shadow-md hover:border-[#0b659a] hover:-translate-y-1">
+      <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3 bg-white transition-colors duration-300">
+        <div className="p-2.5 bg-slate-100 group-hover/section:bg-[#0b659a] group-hover/section:text-white rounded-xl text-[#0b659a] transition-colors duration-300">
+          {icon}
+        </div>
+        <h3 className="text-lg font-bold text-slate-800 transition-colors duration-300">
+          {title}
+        </h3>
+      </div>
+      <div className="p-6 bg-slate-50/30 flex-1">
+        {children}
+      </div>
     </div>
   );
 }
 
 function Table({ headers, children, loading, emptyText }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="bg-slate-100">
-          <tr>
-            {headers.map(h => (
-              <th key={h} className="px-4 py-3 text-left">{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {loading && (
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left whitespace-nowrap">
+          <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
             <tr>
-              <td colSpan={headers.length} className="py-6 text-center">
-                Loading...
-              </td>
+              {headers.map(h => (
+                <th key={h} className="px-5 py-4">{h}</th>
+              ))}
             </tr>
-          )}
-          {!loading && children.length === 0 && (
-            <tr>
-              <td colSpan={headers.length} className="py-6 text-center">
-                {emptyText}
-              </td>
-            </tr>
-          )}
-          {!loading && children}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {loading && (
+              <tr>
+                <td colSpan={headers.length} className="py-8 text-center text-slate-500 font-medium">
+                  Loading...
+                </td>
+              </tr>
+            )}
+            {!loading && (!children || (Array.isArray(children) ? children.length === 0 : false)) && (
+              <tr>
+                <td colSpan={headers.length} className="py-8 text-center text-slate-500 font-medium">
+                  {emptyText}
+                </td>
+              </tr>
+            )}
+            {!loading && children}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
 function Badge({ children }) {
   return (
-    <span className="px-3 py-1 text-xs bg-indigo-100 text-indigo-700 rounded-full">
+    <span className="px-3 py-1.5 text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-lg inline-flex items-center justify-center whitespace-nowrap">
       {children}
     </span>
   );
-}
+}

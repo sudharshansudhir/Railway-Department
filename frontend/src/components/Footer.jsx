@@ -22,7 +22,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-[#a29dff] text-black mt-12">
+    <footer className="bg-[#0b659a] text-white mt-12">
       <div className="max-w-7xl mx-auto px-6 py-10">
 
         {/* TOP GRID */}
@@ -110,7 +110,7 @@ export default function Footer() {
         </div>
 
         {/* DIVIDER */}
-        <div className="border-t border-black/20 my-8"></div>
+        <div className="border-t border-white/20 my-8"></div>
 
         {/* BOTTOM */}
         <div className="text-center text-xs sm:text-sm opacity-90">

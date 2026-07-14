@@ -59,32 +59,44 @@ export default function CircularList() {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-slate-100 p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-[#F8FAFC] px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
 
-          {/* HEADER */}
-          <div className="mb-5">
-            <h2 className="text-xl font-bold text-gray-800">
-              Official Circulars
-            </h2>
-            <p className="text-sm text-gray-500">
-              Latest circulars issued by the administration
-            </p>
+          {/* ================= HEADER ================= */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            {/* LEFT */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-slate-100 rounded-xl text-[#0b659a] flex-shrink-0">
+                  <FileText size={28} />
+                </div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">
+                    Official Circulars
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1 font-medium">
+                    Latest circulars issued by the administration
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* LOADING STATE */}
           {loading && (
-            <div className="bg-white p-6 rounded-xl shadow text-center">
-              <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-2" />
-              <p className="text-gray-500">Loading circulars...</p>
+            <div className="bg-white py-16 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-slate-500">
+              <Loader2 size={36} className="animate-spin mb-4 text-indigo-600" />
+              <p className="font-medium text-lg">Loading circulars...</p>
             </div>
           )}
 
           {/* EMPTY STATE */}
           {!loading && circulars.length === 0 && (
-            <div className="bg-white p-6 rounded-xl shadow text-center text-gray-500">
-              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-              No circulars available
+            <div className="bg-white py-16 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-500 flex flex-col items-center">
+              <div className="p-4 bg-slate-50 rounded-full mb-4">
+                <FileText size={48} className="text-slate-300" />
+              </div>
+              <p className="font-medium text-lg text-slate-600">No circulars available</p>
             </div>
           )}
 
@@ -93,23 +105,22 @@ export default function CircularList() {
             {circulars.map((c) => (
               <div
                 key={c._id}
-                className="bg-white border rounded-xl p-4 shadow-sm
-                           flex flex-col sm:flex-row
-                           sm:items-center sm:justify-between gap-3"
+                className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm
+                           hover:shadow-md hover:-translate-y-1 transition-all duration-250
+                           flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
               >
                 {/* LEFT */}
-                <div className="flex items-start gap-3">
-                  <FileText
-                    className="text-indigo-600 mt-1 shrink-0"
-                    size={22}
-                  />
+                <div className="flex items-start gap-4">
+                  <div className="p-2.5 bg-slate-100 rounded-xl text-[#0b659a] flex-shrink-0">
+                    <FileText size={20} />
+                  </div>
                   <div>
-                    <p className="font-medium text-gray-800">{c.title}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="font-bold text-slate-800 text-base">{c.title}</p>
+                    <p className="text-sm text-slate-500 mt-1 font-medium">
                       Posted on{" "}
                       {new Date(c.createdAt).toLocaleDateString()}
                       {c.originalFilename && (
-                        <span className="ml-2 text-gray-400">
+                        <span className="ml-2 text-slate-400">
                           • {c.originalFilename}
                         </span>
                       )}
@@ -118,14 +129,11 @@ export default function CircularList() {
                 </div>
 
                 {/* RIGHT - ACTION BUTTONS */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   {/* VIEW */}
                   <button
                     onClick={() => openViewer(c)}
-                    className="inline-flex items-center justify-center gap-2
-                               px-4 py-2 text-sm font-medium
-                               text-indigo-600 border border-indigo-200
-                               rounded-lg hover:bg-indigo-50 transition"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium bg-white border border-slate-200 text-[#0b659a] rounded-xl hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
                   >
                     <Eye size={16} />
                     View
@@ -135,10 +143,7 @@ export default function CircularList() {
                   <a
                     href={`${import.meta.env.VITE_API_URI}/admin/circulars/${c._id}/pdf`}
                     download
-                    className="inline-flex items-center justify-center gap-2
-                               px-4 py-2 text-sm font-medium
-                               text-gray-700 border border-gray-200
-                               rounded-lg hover:bg-gray-50 transition"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-700 hover:text-white hover:border-slate-700 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
                   >
                     <Download size={16} />
                   </a>

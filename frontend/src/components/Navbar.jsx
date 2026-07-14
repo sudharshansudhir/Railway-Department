@@ -185,8 +185,8 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition w-full
         ${
           location.pathname === to
-            ? "bg-indigo-600 text-white"
-            : "text-gray-700 hover:bg-slate-100"
+            ? "bg-[#0b659a] text-white"
+            : "text-gray-700 hover:bg-[#0b659a] hover:text-white"
         }`}
     >
       {icon}
@@ -277,7 +277,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
           <div className="flex items-center justify-between h-16">
 
             <div className="flex items-center gap-2">
-              <Train className="text-indigo-600" />
+              <Train className="text-[#0b659a]" />
               <span className="font-bold text-sm md:text-lg text-gray-800">
                 Tower Wagon Driver Management system
               </span>
@@ -300,7 +300,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
             {/* Mobile Toggle */}
             <button
               onClick={() => setOpen(!open)}
-              className="md:hidden p-2 rounded-lg hover:bg-slate-100"
+              className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-[#0b659a] hover:text-white transition"
             >
               {open ? <X /> : <Menu />}
             </button>
