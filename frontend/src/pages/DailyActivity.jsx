@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import Swal from "sweetalert2";
 import {
   LogIn,
@@ -23,37 +24,26 @@ export default function DailyActivity() {
 
   const [signedIn, setSignedIn] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [signInTime, setSignInTime] = useState(null);
 
-  /* ================= NEW MILEAGE FORMULA ================= */
   const totalDistance = Number(km || 0);
   const mileageAmount = totalDistance * 5.2;
 
-  /* ================= TOWER CAR OPTIONS ================= */
-  const towerCars = ["RU 927/017",
-"SR 220035","SR 210018","SR 960025","SR 23025","SR 240063","RU 06878","SR 230022","SR 210067","RU 01896","RU 176019","SR 230059","RU 9516","RU 9514","RU 9496","RU 950021","LR","TRAINING"]
-  /* ================= LOCATION ================= */
+  const towerCars = ["RU 927/017", "SR 220035", "SR 210018", "SR 960025", "SR 23025", "SR 240063", "RU 06878", "SR 230022", "SR 210067", "RU 01896", "RU 176019", "SR 230059", "RU 9516", "RU 9514", "RU 9496", "RU 950021", "LR", "TRAINING"];
+
   const getLocationName = async () => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) reject();
 
       navigator.geolocation.getCurrentPosition(async pos => {
         const { latitude, longitude } = pos.coords;
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-        );
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
         const data = await res.json();
 
-        resolve(
-          data.address?.railway ||
-          data.address?.station ||
-          data.display_name
-        );
+        resolve(data.address?.railway || data.address?.station || data.display_name);
       });
     });
   };
 
-  /* ================= CHECK ACTIVE DUTY ================= */
   useEffect(() => {
     api.get("/driver/active-duty").then(async res => {
       if (res.data.active) {
@@ -61,7 +51,6 @@ export default function DailyActivity() {
         setFromStation(res.data.fromStation);
         setTwNumber(res.data.twNumber);
         setBreathAnalyserDone(res.data.breathAnalyserDone);
-        setSignInTime(res.data.signInTime);
       } else {
         const loc = await getLocationName();
         setFromStation(loc);
@@ -69,7 +58,6 @@ export default function DailyActivity() {
     });
   }, []);
 
-  /* ================= SIGN IN ================= */
   const signIn = async () => {
     if (!twNumber) {
       Swal.fire("Missing Data", "Tower Car Number required", "warning");
@@ -100,7 +88,6 @@ export default function DailyActivity() {
     }
   };
 
-  /* ================= SIGN OUT ================= */
   const signOut = async () => {
     if (!km || !breathAnalyserDone) {
       Swal.fire("Missing Data", "KM required", "warning");
@@ -134,7 +121,6 @@ export default function DailyActivity() {
 
       const freshLoc = await getLocationName();
       setFromStation(freshLoc);
-
     } catch (e) {
       Swal.fire("Error", e.response?.data?.msg || "Failed", "error");
     } finally {
@@ -145,114 +131,50 @@ export default function DailyActivity() {
   return (
     <>
       <Navbar />
-
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6">
-        <div className="max-w-4xl mx-auto space-y-8">
-
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-800">
-              Mileage & Duty Log
-            </h2>
-            <p className="text-sm text-gray-500">
-              Tower Wagon Driver Daily Activity
-            </p>
-          </div>
-
-          {/* SIGN ON */}
-          <SectionCard
-            title="Sign ON"
-            icon={<LogIn />}
-            status={signedIn ? "Completed" : "Pending"}
-            statusColor={signedIn ? "green" : "yellow"}
-          >
-            <ReadOnlyInput
-              label="From Station"
-              icon={<MapPin />}
-              value={fromStation}
-            />
-
-            {/* UPDATED DROPDOWN */}
-            <SelectInput
-              label="Tower Car Number"
-              icon={<Hash />}
-              value={twNumber}
-              onChange={setTwNumber}
-              disabled={signedIn}
-              options={towerCars}
-            />
-
-            <label className="flex items-center gap-3 mt-3 text-sm font-semibold text-gray-700">
-              <input
-                type="checkbox"
-                checked={breathAnalyserinitial}
-                onChange={() => setBreathAnalyserinitial(!breathAnalyserinitial)}
-              />
-              Breath Analyser Test Done
-            </label>
-
-            <ActionButton
-              label={signedIn ? "Signed ON" : "Sign ON"}
-              icon={<CheckCircle />}
-              onClick={signIn}
-              loading={loading}
-              disabled={signedIn}
-              color="green"
-            />
-          </SectionCard>
-
-          {/* SIGN OFF */}
-          <SectionCard
-            title="Sign OFF"
-            icon={<LogOut />}
-            status={signedIn ? "Pending" : "Disabled"}
-            statusColor={signedIn ? "red" : "gray"}
-          >
-            <ReadOnlyInput
-              label="To Station (Auto detected)"
-              icon={<MapPin />}
-              value={toStation}
-            />
-
-            <Input
-              label="Total Distance (KM)"
-              icon={<Route />}
-              value={km}
-              onChange={setKm}
-              disabled={!signedIn}
-            />
-
-            <label className="flex items-center gap-3 mt-3 text-sm font-semibold text-gray-700">
-              <input
-                type="checkbox"
-                checked={breathAnalyserDone}
-                onChange={() => setBreathAnalyserDone(!breathAnalyserDone)}
-              />
-              Breath Analyser Test Done
-            </label>
-
-            {/* UPDATED CALCULATION DISPLAY */}
-            <div className="mt-4 flex items-center gap-4 bg-indigo-50 border border-indigo-200 p-4 rounded-xl">
-              <Gauge className="text-indigo-700" />
-              <div>
-                <p className="text-xs text-gray-500">
-                  Calculated Amount (Distance × 5.2)
-                </p>
-                <p className="text-2xl font-bold text-indigo-700">
-                  ₹ {mileageAmount.toFixed(2)}
-                </p>
+      <div className="rail-page">
+        <div className="mx-auto max-w-5xl space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <BackButton />
+                <div>
+                  <h2 className="rail-page-title">Mileage & Duty Log</h2>
+                  <p className="rail-page-subtitle">Track daily duty sign-on and mileage submission</p>
+                </div>
               </div>
             </div>
+            <div className="rounded-2xl border border-[#D1D5DB] bg-[#E8EEF5] px-4 py-3 text-sm text-[#0B3C5D]">
+              <p className="font-semibold">Daily operations</p>
+              <p className="text-[#1F6F8B]">Official duty workflow</p>
+            </div>
+          </div>
 
-            <ActionButton
-              label="Sign OFF"
-              icon={<LogOut />}
-              onClick={signOut}
-              loading={loading}
-              disabled={!signedIn}
-              color="red"
-            />
+          <SectionCard title="Sign ON" icon={<LogIn />} status={signedIn ? "Completed" : "Pending"} tone={signedIn ? "valid" : "warning"}>
+            <ReadOnlyInput label="From Station" icon={<MapPin />} value={fromStation} />
+            <SelectInput label="Tower Car Number" icon={<Hash />} value={twNumber} onChange={setTwNumber} disabled={signedIn} options={towerCars} />
+            <label className="mt-3 flex items-center gap-3 text-sm font-semibold text-[#1F2937]">
+              <input type="checkbox" checked={breathAnalyserinitial} onChange={() => setBreathAnalyserinitial(!breathAnalyserinitial)} className="h-4 w-4 rounded border-[#D1D5DB]" />
+              Breath Analyser Test Done
+            </label>
+            <ActionButton label={signedIn ? "Signed ON" : "Sign ON"} icon={<CheckCircle />} onClick={signIn} loading={loading} disabled={signedIn} color="green" />
           </SectionCard>
 
+          <SectionCard title="Sign OFF" icon={<LogOut />} status={signedIn ? "Pending" : "Disabled"} tone={signedIn ? "danger" : "info"}>
+            <ReadOnlyInput label="To Station (Auto detected)" icon={<MapPin />} value={toStation} />
+            <Input label="Total Distance (KM)" icon={<Route />} value={km} onChange={setKm} disabled={!signedIn} />
+            <label className="mt-3 flex items-center gap-3 text-sm font-semibold text-[#1F2937]">
+              <input type="checkbox" checked={breathAnalyserDone} onChange={() => setBreathAnalyserDone(!breathAnalyserDone)} className="h-4 w-4 rounded border-[#D1D5DB]" />
+              Breath Analyser Test Done
+            </label>
+            <div className="mt-4 flex items-center gap-4 rounded-2xl border border-[#D1D5DB] bg-[#F9FBFC] p-4">
+              <Gauge className="text-[#0B3C5D]" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#6B7280]">Calculated Amount</p>
+                <p className="text-2xl font-bold text-[#0B3C5D]">₹ {mileageAmount.toFixed(2)}</p>
+              </div>
+            </div>
+            <ActionButton label="Sign OFF" icon={<LogOut />} onClick={signOut} loading={loading} disabled={!signedIn} color="red" />
+          </SectionCard>
         </div>
       </div>
       <Footer />
@@ -260,22 +182,22 @@ export default function DailyActivity() {
   );
 }
 
-/* ================= UI COMPONENTS ================= */
+function SectionCard({ title, icon, status, tone, children }) {
+  const toneClasses = {
+    valid: "rail-status-valid",
+    warning: "rail-status-warning",
+    danger: "rail-status-danger",
+    info: "rail-status-info"
+  };
 
-function SectionCard({ title, icon, status, statusColor, children }) {
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2 font-semibold text-lg">
+    <div className="rail-card p-4 sm:p-6">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 text-lg font-semibold text-[#1F2937]">
           {icon}
           {title}
         </div>
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold
-            bg-${statusColor}-100 text-${statusColor}-700`}
-        >
-          {status}
-        </span>
+        <span className={`rail-badge ${toneClasses[tone]}`}>{status}</span>
       </div>
       {children}
     </div>
@@ -285,37 +207,22 @@ function SectionCard({ title, icon, status, statusColor, children }) {
 function Input({ label, icon, value, onChange, disabled }) {
   return (
     <div className="mb-3">
-      <label className="text-sm font-semibold">{label}</label>
+      <label className="mb-2 block text-sm font-semibold text-[#1F2937]">{label}</label>
       <div className="relative">
-        <span className="absolute left-3 top-2.5 text-gray-400">
-          {icon}
-        </span>
-        <input
-          value={value}
-          disabled={disabled}
-          onChange={e => onChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border rounded-lg disabled:bg-gray-100"
-        />
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">{icon}</span>
+        <input value={value} disabled={disabled} onChange={e => onChange(e.target.value)} className="rail-input pl-10 disabled:bg-[#F3F4F6]" />
       </div>
     </div>
   );
 }
 
-/* NEW SELECT COMPONENT */
 function SelectInput({ label, icon, value, onChange, disabled, options }) {
   return (
     <div className="mb-3">
-      <label className="text-sm font-semibold">{label}</label>
+      <label className="mb-2 block text-sm font-semibold text-[#1F2937]">{label}</label>
       <div className="relative">
-        <span className="absolute left-3 top-2.5 text-gray-400">
-          {icon}
-        </span>
-        <select
-          value={value}
-          disabled={disabled}
-          onChange={e => onChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border rounded-lg disabled:bg-gray-100"
-        >
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">{icon}</span>
+        <select value={value} disabled={disabled} onChange={e => onChange(e.target.value)} className="rail-input pl-10 disabled:bg-[#F3F4F6]">
           <option value="">Select Tower Car</option>
           {options.map(opt => (
             <option key={opt} value={opt}>{opt}</option>
@@ -329,16 +236,10 @@ function SelectInput({ label, icon, value, onChange, disabled, options }) {
 function ReadOnlyInput({ label, icon, value }) {
   return (
     <div className="mb-3">
-      <label className="text-sm font-semibold">{label}</label>
+      <label className="mb-2 block text-sm font-semibold text-[#1F2937]">{label}</label>
       <div className="relative">
-        <span className="absolute left-3 top-2.5 text-gray-400">
-          {icon}
-        </span>
-        <input
-          value={value}
-          readOnly
-          className="w-full pl-10 pr-4 py-2 border rounded-lg bg-gray-100"
-        />
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">{icon}</span>
+        <input value={value} readOnly className="rail-input pl-10 bg-[#F9FBFC]" />
       </div>
     </div>
   );
@@ -346,14 +247,7 @@ function ReadOnlyInput({ label, icon, value }) {
 
 function ActionButton({ label, icon, onClick, loading, disabled, color }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled || loading}
-      className={`w-full mt-5 py-2.5 rounded-xl font-semibold text-white flex
-        items-center justify-center gap-2 transition
-        ${color === "red" ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
-        ${(disabled || loading) && "opacity-60 cursor-not-allowed"}`}
-    >
+    <button onClick={onClick} disabled={disabled || loading} className={`mt-5 flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-white transition ${color === "red" ? "bg-[#C8102E] hover:bg-[#a50d26]" : "bg-[#2E7D32] hover:bg-[#256b28]"} ${disabled || loading ? "cursor-not-allowed opacity-70" : ""}`}>
       {loading ? "Processing..." : label}
       {icon}
     </button>
