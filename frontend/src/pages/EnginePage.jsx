@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import Footer from "../components/Footer";
 import api from "../api/axios";
 import EngineDetails from "../components/EngineDetails";
@@ -17,7 +18,7 @@ import {
 
 const DEPOTS = [
   "PTJ",
-  "PGT",
+  "PGT", "SLY", "BQI", "TUP", "KMD", "PLI", "NMKL", "CHSM",
   "POY",
   "ED",
   "CBE",
@@ -53,79 +54,79 @@ export default function EnginePage() {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-const [isEdit, setIsEdit] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
 
-const emptyEngine = {
-  depot: "",
-  towerCarNumber: "",
+  const emptyEngine = {
+    depot: "",
+    towerCarNumber: "",
 
-  towerCar: {
-    type: "",
-    make: "",
-    doc: ""
-  },
+    towerCar: {
+      type: "",
+      make: "",
+      doc: ""
+    },
 
-  brakePower: {
-    issueDate: "",
-    dueDate: ""
-  },
+    brakePower: {
+      issueDate: "",
+      dueDate: ""
+    },
 
-  engine: {
-    make: "",
-    bCheckDate: "",
-    bCheckHours: "",
-    bCheckDueDate: "",
-    bCheckDueHours: "",
+    engine: {
+      make: "",
+      bCheckDate: "",
+      bCheckHours: "",
+      bCheckDueDate: "",
+      bCheckDueHours: "",
 
-    cCheckDate: "",
-    cCheckHours: "",
-    cCheckDueDate: "",
-    cCheckDueHours: "",
+      cCheckDate: "",
+      cCheckHours: "",
+      cCheckDueDate: "",
+      cCheckDueHours: "",
 
-    dCheckDate: "",
-    dCheckHours: "",
-    dCheckDueDate: "",
-    dCheckDueHours: "",
+      dCheckDate: "",
+      dCheckHours: "",
+      dCheckDueDate: "",
+      dCheckDueHours: "",
 
-    pohDate: "",
-    pohDueDate: "",
-    pohRemarks: ""
-  },
+      pohDate: "",
+      pohDueDate: "",
+      pohRemarks: ""
+    },
 
-  ultrasonicTesting: {
-    doneDate: "",
-    dueDate: ""
-  },
+    ultrasonicTesting: {
+      doneDate: "",
+      dueDate: ""
+    },
 
-  hydraulicReplacement: {
-    changeDate: "",
-    currentHours: "",
-    dueHours: ""
-  },
+    hydraulicReplacement: {
+      changeDate: "",
+      currentHours: "",
+      dueHours: ""
+    },
 
-  startingBattery: {
-    make: "",
-    commissionDate: "",
-    dueDate: ""
-  },
+    startingBattery: {
+      make: "",
+      commissionDate: "",
+      dueDate: ""
+    },
 
-  lightingBattery: {
-    make: "",
-    commissionDate: "",
-    dueDate: ""
-  },
+    lightingBattery: {
+      make: "",
+      commissionDate: "",
+      dueDate: ""
+    },
 
-  generator: {
-    make: "",
-    serviceDate: "",
-    serviceHours: "",
-    dueHours: ""
-  },
+    generator: {
+      make: "",
+      serviceDate: "",
+      serviceHours: "",
+      dueHours: ""
+    },
 
-  failures: []
-};
+    failures: []
+  };
 
-const [formData, setFormData] = useState(emptyEngine);
+  const [formData, setFormData] = useState(emptyEngine);
 
   const canEdit =
     role === "SUPER_ADMIN" ||
@@ -137,7 +138,7 @@ const [formData, setFormData] = useState(emptyEngine);
   const canCreate =
     role === "SUPER_ADMIN";
 
-      useEffect(() => {
+  useEffect(() => {
 
     if (!selectedDepot) return;
 
@@ -217,44 +218,44 @@ const [formData, setFormData] = useState(emptyEngine);
 
   const deleteEngine = async () => {
 
-  const result = await Swal.fire({
-    title: "Delete Engine?",
-    text: "This action cannot be undone.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Delete"
-  });
+    const result = await Swal.fire({
+      title: "Delete Engine?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete"
+    });
 
-  if (!result.isConfirmed) return;
+    if (!result.isConfirmed) return;
 
-  try {
+    try {
 
-    await api.delete(`/engine/${engine._id}`);
+      await api.delete(`/engine/${engine._id}`);
 
-    Swal.fire(
-      "Deleted",
-      "Engine removed successfully",
-      "success"
-    );
+      Swal.fire(
+        "Deleted",
+        "Engine removed successfully",
+        "success"
+      );
 
-    loadEngines();
+      loadEngines();
 
-  }
+    }
 
-  catch(err){
+    catch (err) {
 
-    Swal.fire(
-      "Error",
-      err.response?.data?.msg ||
-      "Delete failed",
-      "error"
-    );
+      Swal.fire(
+        "Error",
+        err.response?.data?.msg ||
+        "Delete failed",
+        "error"
+      );
 
-  }
+    }
 
-};
+  };
 
-    return (
+  return (
     <>
       <Navbar />
 
@@ -334,7 +335,7 @@ const [formData, setFormData] = useState(emptyEngine);
               </div>
             </div>
           </div>
-                    {loading && (
+          {loading && (
 
             <div className="bg-white rounded-xl shadow p-12 text-center">
 
@@ -344,40 +345,40 @@ const [formData, setFormData] = useState(emptyEngine);
 
           )}
 
-{!loading && engine && (
-    <EngineDetails
-  engine={engine}
-  canEdit={
-    role === "SUPER_ADMIN" ||
-    (role === "DEPOT_MANAGER" &&
-      engine?.depot === depotName)
-  }
-  canDelete={role === "SUPER_ADMIN"}
-  onEdit={() => {
-    setIsEdit(true);
-    setFormData(engine);
-    setShowModal(true);
-  }}
-  onDelete={deleteEngine}
-/>
-)}
+          {!loading && engine && (
+            <EngineDetails
+              engine={engine}
+              canEdit={
+                role === "SUPER_ADMIN" ||
+                (role === "DEPOT_MANAGER" &&
+                  engine?.depot === depotName)
+              }
+              canDelete={role === "SUPER_ADMIN"}
+              onEdit={() => {
+                setIsEdit(true);
+                setFormData(engine);
+                setShowModal(true);
+              }}
+              onDelete={deleteEngine}
+            />
+          )}
         </div>
 
       </div>
 
-<EngineFormModal
-    open={showModal}
-    onClose={() => setShowModal(false)}
-    formData={formData}
-    setFormData={setFormData}
-    isEdit={isEdit}
-   refresh={() => {
-  loadEngines();
+      <EngineFormModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        formData={formData}
+        setFormData={setFormData}
+        isEdit={isEdit}
+        refresh={() => {
+          loadEngines();
 
-  setShowModal(false);
-}}
-/>
-      <Footer/>
+          setShowModal(false);
+        }}
+      />
+      <Footer />
 
     </>
   );

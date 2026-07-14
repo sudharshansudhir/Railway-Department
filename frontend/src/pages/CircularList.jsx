@@ -1,26 +1,21 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import { FileText, Download, Eye, X, Loader2 } from "lucide-react";
 import Footer from "../components/Footer";
 import { Worker, Viewer, SpecialZoomLevel } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 
-const PDFJS_WORKER_URL =
-  "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+const PDFJS_WORKER_URL = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 
 export default function CircularList() {
   const [circulars, setCirculars] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // PDF viewer states
   const [selectedCircular, setSelectedCircular] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(true);
   const [pdfError, setPdfError] = useState(false);
 
-  /* =======================
-     FETCH CIRCULARS
-  ======================= */
   useEffect(() => {
     const fetchCirculars = async () => {
       try {
@@ -37,18 +32,12 @@ export default function CircularList() {
     fetchCirculars();
   }, []);
 
-  /* =======================
-     OPEN PDF VIEWER
-  ======================= */
   const openViewer = (circular) => {
     setSelectedCircular(circular);
     setPdfLoading(true);
     setPdfError(false);
   };
 
-  /* =======================
-     CLOSE PDF VIEWER
-  ======================= */
   const closeViewer = () => {
     setSelectedCircular(null);
     setPdfLoading(true);
@@ -82,7 +71,6 @@ export default function CircularList() {
             </div>
           </div>
 
-          {/* LOADING STATE */}
           {loading && (
             <div className="bg-white py-16 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-slate-500">
               <Loader2 size={36} className="animate-spin mb-4 text-indigo-600" />
@@ -90,7 +78,6 @@ export default function CircularList() {
             </div>
           )}
 
-          {/* EMPTY STATE */}
           {!loading && circulars.length === 0 && (
             <div className="bg-white py-16 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-500 flex flex-col items-center">
               <div className="p-4 bg-slate-50 rounded-full mb-4">
@@ -100,7 +87,6 @@ export default function CircularList() {
             </div>
           )}
 
-          {/* LIST */}
           <div className="space-y-4">
             {circulars.map((c) => (
               <div
@@ -154,30 +140,19 @@ export default function CircularList() {
         </div>
       </div>
 
-      {/* =======================
-          PDF VIEWER MODAL
-      ======================= */}
       {selectedCircular && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-white w-full max-w-5xl h-[90vh] rounded-xl shadow-lg overflow-hidden">
-
-            {/* MODAL HEADER */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <p className="font-medium text-gray-800">
-                {selectedCircular.title}
-              </p>
-              <button onClick={closeViewer}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3">
+          <div className="h-[90vh] w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#D1D5DB] p-4">
+              <p className="font-semibold text-[#1F2937]">{selectedCircular.title}</p>
+              <button onClick={closeViewer} className="rounded-full p-2 text-[#1F2937] transition hover:bg-[#E8EEF5]">
                 <X />
               </button>
             </div>
-
-            {/* PDF CONTENT */}
-            <div className="h-full">
+            <div className="h-[calc(100%-64px)]">
               <Worker workerUrl={PDFJS_WORKER_URL}>
                 {pdfError ? (
-                  <div className="h-full flex items-center justify-center text-red-500">
-                    Failed to load PDF
-                  </div>
+                  <div className="flex h-full items-center justify-center text-[#C8102E]">Failed to load PDF</div>
                 ) : (
                   <Viewer
                     fileUrl={selectedCircular.pdfUrl}

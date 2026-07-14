@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import Swal from "sweetalert2";
 import { HeartPulse, Calendar, ClipboardCheck } from "lucide-react";
 import Footer from "../components/Footer";
 
-/* 🔥 PREDEFINED TRAININGS */
 const TRAINING_KEYS = ["PME", "GRS_RC", "TR4", "OC"];
 
 const calculateSchedule = (start, end) => {
@@ -36,7 +36,6 @@ export default function DriverHealth() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  /* ================= LOAD EXISTING DATA ================= */
   useEffect(() => {
     api.get("/driver/profile")
       .then(res => {
@@ -46,18 +45,14 @@ export default function DriverHealth() {
           const formatted = {};
           TRAINING_KEYS.forEach(key => {
             formatted[key] = {
-              doneDate: existing[key]?.doneDate
-                ? existing[key].doneDate.substring(0, 10)
-                : "",
-              dueDate: existing[key]?.dueDate
-                ? existing[key].dueDate.substring(0, 10)
-                : "",
+              doneDate: existing[key]?.doneDate ? existing[key].doneDate.substring(0, 10) : "",
+              dueDate: existing[key]?.dueDate ? existing[key].dueDate.substring(0, 10) : "",
               schedule: existing[key]?.schedule || ""
             };
           });
 
           setTrainings(formatted);
-          checkTrainingAlerts(formatted); // 🔥 popup alert
+          checkTrainingAlerts(formatted);
         }
       })
       .catch(() => {
@@ -66,7 +61,6 @@ export default function DriverHealth() {
       .finally(() => setLoading(false));
   }, []);
 
-  /* ================= ALERT CHECK FUNCTION ================= */
   const checkTrainingAlerts = (data) => {
     const today = new Date();
 
@@ -90,30 +84,28 @@ export default function DriverHealth() {
     if (overdueList.length > 0) {
       Swal.fire({
         icon: "error",
-        title: "⚠ Training Overdue",
+        title: "Training Overdue",
         html: overdueList.map(i => `<div>${i}</div>`).join(""),
-        confirmButtonColor: "#dc2626"
+        confirmButtonColor: "#C8102E"
       });
     } else if (expiringList.length > 0) {
       Swal.fire({
         icon: "warning",
-        title: "⏳ Training Expiring Soon",
+        title: "Training Expiring Soon",
         html: expiringList.map(i => `<div>${i}</div>`).join(""),
-        confirmButtonColor: "#d97706"
+        confirmButtonColor: "#F9A825"
       });
     }
   };
 
-  /* ================= SAVE ================= */
   const save = async () => {
     for (const key of TRAINING_KEYS) {
       const t = trainings[key];
-      if ((t.doneDate || t.dueDate || t.schedule) &&
-          (!t.doneDate || !t.dueDate)) {
+      if ((t.doneDate || t.dueDate || t.schedule) && (!t.doneDate || !t.dueDate)) {
         Swal.fire({
           icon: "warning",
           title: "Incomplete Details",
-          text: `${key} training requires Done Date & Due Date`,
+          text: `${key} training requires Done Date & Due Date`
         });
         return;
       }
@@ -121,19 +113,15 @@ export default function DriverHealth() {
 
     try {
       setSaving(true);
-
-      await api.put("/driver/profile/training", {
-        trainings
-      });
+      await api.put("/driver/profile/training", { trainings });
 
       Swal.fire({
         icon: "success",
         title: "Training Updated",
         text: "All training details saved successfully",
         timer: 1400,
-        showConfirmButton: false,
+        showConfirmButton: false
       });
-
     } catch {
       Swal.fire("Error", "Unable to save training details", "error");
     } finally {
@@ -145,8 +133,8 @@ export default function DriverHealth() {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center text-gray-500">
-          Loading training details...
+        <div className="rail-page flex items-center justify-center">
+          <div className="rail-card px-8 py-6 text-[#6B7280]">Loading training details...</div>
         </div>
       </>
     );
@@ -155,64 +143,62 @@ export default function DriverHealth() {
   return (
     <>
       <Navbar />
-
-      <div className="min-h-screen bg-slate-100 px-4 py-6">
-        <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
-
-          <div className="mb-8 text-center">
-            <div className="flex justify-center mb-2">
-              <div className="p-3 rounded-full bg-emerald-100">
-                <HeartPulse className="text-emerald-700" />
+      <div className="rail-page">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <BackButton />
+                <div>
+                  <h2 className="rail-page-title">Health / Training Details</h2>
+                  <p className="rail-page-subtitle">Maintain mandatory compliance for rail operations</p>
+                </div>
               </div>
             </div>
-            <h2 className="text-xl font-bold text-gray-800">
-              Health / Training Details
-            </h2>
-            <p className="text-sm text-gray-500">
-              Maintain mandatory training compliance
-            </p>
+            <div className="rounded-2xl border border-[#D1D5DB] bg-[#E8EEF5] px-4 py-3 text-sm text-[#0B3C5D]">
+              <p className="font-semibold">Compliance status</p>
+              <p className="text-[#1F6F8B]">Track upcoming renewals</p>
+            </div>
           </div>
 
-          <div className="space-y-8">
-            {TRAINING_KEYS.map(key => (
-              <TrainingSection
-                key={key}
-                title={key.replace("_", " ")}
-                data={trainings[key]}
-                onChange={v =>
-                  setTrainings({
-                    ...trainings,
-                    [key]: v
-                  })
-                }
-              />
-            ))}
+          <div className="rail-panel p-4 sm:p-6 md:p-8">
+            <div className="mb-6 flex items-center gap-3 rounded-2xl border border-[#D1D5DB] bg-[#F9FBFC] p-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E8EEF5] text-[#0B3C5D]">
+                <HeartPulse size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-[#1F2937]">Training Review</h3>
+                <p className="text-sm text-[#6B7280]">Keep the training record current and complete.</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {TRAINING_KEYS.map(key => (
+                <TrainingSection
+                  key={key}
+                  title={key.replace("_", " ")}
+                  data={trainings[key]}
+                  onChange={v => setTrainings({ ...trainings, [key]: v })}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={save}
+              disabled={saving}
+              className="mt-8 inline-flex w-full items-center justify-center rounded-2xl bg-[#2E7D32] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#256b28] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {saving ? "Saving..." : "Save Training Details"}
+            </button>
           </div>
-
-          <button
-            onClick={save}
-            disabled={saving}
-            className={`w-full mt-8 py-2.5 rounded-xl font-semibold text-white transition
-              ${
-                saving
-                  ? "bg-emerald-400 cursor-not-allowed"
-                  : "bg-emerald-600 hover:bg-emerald-700"
-              }`}
-          >
-            {saving ? "Saving..." : "Save Training Details"}
-          </button>
-
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 }
 
-/* ================= TRAINING SECTION ================= */
-
 function TrainingSection({ title, data, onChange }) {
-
   const today = new Date();
   const dueDateObj = data.dueDate ? new Date(data.dueDate) : null;
 
@@ -223,83 +209,35 @@ function TrainingSection({ title, data, onChange }) {
     const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
     if (daysLeft < 0) {
-      statusBox = (
-        <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">
-          🔴 Training Overdue by {Math.abs(daysLeft)} days
-        </div>
-      );
+      statusBox = <div className="mb-4 rounded-2xl border border-[#F5C2C7] bg-[#FFF5F5] p-3 text-sm font-medium text-[#C62828]">Overdue by {Math.abs(daysLeft)} days</div>;
     } else if (daysLeft <= 30) {
-      statusBox = (
-        <div className="mb-4 p-3 rounded-lg text-sm bg-amber-50 text-amber-700 border border-amber-200">
-          🟡 Expiring in {daysLeft} days
-        </div>
-      );
+      statusBox = <div className="mb-4 rounded-2xl border border-[#F9DDA8] bg-[#FFF8E1] p-3 text-sm font-medium text-[#F9A825]">Expiring in {daysLeft} days</div>;
     } else {
-      statusBox = (
-        <div className="mb-4 p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200">
-          🟢 Valid till {data.dueDate}
-        </div>
-      );
+      statusBox = <div className="mb-4 rounded-2xl border border-[#C8E6C9] bg-[#F1F8E9] p-3 text-sm font-medium text-[#2E7D32]">Valid till {data.dueDate}</div>;
     }
   }
 
   return (
-    <div className="border rounded-xl p-5 bg-slate-50">
-
-      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-        <ClipboardCheck />
-        {title}
-      </h3>
-
+    <div className="rounded-2xl border border-[#D1D5DB] bg-[#F9FBFC] p-4 sm:p-5">
+      <div className="mb-4 flex items-center gap-2">
+        <ClipboardCheck size={18} className="text-[#1F6F8B]" />
+        <h3 className="text-lg font-semibold text-[#1F2937]">{title}</h3>
+      </div>
       {statusBox}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-        <DateField
-          label="Done Date"
-          value={data.doneDate}
-          onChange={v => {
-            const schedule = calculateSchedule(v, data.dueDate);
-            onChange({ ...data, doneDate: v, schedule });
-          }}
-        />
-
-        <DateField
-          label="Next Due Date"
-          value={data.dueDate}
-          onChange={v => {
-            const schedule = calculateSchedule(data.doneDate, v);
-            onChange({ ...data, dueDate: v, schedule });
-          }}
-        />
-
-        <InputField
-          label="Schedule"
-          placeholder="Auto calculated"
-          value={data.schedule}
-          disabled
-        />
+      <div className="grid gap-4 md:grid-cols-3">
+        <DateField label="Done Date" value={data.doneDate} onChange={v => { const schedule = calculateSchedule(v, data.dueDate); onChange({ ...data, doneDate: v, schedule }); }} />
+        <DateField label="Next Due Date" value={data.dueDate} onChange={v => { const schedule = calculateSchedule(data.doneDate, v); onChange({ ...data, dueDate: v, schedule }); }} />
+        <InputField label="Schedule" placeholder="Auto calculated" value={data.schedule} disabled />
       </div>
     </div>
   );
 }
 
-/* ================= UI COMPONENTS ================= */
-
 function InputField({ label, value, onChange, placeholder, disabled }) {
   return (
     <div>
-      <label className="block text-sm font-semibold mb-1">{label}</label>
-      <input
-        type="text"
-        value={value}
-        placeholder={placeholder}
-        disabled={disabled}
-        onChange={e => onChange?.(e.target.value)}
-        className="w-full px-4 py-2.5 border rounded-lg text-sm
-                   disabled:bg-gray-100 disabled:cursor-not-allowed
-                   focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-      />
+      <label className="mb-2 block text-sm font-semibold text-[#1F2937]">{label}</label>
+      <input type="text" value={value} placeholder={placeholder} disabled={disabled} onChange={e => onChange?.(e.target.value)} className="rail-input disabled:cursor-not-allowed disabled:bg-[#F3F4F6]" />
     </div>
   );
 }
@@ -307,16 +245,10 @@ function InputField({ label, value, onChange, placeholder, disabled }) {
 function DateField({ label, value, onChange }) {
   return (
     <div>
-      <label className="block text-sm font-semibold mb-1 flex items-center gap-1">
+      <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#1F2937]">
         <Calendar size={14} /> {label}
       </label>
-      <input
-        type="date"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="w-full px-4 py-2.5 border rounded-lg text-sm
-                   focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-      />
+      <input type="date" value={value} onChange={e => onChange(e.target.value)} className="rail-input" />
     </div>
   );
 }

@@ -182,15 +182,15 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
         navigate(to);
         setOpen(false);
       }}
-      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition w-full
+      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition md:w-auto
         ${
           location.pathname === to
             ? "bg-[#0b659a] text-white"
             : "text-gray-700 hover:bg-[#0b659a] hover:text-white"
         }`}
     >
-      {icon}
-      {label}
+      <span className="inline-flex shrink-0 items-center justify-center">{icon}</span>
+      <span>{label}</span>
     </button>
   );
 
@@ -198,75 +198,41 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
     <>
       {role === "DRIVER" && (
         <>
-          <NavButton to="/driver" icon={<User />} label="Driver Dashboard" />
-          <NavButton
-      to="/driver/engine"
-      icon={<Train />}
-      label="TW Dashboard"
-    />
-          <NavButton to="/driver/daily" icon={<ClipboardList />} label="Mileage Details" />
-          <NavButton
-  to="/driver/abnormalities"
-  icon={<AlertTriangle />}
-  label="Abnormalities"
-/>
-          
-          <NavButton to="/circulars" icon={<FileText />} label="Circulars" />
+          <NavButton to="/driver" icon={<User size={18} />} label="Driver Dashboard" />
+          <NavButton to="/driver/engine" icon={<Train size={18} />} label="TW Dashboard" />
+          <NavButton to="/driver/daily" icon={<ClipboardList size={18} />} label="Mileage Details" />
+          <NavButton to="/driver/abnormalities" icon={<AlertTriangle size={18} />} label="Abnormalities" />
+          <NavButton to="/circulars" icon={<FileText size={18} />} label="Circulars" />
         </>
       )}
 
       {role === "DEPOT_MANAGER" && (
         <>
-          <NavButton to="/manager" icon={<Users />} label="Drivers" />
-           <NavButton
-      to="/manager/engine"
-      icon={<Train />}
-      label="TW Dashboard"
-    />
-    
-          <NavButton to="/admin/circular-status" icon={<CheckSquare />} label="Circular Status" />
-          <NavButton to="/circulars" icon={<FileText />} label="Circulars" />
+          <NavButton to="/manager" icon={<Users size={18} />} label="Drivers" />
+          <NavButton to="/manager/engine" icon={<Train size={18} />} label="TW Dashboard" />
+          <NavButton to="/admin/circular-status" icon={<CheckSquare size={18} />} label="Circular Status" />
+          <NavButton to="/circulars" icon={<FileText size={18} />} label="Circulars" />
         </>
       )}
 
       {role === "SUPER_ADMIN" && (
         <>
-          <NavButton to="/admin" icon={<Shield />} label="Dashboard" />
-
-    <NavButton
-      to="/admin/engine"
-      icon={<Train />}
-      label="TW Dashboard"
-    />
-
-          <NavButton to="/admin/circular-upload" icon={<FileText />} label="Upload Circular" />
-          <NavButton to="/admin/circular-status" icon={<CheckSquare />} label="Circular Status" />
-          <NavButton to="/admin/report-download" icon={<ClipboardList />} label="Reports" />
+          <NavButton to="/admin" icon={<Shield size={18} />} label="Dashboard" />
+          <NavButton to="/admin/engine" icon={<Train size={18} />} label="TW Dashboard" />
+          <NavButton to="/admin/circular-upload" icon={<FileText size={18} />} label="Upload Circular" />
+          <NavButton to="/admin/circular-status" icon={<CheckSquare size={18} />} label="Circular Status" />
+          <NavButton to="/admin/report-download" icon={<ClipboardList size={18} />} label="Reports" />
         </>
       )}
 
       {role === "ADEE" && (
-  <>
-    <NavButton
-      to="/adee"
-      icon={<Shield />}
-      label="Dashboard"
-    />
-
-    <NavButton
-      to="/adee/engine"
-      icon={<Train />}
-      label="TW Dashboard"
-    />
-
-          <NavButton to="/admin/circular-status" icon={<CheckSquare />} label="Circular Status" />
-    <NavButton
-      to="/circulars"
-      icon={<FileText />}
-      label="Circulars"
-    />
-  </>
-)}
+        <>
+          <NavButton to="/adee" icon={<Shield size={18} />} label="Dashboard" />
+          <NavButton to="/adee/engine" icon={<Train size={18} />} label="TW Dashboard" />
+          <NavButton to="/admin/circular-status" icon={<CheckSquare size={18} />} label="Circular Status" />
+          <NavButton to="/circulars" icon={<FileText size={18} />} label="Circulars" />
+        </>
+      )}
     </>
   );
 
@@ -284,13 +250,17 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
             </div>
 
             {/* Desktop Menu */}
-            <div className="hidden md:flex items-center gap-2">
-              <RoleButtons />
+            <div className="hidden flex-1 items-center justify-center md:flex">
+              <div className="flex items-center gap-1">
+                <RoleButtons />
+              </div>
+            </div>
+
+            {/* Desktop Logout */}
+            <div className="hidden md:block">
               <button
                 onClick={logout}
-                className="ml-4 flex items-center gap-2 px-3 py-2 rounded-lg
-                           text-sm font-medium bg-red-50 text-red-600
-                           hover:bg-red-100 transition"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#C8102E] transition hover:bg-red-50"
               >
                 <LogOut size={18} />
                 Logout
@@ -309,17 +279,19 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
 
         {/* Mobile Menu */}
         {open && (
-          <div className="md:hidden bg-white border-t shadow-lg px-4 py-3 space-y-2">
-            <RoleButtons />
-            <button
-              onClick={logout}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg
-                         text-sm font-medium bg-red-50 text-red-600
-                         hover:bg-red-100 transition"
-            >
-              <LogOut size={18} />
-              Logout
-            </button>
+          <div className="border-t border-[#E5E7EB] bg-white px-4 py-3 shadow-lg md:hidden">
+            <div className="space-y-1">
+              <RoleButtons />
+              <button
+                onClick={logout}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-[#C8102E] transition hover:bg-red-50"
+              >
+                <span className="inline-flex shrink-0 items-center justify-center">
+                  <LogOut size={18} />
+                </span>
+                Logout
+              </button>
+            </div>
           </div>
         )}
       </nav>
