@@ -26,7 +26,7 @@ export default function AdminCircularStatus() {
   const [loading, setLoading] = useState(false);
   const [loadingCirculars, setLoadingCirculars] = useState(true);
   const [filterRole, setFilterRole] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStatus, setFilterStatus] = useState("pending");
   const [filterDepot, setFilterDepot] = useState("");
 
   // ✅ LOAD CIRCULARS (with optional date filter)
@@ -140,7 +140,7 @@ export default function AdminCircularStatus() {
             <button
               onClick={refreshReport}
               disabled={loading || !selectedCircular}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-[#0b659a] hover:bg-[#084d78] text-white rounded-xl px-5 py-2.5 flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
               Refresh
@@ -213,9 +213,8 @@ export default function AdminCircularStatus() {
 
           {/* SUMMARY CARDS */}
           {report && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <SummaryCard icon={<Users />} label="Total Users" value={report.summary.total} color="slate" />
-              <SummaryCard icon={<CheckCircle />} label="Acknowledged" value={report.summary.acknowledged} color="emerald" />
               <SummaryCard icon={<XCircle />} label="Pending" value={report.summary.pending} color="red" />
               <SummaryCard icon={<FileText />} label="Completion" value={`${report.summary.percentComplete}%`} color="indigo" />
             </div>
@@ -228,16 +227,6 @@ export default function AdminCircularStatus() {
               <span className="text-base">Filters</span>
             </div>
 
-            {/* Status */}
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full sm:w-auto px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer"
-            >
-              <option value="">All Status</option>
-              <option value="acknowledged">Acknowledged</option>
-              <option value="pending">Pending</option>
-            </select>
 
             {/* Role */}
             <select
@@ -274,12 +263,12 @@ export default function AdminCircularStatus() {
                 <Loader2 size={36} className="animate-spin mb-4 text-indigo-600" />
                 <p className="font-medium text-lg">Loading acknowledgement data...</p>
               </div>
-            ) : !report || report.users.length === 0 ? (
+            ) : !report || filteredUsers.length === 0 ? (
               <div className="py-16 text-center text-slate-500 flex flex-col items-center">
                 <div className="p-4 bg-slate-50 rounded-full mb-4">
                   <FileText size={48} className="text-slate-300" />
                 </div>
-                <p className="font-medium text-lg text-slate-600">No users found or no circular selected</p>
+                <p className="font-medium text-lg text-slate-600">No results</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -343,6 +332,39 @@ function SummaryCard({ icon, label, value, color }) {
     indigo: "bg-slate-100 text-[#0b659a] border border-slate-200"
   };
 
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let startTimestamp = null;
+    const duration = 1500; // 1.5 seconds
+
+    const targetValue = parseInt(value, 10) || 0;
+    const isPercent = typeof value === 'string' && value.includes('%');
+
+    if (targetValue === 0) {
+      setDisplayValue(isPercent ? '0%' : 0);
+      return;
+    }
+
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      
+      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      
+      const currentNum = Math.floor(easeProgress * targetValue);
+      setDisplayValue(isPercent ? `${currentNum}%` : currentNum);
+      
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        setDisplayValue(isPercent ? `${targetValue}%` : targetValue);
+      }
+    };
+    
+    window.requestAnimationFrame(step);
+  }, [value]);
+
   return (
     <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-250 flex items-center gap-5">
       <div className={`p-4 rounded-2xl flex-shrink-0 ${colorClasses[color]}`}>
@@ -350,7 +372,7 @@ function SummaryCard({ icon, label, value, color }) {
       </div>
       <div>
         <p className="text-sm font-semibold text-slate-500 tracking-wide mb-1 uppercase">{label}</p>
-        <p className="text-3xl font-bold text-slate-800">{value}</p>
+        <p className="text-3xl font-bold text-slate-800">{displayValue}</p>
       </div>
     </div>
   );

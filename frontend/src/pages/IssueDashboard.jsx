@@ -24,7 +24,7 @@ export default function IssueDashboard({
 
   const [search, setSearch] = useState("");
 
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("Pending");
 
 //   const [depot, setDepot] = useState("");
 
@@ -116,19 +116,6 @@ export default function IssueDashboard({
                 className="border rounded-lg pl-10 pr-4 py-2"
               />
             </div>
-
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="border rounded-lg px-3 py-2"
-            >
-              <option value="">All Status</option>
-
-              <option>Pending</option>
-
-              <option>Resolved</option>
-            </select>
-
             
           </div>
 
@@ -250,14 +237,26 @@ rounded-lg"
                               Resolve
                             </button>
                           ) : (
-                            <Eye />
+                            <button className="text-[#0b659a] hover:text-[#084d78] transition">
+                              <Eye size={18} />
+                            </button>
                           )
                         ) : (
-                          <Eye />
+                          <button className="text-[#0b659a] hover:text-[#084d78] transition">
+                            <Eye size={18} />
+                          </button>
                         )}
                       </TD>
                     </tr>
                   ))}
+
+                {!loading && filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="text-center py-10 text-gray-500 font-medium">
+                      No results
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

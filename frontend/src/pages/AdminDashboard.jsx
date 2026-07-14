@@ -189,6 +189,15 @@ const loadAbnormalities = async () => {
   loadAbnormalities();
   }, [depot]);
 
+  const scrollToSection = (id, toggleStateFn, currentState) => {
+    if (toggleStateFn && !currentState) {
+      toggleStateFn(true);
+    }
+    setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
   return (
     <>
       <Navbar />
@@ -233,45 +242,53 @@ const loadAbnormalities = async () => {
                 icon={<UserCog />}
                 label="SSE / TRD"
                 value={managers.length}
+                onClick={() => scrollToSection("section-managers")}
               />
               <StatCard
                 icon={<Train />}
                 label="Drivers"
                 value={drivers.length}
+                onClick={() => scrollToSection("section-drivers")}
               />
               {!isADEE && (
                 <StatCard
                   icon={<Users />}
                   label="Mini Admins"
                   value={miniAdmins.length}
+                  onClick={() => scrollToSection("section-mini-admins")}
                 />
               )}
               <StatCard
                 icon={<ClipboardList />}
                 label="Training Due"
                 value={trainingOverdues}
+                onClick={() => scrollToSection("section-overdues", setShowOverdues, showOverdues)}
               />
               <StatCard
                 icon={<Shield />}
                 label="LR Due"
                 value={lrOverdues}
+                onClick={() => scrollToSection("section-overdues", setShowOverdues, showOverdues)}
               />
               <StatCard
                 icon={<AlertTriangle />}
                 label="Circular Pending"
                 value={circularPending}
+                onClick={() => scrollToSection("section-overdues", setShowOverdues, showOverdues)}
               />
               <StatCard
                 icon={<AlertTriangle />}
                 label="TW High Issues"
                 value={issueTotal}
                 colorClass="bg-amber-50 text-amber-600"
+                onClick={() => scrollToSection("section-issues", setShowIssues, showIssues)}
               />
               <StatCard
                 icon={<AlertTriangle />}
                 label="Track Abnormalities"
                 value={abnormalityTotal}
                 colorClass="bg-red-50 text-red-600"
+                onClick={() => scrollToSection("section-abnormalities", setShowAbnormalities, showAbnormalities)}
               />
             </div>
 
@@ -303,7 +320,7 @@ const loadAbnormalities = async () => {
               ))}
             </select>
           </div>
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card">
+            <div id="section-issues" className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card">
               <button
                 onClick={() => setShowIssues(!showIssues)}
                 className="w-full flex items-center justify-between px-6 py-5 bg-white transition-colors duration-300 text-left"
@@ -325,7 +342,7 @@ const loadAbnormalities = async () => {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card">
+            <div id="section-abnormalities" className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card">
               <button
                 onClick={() => setShowAbnormalities(!showAbnormalities)}
                 className="w-full flex items-center justify-between px-6 py-5 bg-white transition-colors duration-300 text-left"
@@ -347,7 +364,7 @@ const loadAbnormalities = async () => {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card">
+            <div id="section-overdues" className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card">
               <button
                 onClick={() => setShowOverdues(!showOverdues)}
                 className="w-full flex items-center justify-between px-6 py-5 bg-white transition-colors duration-300 text-left"
@@ -401,7 +418,7 @@ const loadAbnormalities = async () => {
             </div>
 
           {/* ================= MINI ADMINS (NEW) ================= */}
-          {!isADEE  && <Section title="Mini Admins (ADEE)" icon={<Users />}>
+          {!isADEE  && <Section id="section-mini-admins" title="Mini Admins (ADEE)" icon={<Users />}>
             <Table
               headers={["Name", "PF No", "Depot", "Actions"]}
               loading={loading}
@@ -439,7 +456,7 @@ const loadAbnormalities = async () => {
           
 
           {/* ================= MANAGERS ================= */}
-          <Section title="SSE/TRD" icon={<Users />}>
+          <Section id="section-managers" title="SSE/TRD" icon={<Users />}>
             <Table headers={["Name", "PF No", "Depot", "Actions"]} loading={loading} emptyText="No managers found">
               {managers.map(m => (
                 <tr key={m._id} className="hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0">
@@ -472,7 +489,7 @@ const loadAbnormalities = async () => {
           </Section>
 
           {/* ================= DRIVERS ================= */}
-          <Section title="Drivers" icon={<Train />}>
+          <Section id="section-drivers" title="Drivers" icon={<Train />}>
             <Table headers={["PF No", "Name", "Depot", "Actions"]} loading={loading} emptyText="No drivers found">
               {drivers.map(d => (
                 <tr key={d._id} className="hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0">
@@ -530,24 +547,58 @@ const loadAbnormalities = async () => {
 
 /* ================= COMPONENTS ================= */
 
-function StatCard({ icon, label, value, colorClass }) {
+function StatCard({ icon, label, value, colorClass, onClick }) {
   const iconStyle = colorClass || "bg-slate-100 text-[#0b659a]";
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let startTimestamp = null;
+    const duration = 1500; // 1.5 seconds
+    const targetValue = Number(value) || 0;
+
+    if (targetValue === 0) {
+      setDisplayValue(0);
+      return;
+    }
+
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      
+      // easeOutExpo for a very snappy start and slow finish
+      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      
+      setDisplayValue(Math.floor(easeProgress * targetValue));
+      
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        setDisplayValue(targetValue);
+      }
+    };
+    
+    window.requestAnimationFrame(step);
+  }, [value]);
+
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-[#0b659a] hover:-translate-y-1 group transition-all duration-300 flex items-center gap-5">
+    <div 
+      onClick={onClick}
+      className={`bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-[#0b659a] hover:-translate-y-1 group transition-all duration-300 flex items-center gap-5 ${onClick ? "cursor-pointer" : ""}`}
+    >
       <div className={`p-4 ${iconStyle} group-hover:bg-[#0b659a] group-hover:text-white rounded-2xl flex-shrink-0 transition-colors duration-300`}>
         {icon}
       </div>
       <div>
         <p className="text-sm font-semibold text-slate-500 tracking-wide mb-1 uppercase transition-colors duration-300">{label}</p>
-        <p className="text-3xl font-bold text-slate-800 transition-colors duration-300">{value}</p>
+        <p className="text-3xl font-bold text-slate-800 transition-colors duration-300">{displayValue}</p>
       </div>
     </div>
   );
 }
 
-function Section({ title, icon, children }) {
+function Section({ title, icon, children, id }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-6 flex flex-col group/section transition-all duration-300 hover:shadow-md hover:border-[#0b659a] hover:-translate-y-1">
+    <div id={id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-6 flex flex-col group/section transition-all duration-300 hover:shadow-md hover:border-[#0b659a] hover:-translate-y-1">
       <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3 bg-white transition-colors duration-300">
         <div className="p-2.5 bg-slate-100 group-hover/section:bg-[#0b659a] group-hover/section:text-white rounded-xl text-[#0b659a] transition-colors duration-300">
           {icon}
@@ -568,7 +619,7 @@ function Table({ headers, children, loading, emptyText }) {
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left whitespace-nowrap">
-          <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+          <thead className="bg-[#0b659a]/5 border-b border-[#0b659a]/10 text-[#0b659a] font-semibold">
             <tr>
               {headers.map(h => (
                 <th key={h} className="px-5 py-4">{h}</th>
@@ -600,7 +651,7 @@ function Table({ headers, children, loading, emptyText }) {
 
 function Badge({ children }) {
   return (
-    <span className="px-3 py-1.5 text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-lg inline-flex items-center justify-center whitespace-nowrap">
+    <span className="px-3 py-1.5 text-xs font-semibold bg-[#0b659a]/10 text-[#0b659a] border border-[#0b659a]/20 rounded-lg inline-flex items-center justify-center whitespace-nowrap">
       {children}
     </span>
   );

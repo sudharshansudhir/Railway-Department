@@ -227,7 +227,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
 
       {role === "ADEE" && (
         <>
-          <NavButton to="/adee" icon={<Shield size={18} />} label="Dashboard" />
+          <NavButton to="/adee" icon={<Shield size={18} />} label="TW Driver Dashboard" />
           <NavButton to="/adee/engine" icon={<Train size={18} />} label="TW Dashboard" />
           <NavButton to="/admin/circular-status" icon={<CheckSquare size={18} />} label="Circular Status" />
           <NavButton to="/circulars" icon={<FileText size={18} />} label="Circulars" />

@@ -114,7 +114,7 @@ export default function UserDetailModal({ userId, onClose, isAdmin = false }) {
       <div className="bg-white scale-80 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
 
         {/* Header */}
-        <div className="bg-indigo-600 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-[#0b659a] text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg">
               {isDriver ? <Train size={24} /> : <User size={24} />}
@@ -124,7 +124,7 @@ export default function UserDetailModal({ userId, onClose, isAdmin = false }) {
                 {loading ? "Loading..." : user?.name || "User Details"}
               </h2>
               {user && (
-                <p className="text-sm text-indigo-200">
+                <p className="text-sm text-white/80">
                   {user.role=="DEPOT_MANAGER"?`SSE/TRD/${user.depotName}`:`${user.role}`} • {user.depotName}
                 </p>
               )}
@@ -142,7 +142,7 @@ export default function UserDetailModal({ userId, onClose, isAdmin = false }) {
         {loading && (
           <div className="flex-1 flex items-center justify-center py-20">
             <div className="text-center">
-              <Loader2 className="w-10 h-10 animate-spin text-indigo-600 mx-auto mb-3" />
+              <Loader2 className="w-10 h-10 animate-spin text-[#0b659a] mx-auto mb-3" />
               <p className="text-gray-500">Loading user details...</p>
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function UserDetailModal({ userId, onClose, isAdmin = false }) {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${
                       activeTab === tab.id
-                        ? "border-indigo-600 text-indigo-600"
+                        ? "border-[#0b659a] text-[#0b659a]"
                         : "border-transparent text-gray-500 hover:text-gray-700"
                     }`}
                   >
@@ -481,9 +481,9 @@ function InfoCard({ icon, label, value }) {
 
 function StatCard({ label, value }) {
   return (
-    <div className="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100">
-      <p className="text-2xl font-bold text-indigo-700">{value}</p>
-      <p className="text-xs text-indigo-600 font-medium">{label}</p>
+    <div className="bg-[#0b659a]/10 rounded-xl p-4 text-center border border-[#0b659a]/20">
+      <p className="text-2xl font-bold text-[#0b659a]">{value}</p>
+      <p className="text-xs text-[#0b659a] font-medium">{label}</p>
     </div>
   );
 }
