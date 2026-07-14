@@ -32,6 +32,10 @@ export default function Login() {
       localStorage.setItem("role", res.data.role);
       localStorage.setItem("passwordChanged", res.data.passwordChanged ? "true" : "false");
       localStorage.setItem("depotName", res.data.depotName || "");
+      localStorage.setItem(
+  "assignedDepots",
+  JSON.stringify(res.data.assignedDepots || [])
+);
 
       // Check if first login (password not changed)
       if (!res.data.passwordChanged) {
@@ -63,6 +67,7 @@ export default function Login() {
   navigate("/adee");
 }
     } catch (err) {
+       console.error("LOGIN ERROR:", err);
       Swal.fire({
         icon: "error",
         title: "Login Failed",

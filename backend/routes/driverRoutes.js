@@ -1,5 +1,6 @@
 import express from "express";
 import { verifyToken, allowRoles } from "../middleware/auth.js";
+import uploadImage from "../middleware/imageUpload.js";
 import {
   getDriverProfile,
   updateBioData,
@@ -21,8 +22,8 @@ router.put("/profile/bio", verifyToken, allowRoles("DRIVER"), updateBioData);
 router.put("/profile/training", verifyToken, allowRoles("DRIVER"), updateTraining);
 router.put("/profile/lr", verifyToken, allowRoles("DRIVER"), updateLR);
 
-router.post("/signin", verifyToken, allowRoles("DRIVER"), driverSignIn);
-router.post("/signout", verifyToken, allowRoles("DRIVER"), driverSignOut);
+router.post("/signin", verifyToken, allowRoles("DRIVER"), uploadImage.single("image"),driverSignIn);
+router.post("/signout", verifyToken, allowRoles("DRIVER"), uploadImage.single("image"),driverSignOut);
 
 router.get("/alerts", verifyToken, allowRoles("DRIVER"), driverAlerts);
 router.get(

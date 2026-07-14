@@ -80,9 +80,10 @@ export default function IssueDashboard({
     <>
       {/* <Navbar/> */}
 
-      <div className=" bg-slate-100">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex items-center gap-3">
+      <div className="">
+        <div className="max-w-7xl mx-auto space-y-6 p-1">
+          <div className="flex justify-between gap-3">
+            <div className="flex items-center gap-3">
             <AlertTriangle className="text-red-600" size={30} />
 
             <div>
@@ -90,6 +91,24 @@ export default function IssueDashboard({
 
               <p className="text-gray-500">Last 30 Days</p>
             </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow p-4 flex flex-wrap gap-3">
+            <div className="relative">
+              <Search
+                size={18}
+                className="absolute left-3 top-3 text-gray-400"
+              />
+
+              <input
+                placeholder="Search Driver"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="border w-80 rounded-lg pl-10 pr-4 py-2"
+              />
+            </div>
+            
+          </div>
           </div>
 
           {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -102,22 +121,7 @@ export default function IssueDashboard({
             <Card icon={<User />} title="Drivers" value={drivers} />
           </div> */}
 
-          <div className="bg-white rounded-xl shadow p-4 flex flex-wrap gap-3">
-            <div className="relative">
-              <Search
-                size={18}
-                className="absolute left-3 top-3 text-gray-400"
-              />
-
-              <input
-                placeholder="Search Driver"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="border rounded-lg pl-10 pr-4 py-2"
-              />
-            </div>
-            
-          </div>
+          
 
           <div className="bg-white rounded-xl shadow overflow-x-auto">
             <table className="w-full">

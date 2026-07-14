@@ -429,6 +429,13 @@ export default function AdminUserDetail() {
                       <th className="px-4 py-2 text-center">Breath Analyser</th>
                       {/* <th className="px-4 py-2 text-center">Hours</th> */}
                       <th className="px-4 py-2 text-center">Mileage</th>
+                       <th className="px-4 py-2 text-center">
+      Sign ON Image
+    </th>
+
+    <th className="px-4 py-2 text-center">
+      Sign OFF Image
+    </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -469,6 +476,47 @@ export default function AdminUserDetail() {
                         <td className="px-4 py-2 text-center font-semibold text-[#0b659a]">
                           {log.mileage?.toFixed(2) || "-"}
                         </td>
+                        <td className="px-4 py-2 text-center">
+
+  {log.signInImage ? (
+
+    <a
+      href={log.signInImage}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs hover:bg-blue-700"
+    >
+      View
+    </a>
+
+  ) : (
+
+    "-"
+
+  )}
+
+</td>
+
+<td className="px-4 py-2 text-center">
+
+  {log.signOutImage ? (
+
+    <a
+      href={log.signOutImage}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="px-3 py-1 rounded-lg bg-green-600 text-white text-xs hover:bg-green-700"
+    >
+      View
+    </a>
+
+  ) : (
+
+    "-"
+
+  )}
+
+</td>
                       </tr>
                     ))}
                   </tbody>

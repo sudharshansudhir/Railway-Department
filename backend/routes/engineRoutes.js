@@ -5,6 +5,7 @@ import {
   getEnginesByDepot,
   getEngineById,
   updateEngine,
+  getAvailableDepots,
   deleteEngine
 } from "../controllers/engineController.js";
 
@@ -47,6 +48,17 @@ router.get(
 /* ============================================
    GET SINGLE ENGINE DETAILS
 ============================================ */
+router.get(
+  "/depots/list",
+  verifyToken,
+  allowRoles(
+    "SUPER_ADMIN",
+    "ADEE",
+    "DEPOT_MANAGER",
+    "DRIVER"
+  ),
+  getAvailableDepots
+);
 
 router.get(
   "/:id",

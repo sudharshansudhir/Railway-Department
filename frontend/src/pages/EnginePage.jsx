@@ -16,38 +16,44 @@ import {
   Save
 } from "lucide-react";
 
-const DEPOTS = [
-  "PTJ",
-  "PGT", "SLY", "BQI", "TUP", "KMD", "PLI", "NMKL", "CHSM",
-  "POY",
-  "ED",
-  "CBE",
-  "MTP",
-  "SA",
-  "JTJ",
-  "KRR",
-  "TPJ",
-  "DG",
-  "MTDM",
-  "VRI",
-  "DPJ"
-];
 
 export default function EnginePage() {
+const role = localStorage.getItem("role");
 
-  const role = localStorage.getItem("role");
+const depotName = localStorage.getItem("depotName");
 
-  const depotName = localStorage.getItem("depotName");
+const assignedDepots = JSON.parse(
+  localStorage.getItem("assignedDepots") || "[]"
+);
 
-  const [selectedDepot, setSelectedDepot] = useState(
-    role === "DRIVER" || role === "DEPOT_MANAGER"
-      ? depotName
-      : ""
-  );
+const [selectedDepot, setSelectedDepot] = useState(() => {
+
+  if (role === "DRIVER") {
+    return depotName;
+  }
+
+  if (role === "DEPOT_MANAGER") {
+    return depotName;
+  }
+
+  if (role === "ADEE") {
+    return assignedDepots.length
+      ? assignedDepots[0]
+      : "";
+  }
+
+  return "";
+
+});
 
   const [engineList, setEngineList] = useState([]);
+const [availableDepots, setAvailableDepots] = useState([]);
+const [availableTowerCars, setAvailableTowerCars] = useState([]);
+const [allDepots, setAllDepots] = useState([]);
+  // const [selectedEngine, setSelectedEngine] = useState("");
 
-  const [selectedEngine, setSelectedEngine] = useState("");
+const [selectedTowerCar, setSelectedTowerCar] = useState("");
+const [expandedEngine, setExpandedEngine] = useState(null);
 
   const [engine, setEngine] = useState(null);
 
@@ -148,112 +154,152 @@ export default function EnginePage() {
 
   useEffect(() => {
 
-    if (!selectedEngine) return;
+  loadAllDepots();
 
-    loadEngine();
+}, []);
 
-  }, [selectedEngine]);
+useEffect(() => {
 
-  const loadEngines = async () => {
+  if (!selectedTowerCar) return;
 
-    try {
+  setExpandedEngine(selectedTowerCar);
 
-      const res = await api.get(
-        `/engine?depot=${selectedDepot}`
-      );
+}, [selectedTowerCar]);
 
-      setEngineList(res.data);
+  // useEffect(() => {
 
-      if (res.data.length) {
+  //   if (!selectedEngine) return;
 
-        setSelectedEngine(res.data[0]._id);
+  //   loadEngine();
 
-      } else {
+  // }, [selectedEngine]);
+const loadEngines = async () => {
 
-        setSelectedEngine("");
+  try {
 
-        setEngine(null);
+    const url = selectedDepot
+      ? `/engine?depot=${selectedDepot}`
+      : "/engine";
 
-      }
+    const res = await api.get(url);
 
-    } catch {
+    setEngineList(res.data);
+    setAvailableTowerCars(res.data);
 
-      Swal.fire(
-        "Error",
-        "Unable to load engines",
-        "error"
-      );
+    // Build depot dropdown dynamically
+    const depots = [...new Set(
+      res.data.map(item => item.depot)
+    )].sort();
 
+    setAvailableDepots(depots);
+
+      // if (res.data.length) {
+
+      //   setSelectedEngine(res.data[0]._id);
+
+      // } else {
+
+      //   setSelectedEngine("");
+
+      //   setEngine(null);
+
+      // }
+
+  } catch {
+
+    Swal.fire(
+      "Error",
+      "Unable to load engines",
+      "error"
+    );
+
+  }
+
+};
+
+const loadAllDepots = async () => {
+
+  try {
+
+    const res = await api.get("/engine/depots/list");
+
+    setAllDepots(res.data);
+
+  } catch (err) {
+
+    console.error(err);
+
+  }
+
+};
+
+  // const loadEngine = async () => {
+
+  //   try {
+
+  //     setLoading(true);
+
+  //     const res = await api.get(
+  //       `/engine/${selectedEngine}`
+  //     );
+
+  //     setEngine(res.data);
+
+  //   } catch {
+
+  //     Swal.fire(
+  //       "Error",
+  //       "Unable to load engine details",
+  //       "error"
+  //     );
+
+  //   } finally {
+
+  //     setLoading(false);
+
+  //   }
+
+  // };
+
+const deleteEngine = async (engine) => {
+
+  const result = await Swal.fire({
+    title: "Delete Engine?",
+    text: "This action cannot be undone.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Delete"
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+
+    await api.delete(`/engine/${engine._id}`);
+
+    Swal.fire(
+      "Deleted",
+      "Engine removed successfully",
+      "success"
+    );
+
+    await loadEngines();
+
+    if (expandedEngine === engine._id) {
+      setExpandedEngine(null);
     }
 
-  };
+  } catch (err) {
 
-  const loadEngine = async () => {
+    Swal.fire(
+      "Error",
+      err.response?.data?.msg || "Delete failed",
+      "error"
+    );
 
-    try {
+  }
 
-      setLoading(true);
-
-      const res = await api.get(
-        `/engine/${selectedEngine}`
-      );
-
-      setEngine(res.data);
-
-    } catch {
-
-      Swal.fire(
-        "Error",
-        "Unable to load engine details",
-        "error"
-      );
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  };
-
-  const deleteEngine = async () => {
-
-    const result = await Swal.fire({
-      title: "Delete Engine?",
-      text: "This action cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Delete"
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-
-      await api.delete(`/engine/${engine._id}`);
-
-      Swal.fire(
-        "Deleted",
-        "Engine removed successfully",
-        "success"
-      );
-
-      loadEngines();
-
-    }
-
-    catch (err) {
-
-      Swal.fire(
-        "Error",
-        err.response?.data?.msg ||
-        "Delete failed",
-        "error"
-      );
-
-    }
-
-  };
+};
 
   return (
     <>
@@ -272,10 +318,10 @@ export default function EnginePage() {
                 </div>
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">
-                    Engine Management
+                    TW Management
                   </h2>
                   <p className="text-sm text-slate-500 mt-1 font-medium">
-                    View and manage Tower Car engine records
+                    View and manage Tower Car records
                   </p>
                 </div>
               </div>
@@ -311,9 +357,14 @@ export default function EnginePage() {
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer"
                 >
                   <option value="">Select Depot</option>
-                  {DEPOTS.map(depot=>(
-                    <option key={depot} value={depot}>{depot}</option>
-                  ))}
+                 {allDepots.map(depot => (
+  <option
+    key={depot}
+    value={depot}
+  >
+    {depot}
+  </option>
+))}
                 </select>
               </div>
 
@@ -323,18 +374,175 @@ export default function EnginePage() {
                   Tower Car
                 </label>
                 <select
-                  value={selectedEngine}
-                  onChange={(e)=>setSelectedEngine(e.target.value)}
+                  value={selectedTowerCar}
+                  onChange={(e)=>setSelectedTowerCar(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer"
                 >
                   <option value="">Select Tower Car</option>
-                  {engineList.map(item=>(
-                    <option key={item._id} value={item._id}>{item.towerCarNumber}</option>
-                  ))}
+                  {availableTowerCars.map(item => (
+  <option
+    key={item._id}
+    value={item._id}
+  >
+    {item.towerCarNumber}
+  </option>
+))}
                 </select>
               </div>
             </div>
           </div>
+
+          {/* ================= ENGINE LIST ================= */}
+
+<div className="bg-white rounded-2xl shadow-sm border border-slate-100">
+
+  <div className="px-6 py-5 border-b border-slate-200">
+
+    <h2 className="text-xl font-bold text-slate-800">
+      Available Engines
+    </h2>
+
+    <p className="text-sm text-slate-500 mt-1">
+      Click any engine to view complete details.
+    </p>
+
+  </div>
+
+  {loading ? (
+
+    <div className="p-10 text-center">
+
+      Loading...
+
+    </div>
+
+  ) : engineList.length === 0 ? (
+
+    <div className="p-10 text-center text-slate-500">
+
+      No Engines Found
+
+    </div>
+
+  ) : (
+
+    engineList
+
+      .filter((item) => {
+
+        if (!selectedTowerCar) return true;
+
+        return item._id === selectedTowerCar;
+
+      })
+
+      .map((item) => (
+
+        <div
+          key={item._id}
+          className="border-b last:border-b-0"
+        >
+
+          <button
+
+            onClick={() => {
+
+              setExpandedEngine(
+
+                expandedEngine === item._id
+                  ? null
+                  : item._id
+
+              );
+
+            }}
+
+            className="w-full px-6 py-5 flex items-center justify-between hover:bg-slate-50 transition"
+
+          >
+
+            <div className="flex items-center gap-6">
+
+              <div>
+
+                <div className="font-semibold text-slate-800">
+
+                  {item.towerCarNumber}
+
+                </div>
+
+                <div className="text-sm text-slate-500">
+
+                  {item.depot}
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="text-2xl">
+
+              {expandedEngine === item._id ? "▲" : "▼"}
+
+            </div>
+
+          </button>
+
+          {expandedEngine === item._id && (
+
+            <div className="px-6 pb-6">
+
+              <EngineDetails
+
+                engine={item}
+
+                canEdit={
+
+                  role === "SUPER_ADMIN" ||
+
+                  (
+
+                    role === "DEPOT_MANAGER" &&
+
+                    item.depot === depotName
+
+                  )
+
+                }
+
+                canDelete={
+
+                  role === "SUPER_ADMIN"
+
+                }
+
+             onEdit={() => {
+
+  setIsEdit(true);
+
+  setFormData(item);
+
+  setExpandedEngine(item._id);
+
+  setShowModal(true);
+
+}}
+                onDelete={() => deleteEngine(item)}
+
+              />
+
+            </div>
+
+          )}
+
+        </div>
+
+      ))
+
+  )}
+
+</div>
           {loading && (
 
             <div className="bg-white rounded-xl shadow p-12 text-center">
@@ -345,7 +553,7 @@ export default function EnginePage() {
 
           )}
 
-          {!loading && engine && (
+          {/* {!loading && engine && (
             <EngineDetails
               engine={engine}
               canEdit={
@@ -361,7 +569,7 @@ export default function EnginePage() {
               }}
               onDelete={deleteEngine}
             />
-          )}
+          )} */}
         </div>
 
       </div>
@@ -372,11 +580,15 @@ export default function EnginePage() {
         formData={formData}
         setFormData={setFormData}
         isEdit={isEdit}
-        refresh={() => {
-          loadEngines();
+   refresh={async () => {
 
-          setShowModal(false);
-        }}
+  await loadEngines();
+
+  setExpandedEngine(null);
+
+  setShowModal(false);
+
+}}
       />
       <Footer />
 

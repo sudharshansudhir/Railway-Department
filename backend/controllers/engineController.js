@@ -86,26 +86,53 @@ export const createEngine = async (req, res) => {
 
 export const getEnginesByDepot = async (req, res) => {
   try {
-
     const { depot } = req.query;
 
-    // If no depot selected return empty list
+    let filter = {};
+
+    /* ======================================
+       DEFAULT VIEW BASED ON ROLE
+    ====================================== */
+
     if (!depot) {
-      return res.json([]);
+
+      if (req.user.role === "SUPER_ADMIN") {
+
+        // Super Admin sees all depots
+        filter = {};
+
+      } else if (req.user.role === "ADEE") {
+
+        // ADEE sees only his assigned depots by default
+        filter = {
+          depot: {
+            $in: req.user.assignedDepots || []
+          }
+        };
+
+      } else {
+
+        // Driver & Depot Manager
+        filter = {
+          depot: req.user.depotName
+        };
+
+      }
+
+    } else {
+
+      // User selected a depot from dropdown
+      filter = {
+        depot
+      };
+
     }
 
-    const engines = await CompleteEngine.find(
-      {
-        depot
-      },
-      {
-        towerCarNumber: 1,
-        depot: 1
-      }
-    )
-    .sort({
-      towerCarNumber: 1
-    });
+ const engines = await CompleteEngine.find(filter)
+.sort({
+  depot: 1,
+  towerCarNumber: 1
+});
 
     res.json(engines);
 
@@ -119,6 +146,28 @@ export const getEnginesByDepot = async (req, res) => {
 
   }
 };
+
+
+export const getAvailableDepots = async (req, res) => {
+  try {
+
+    const depots = await CompleteEngine.distinct("depot");
+
+    depots.sort();
+
+    res.json(depots);
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      msg: err.message
+    });
+
+  }
+};
+
 
 export const getEngineById = async (req, res) => {
   try {

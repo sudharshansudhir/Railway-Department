@@ -16,7 +16,15 @@ const dailyLogSchema = new mongoose.Schema({
 
   signInTime: Date,
   signOutTime: Date,
+signInImage: {
+    type: String,
+    default: ""
+},
 
+signOutImage: {
+    type: String,
+    default: ""
+},
   fromStation: String,
   toStation: String,
 

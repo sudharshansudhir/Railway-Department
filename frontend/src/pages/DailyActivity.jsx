@@ -21,7 +21,9 @@ export default function DailyActivity() {
   const [km, setKm] = useState("");
   const [breathAnalyserinitial, setBreathAnalyserinitial] = useState(false);
   const [breathAnalyserDone, setBreathAnalyserDone] = useState(false);
+const [signInImage, setSignInImage] = useState(null);
 
+const [signOutImage, setSignOutImage] = useState(null);
   const [signedIn, setSignedIn] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -58,75 +60,165 @@ export default function DailyActivity() {
     });
   }, []);
 
-  const signIn = async () => {
-    if (!twNumber) {
-      Swal.fire("Missing Data", "Tower Car Number required", "warning");
-      return;
+const signIn = async () => {
+
+  if (!twNumber) {
+
+    Swal.fire(
+      "Missing Data",
+      "Tower Car Number required",
+      "warning"
+    );
+
+    return;
+
+  }
+
+  try {
+
+    setLoading(true);
+
+    const formData = new FormData();
+
+    formData.append("fromStation", fromStation);
+
+    formData.append("twNumber", twNumber);
+
+    formData.append(
+      "breathAnalyserinitial",
+      breathAnalyserinitial
+    );
+
+    if (signInImage) {
+
+      formData.append("image", signInImage);
+
     }
 
-    try {
-      setLoading(true);
-      await api.post("/driver/signin", {
-        fromStation,
-        twNumber,
-        breathAnalyserinitial
-      });
+    await api.post(
+      "/driver/signin",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      }
+    );
 
-      setSignedIn(true);
+    setSignedIn(true);
 
-      Swal.fire({
-        icon: "success",
-        title: "Signed ON",
-        text: "Duty started successfully",
-        timer: 1400,
-        showConfirmButton: false
-      });
-    } catch (e) {
-      Swal.fire("Error", e.response?.data?.msg || "Failed", "error");
-    } finally {
-      setLoading(false);
+    Swal.fire({
+      icon: "success",
+      title: "Signed ON",
+      text: "Duty started successfully",
+      timer: 1400,
+      showConfirmButton: false
+    });
+
+  } catch (e) {
+
+    Swal.fire(
+      "Error",
+      e.response?.data?.msg || "Failed",
+      "error"
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+
+};
+
+const signOut = async () => {
+
+  if (!km || !breathAnalyserDone) {
+
+    Swal.fire(
+      "Missing Data",
+      "KM required",
+      "warning"
+    );
+
+    return;
+
+  }
+
+  try {
+
+    setLoading(true);
+
+    const loc = await getLocationName();
+
+    setToStation(loc);
+
+    const formData = new FormData();
+
+    formData.append("toStation", loc);
+
+    formData.append("km", km);
+
+    formData.append(
+      "breathAnalyserDone",
+      breathAnalyserDone
+    );
+
+    if (signOutImage) {
+
+      formData.append("image", signOutImage);
+
     }
-  };
 
-  const signOut = async () => {
-    if (!km || !breathAnalyserDone) {
-      Swal.fire("Missing Data", "KM required", "warning");
-      return;
-    }
+    await api.post(
+      "/driver/signout",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      }
+    );
 
-    try {
-      setLoading(true);
+    Swal.fire({
+      icon: "success",
+      title: "Duty Completed",
+      text: "Mileage recorded successfully",
+      timer: 1600,
+      showConfirmButton: false
+    });
 
-      const loc = await getLocationName();
-      setToStation(loc);
+    setSignedIn(false);
 
-      await api.post("/driver/signout", {
-        toStation: loc,
-        km,
-        breathAnalyserDone
-      });
+    setTwNumber("");
 
-      Swal.fire({
-        icon: "success",
-        title: "Duty Completed",
-        text: "Mileage recorded successfully",
-        timer: 1600,
-        showConfirmButton: false
-      });
+    setKm("");
 
-      setSignedIn(false);
-      setTwNumber("");
-      setKm("");
-      setBreathAnalyserDone(false);
+    setBreathAnalyserDone(false);
 
-      const freshLoc = await getLocationName();
-      setFromStation(freshLoc);
-    } catch (e) {
-      Swal.fire("Error", e.response?.data?.msg || "Failed", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setSignInImage(null);
+
+    setSignOutImage(null);
+
+    const freshLoc = await getLocationName();
+
+    setFromStation(freshLoc);
+
+  } catch (e) {
+
+    Swal.fire(
+      "Error",
+      e.response?.data?.msg || "Failed",
+      "error"
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+
+};
 
   return (
     <>
@@ -152,6 +244,33 @@ export default function DailyActivity() {
               <input type="checkbox" checked={breathAnalyserinitial} onChange={() => setBreathAnalyserinitial(!breathAnalyserinitial)} className="h-4 w-4 rounded border-[#D1D5DB]" />
               Breath Analyser Test Done
             </label>
+            <div className="mt-4">
+
+  <label className="block text-sm font-semibold text-[#1F2937] mb-2">
+    Upload Breath Analyser Photo
+  </label>
+
+  <input
+    type="file"
+    accept="image/*"
+    capture="environment"
+    onChange={(e) =>
+      setSignInImage(e.target.files[0])
+    }
+    className="block w-full rounded-xl border border-[#D1D5DB] bg-white px-3 py-2 text-sm"
+  />
+
+  {signInImage && (
+
+    <p className="mt-2 text-sm text-green-700">
+
+      📷 {signInImage.name}
+
+    </p>
+
+  )}
+
+</div>
             <ActionButton label={signedIn ? "Signed ON" : "Sign ON"} icon={<CheckCircle />} onClick={signIn} loading={loading} disabled={signedIn} color="green" />
           </SectionCard>
 
@@ -162,6 +281,33 @@ export default function DailyActivity() {
               <input type="checkbox" checked={breathAnalyserDone} onChange={() => setBreathAnalyserDone(!breathAnalyserDone)} className="h-4 w-4 rounded border-[#D1D5DB]" />
               Breath Analyser Test Done
             </label>
+            <div className="mt-4">
+
+  <label className="block text-sm font-semibold text-[#1F2937] mb-2">
+    Upload Breath Analyser Photo
+  </label>
+
+  <input
+    type="file"
+    accept="image/*"
+    capture="environment"
+    onChange={(e) =>
+      setSignOutImage(e.target.files[0])
+    }
+    className="block w-full rounded-xl border border-[#D1D5DB] bg-white px-3 py-2 text-sm"
+  />
+
+  {signOutImage && (
+
+    <p className="mt-2 text-sm text-green-700">
+
+      📷 {signOutImage.name}
+
+    </p>
+
+  )}
+
+</div>
             <div className="mt-4 flex items-center gap-4 rounded-2xl border border-[#D1D5DB] bg-[#F9FBFC] p-4">
               <Gauge className="text-[#0B3C5D]" />
               <div>

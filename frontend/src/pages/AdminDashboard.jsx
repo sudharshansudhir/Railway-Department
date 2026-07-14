@@ -58,6 +58,14 @@ const lrOverdues = overdues.filter(
   item => item.category === "LR Overdue"
 ).length;
 
+const trainingOverdueRecords = overdues.filter(
+  item => item.category === "Training Overdue"
+);
+
+const lrOverdueRecords = overdues.filter(
+  item => item.category === "LR Overdue"
+);
+
 const circularPending = drivers.filter(
   d => !d.lastAcknowledgedCircularId
 ).length;
@@ -229,7 +237,7 @@ const loadAbnormalities = async () => {
             {!isADEE && (
               <button
                 onClick={() => navigate("/admin/register")}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                className="bg-[#0b659a] hover:bg-[#0f82c5] text-white rounded-xl px-5 py-2.5 flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
               >
                 <UserPlus size={18} />
                 Add User
@@ -278,7 +286,7 @@ const loadAbnormalities = async () => {
               />
               <StatCard
                 icon={<AlertTriangle />}
-                label="TW High Issues"
+                label="TW issues (higher priority)"
                 value={issueTotal}
                 colorClass="bg-amber-50 text-amber-600"
                 onClick={() => scrollToSection("section-issues", setShowIssues, showIssues)}
@@ -329,7 +337,7 @@ const loadAbnormalities = async () => {
                   <div className="p-2.5 bg-amber-50 group-hover/card:bg-[#0b659a] rounded-xl text-amber-600 group-hover/card:text-white transition-colors duration-300">
                     <AlertTriangle size={20} />
                   </div>
-                  <span className="text-lg font-bold text-slate-800 transition-colors duration-300">TW High Issues</span>
+                  <span className="text-lg font-bold text-slate-800 transition-colors duration-300">TW issues (higher priority)</span>
                 </div>
                 <span className={`text-slate-400 transition-transform duration-300 ${showIssues ? "rotate-180" : ""}`}>
                   ▼
@@ -380,41 +388,154 @@ const loadAbnormalities = async () => {
                 </span>
               </button>
               {showOverdues && (
-                <div className="p-6 border-t border-slate-100 bg-slate-50/30">
-                  <Section title="Overdue Records Details" icon={<ClipboardList />}>
-                    <Table
-                      headers={["Driver", "PF No", "Depot", "Category", "Item", "Due Date", "Overdue", "Action"]}
-                      loading={loadingOverdues}
-                      emptyText="No overdue records"
-                    >
-                      {overdues.map((record, index) => (
-                        <tr key={`${record.driverId}-${index}`} className="hover:bg-slate-50 transition-colors group">
-                          <td className="px-5 py-4 font-medium text-slate-800">{record.driverName}</td>
-                          <td className="px-5 py-4 text-slate-600">{record.pfNo}</td>
-                          <td className="px-5 py-4"><Badge>{record.depotName}</Badge></td>
-                          <td className="px-5 py-4 text-slate-600">{record.category}</td>
-                          <td className="px-5 py-4 text-slate-600">{record.item}</td>
-                          <td className="px-5 py-4 text-slate-600">{new Date(record.dueDate).toLocaleDateString()}</td>
-                          <td className="px-5 py-4">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-100">
-                              {record.overdueDays} Days
-                            </span>
-                          </td>
-                          <td className="px-5 py-4">
-                            <button
-                              onClick={() => navigate(`/admin/user/${record.driverId}`)}
-                              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
-                            >
-                              <Eye size={14} />
-                              View
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </Table>
-                  </Section>
-                </div>
-              )}
+  <div className="p-6 border-t border-slate-100 bg-slate-50/30 space-y-8">
+
+    {/* ================= LR OVERDUES ================= */}
+    <div>
+      <div className="flex items-center gap-3 mb-4">
+        <ClipboardList className="text-red-600" size={22} />
+        <h3 className="text-xl font-bold text-slate-800">
+          LR Due Records
+        </h3>
+      </div>
+
+      <Table
+        headers={[
+          "Driver",
+          "PF No",
+          "Depot",
+          "Category",
+          "Item",
+          "Due Date",
+          "Overdue",
+          "Action",
+        ]}
+        loading={loadingOverdues}
+        emptyText="No LR Due records"
+      >
+        {lrOverdueRecords.map((record, index) => (
+          <tr
+            key={`${record.driverId}-${index}`}
+            className="hover:bg-slate-50 transition-colors group"
+          >
+            <td className="px-5 py-4 font-medium text-slate-800">
+              {record.driverName}
+            </td>
+
+            <td className="px-5 py-4 text-slate-600">
+              {record.pfNo}
+            </td>
+
+            <td className="px-5 py-4">
+              <Badge>{record.depotName}</Badge>
+            </td>
+
+            <td className="px-5 py-4 text-slate-600">
+              {record.category}
+            </td>
+
+            <td className="px-5 py-4 text-slate-600">
+              {record.item}
+            </td>
+
+            <td className="px-5 py-4 text-slate-600">
+              {new Date(record.dueDate).toLocaleDateString()}
+            </td>
+
+            <td className="px-5 py-4">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-100">
+                {record.overdueDays} Days
+              </span>
+            </td>
+
+            <td className="px-5 py-4">
+              <button
+                onClick={() => navigate(`/admin/user/${record.driverId}`)}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
+              >
+                <Eye size={14} />
+                View
+              </button>
+            </td>
+          </tr>
+        ))}
+      </Table>
+    </div>
+
+    {/* ================= TRAINING OVERDUES ================= */}
+    <div>
+      <div className="flex items-center gap-3 mb-4">
+        <ClipboardList className="text-amber-600" size={22} />
+        <h3 className="text-xl font-bold text-slate-800">
+          Training Due Records
+        </h3>
+      </div>
+
+      <Table
+        headers={[
+          "Driver",
+          "PF No",
+          "Depot",
+          "Category",
+          "Item",
+          "Due Date",
+          "Overdue",
+          "Action",
+        ]}
+        loading={loadingOverdues}
+        emptyText="No Training Due records"
+      >
+        {trainingOverdueRecords.map((record, index) => (
+          <tr
+            key={`${record.driverId}-${index}`}
+            className="hover:bg-slate-50 transition-colors group"
+          >
+            <td className="px-5 py-4 font-medium text-slate-800">
+              {record.driverName}
+            </td>
+
+            <td className="px-5 py-4 text-slate-600">
+              {record.pfNo}
+            </td>
+
+            <td className="px-5 py-4">
+              <Badge>{record.depotName}</Badge>
+            </td>
+
+            <td className="px-5 py-4 text-slate-600">
+              {record.category}
+            </td>
+
+            <td className="px-5 py-4 text-slate-600">
+              {record.item}
+            </td>
+
+            <td className="px-5 py-4 text-slate-600">
+              {new Date(record.dueDate).toLocaleDateString()}
+            </td>
+
+            <td className="px-5 py-4">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-100">
+                {record.overdueDays} Days
+              </span>
+            </td>
+
+            <td className="px-5 py-4">
+              <button
+                onClick={() => navigate(`/admin/user/${record.driverId}`)}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
+              >
+                <Eye size={14} />
+                View
+              </button>
+            </td>
+          </tr>
+        ))}
+      </Table>
+    </div>
+
+  </div>
+)}
             </div>
 
           {/* ================= MINI ADMINS (NEW) ================= */}
@@ -655,4 +776,4 @@ function Badge({ children }) {
       {children}
     </span>
   );
-}
+}

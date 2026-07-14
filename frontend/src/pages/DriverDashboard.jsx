@@ -198,7 +198,7 @@ export default function DriverDashboard() {
     { title: "Bio Data", description: "Review profile details and personal records", icon: <User size={20} />, onClick: () => navigate("/driver/profile") },
     { title: "Health / Training", description: "Check medical and training compliance", icon: <HeartPulse size={20} />, onClick: () => navigate("/driver/health") },
     { title: "LR Details", description: "Monitor route learning record history", icon: <FileText size={20} />, onClick: () => navigate("/driver/lr") },
-    { title: "Mileage Details", description: "Access duty and mileage records", icon: <ClipboardList size={20} />, onClick: () => navigate("/driver/daily") },
+    { title: "Duty Logs", description: "Access duty and mileage records", icon: <ClipboardList size={20} />, onClick: () => navigate("/driver/daily") },
     { title: "Daily Tower Car Checklist", description: "Submit the daily operating checklist", icon: <CheckSquare size={20} />, onClick: openTCardPopup },
     { title: "Circulars", description: "Open official circulars and notices", icon: <ScrollText size={20} />, onClick: () => navigate("/circulars") },
     { title: "TW Dashboard", description: "View tower wagon operational status", icon: <Train size={20} />, onClick: () => navigate("/driver/engine") },

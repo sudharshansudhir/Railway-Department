@@ -304,6 +304,13 @@ export default function DriverDetails() {
                   <TableHead center>KM</TableHead>
                   <TableHead center>Breath</TableHead>
                   <TableHead center>Mileage</TableHead>
+                   <TableHead className="px-4 py-2 text-center">
+      Sign ON Image
+    </TableHead>
+
+    <TableHead className="px-4 py-2 text-center">
+      Sign OFF Image
+    </TableHead>
                 </tr>
               </thead>
 
@@ -351,6 +358,47 @@ export default function DriverDetails() {
                     <TableCell center className="text-indigo-600 font-semibold">
                       {log.mileage || "-"}
                     </TableCell>
+                    <TableCell className="px-4 py-2 text-center">
+
+  {log.signInImage ? (
+
+    <a
+      href={log.signInImage}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs hover:bg-blue-700"
+    >
+      View
+    </a>
+
+  ) : (
+
+    "-"
+
+  )}
+
+</TableCell>
+
+<TableCell className="px-4 py-2 text-center">
+
+  {log.signOutImage ? (
+
+    <a
+      href={log.signOutImage}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="px-3 py-1 rounded-lg bg-green-600 text-white text-xs hover:bg-green-700"
+    >
+      View
+    </a>
+
+  ) : (
+
+    "-"
+
+  )}
+
+</TableCell>
                   </tr>
                 ))}
               </tbody>

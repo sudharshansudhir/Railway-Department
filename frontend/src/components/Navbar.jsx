@@ -182,7 +182,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
         navigate(to);
         setOpen(false);
       }}
-      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition md:w-auto
+      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 mx-1 text-sm font-semibold transition md:w-auto
         ${
           location.pathname === to
             ? "bg-[#0b659a] text-white"
@@ -198,9 +198,9 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
     <>
       {role === "DRIVER" && (
         <>
-          <NavButton to="/driver" icon={<User size={18} />} label="Driver Dashboard" />
+          <NavButton to="/driver" icon={<User size={18} />} label="TW Driver Dashboard" />
           <NavButton to="/driver/engine" icon={<Train size={18} />} label="TW Dashboard" />
-          <NavButton to="/driver/daily" icon={<ClipboardList size={18} />} label="Mileage Details" />
+          <NavButton to="/driver/daily" icon={<ClipboardList size={18} />} label="Duty Logs" />
           <NavButton to="/driver/abnormalities" icon={<AlertTriangle size={18} />} label="Abnormalities" />
           <NavButton to="/circulars" icon={<FileText size={18} />} label="Circulars" />
         </>
@@ -208,7 +208,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
 
       {role === "DEPOT_MANAGER" && (
         <>
-          <NavButton to="/manager" icon={<Users size={18} />} label="Drivers" />
+          <NavButton to="/manager" icon={<Users size={18} />} label="TW Driver Dashboard" />
           <NavButton to="/manager/engine" icon={<Train size={18} />} label="TW Dashboard" />
           <NavButton to="/admin/circular-status" icon={<CheckSquare size={18} />} label="Circular Status" />
           <NavButton to="/circulars" icon={<FileText size={18} />} label="Circulars" />
@@ -217,7 +217,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
 
       {role === "SUPER_ADMIN" && (
         <>
-          <NavButton to="/admin" icon={<Shield size={18} />} label="Dashboard" />
+          <NavButton to="/admin" icon={<Shield size={18} />} label="TW Driver Dashboard" />
           <NavButton to="/admin/engine" icon={<Train size={18} />} label="TW Dashboard" />
           <NavButton to="/admin/circular-upload" icon={<FileText size={18} />} label="Upload Circular" />
           <NavButton to="/admin/circular-status" icon={<CheckSquare size={18} />} label="Circular Status" />
@@ -238,7 +238,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
 
   return (
     <>
-      <nav className="bg-white shadow-md sticky top-0 z-[1000]">
+      <nav className="bg-white shadow-md z-20 sticky py-2 top-0 ">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
 

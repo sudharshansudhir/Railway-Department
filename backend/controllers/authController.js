@@ -91,10 +91,13 @@ export const login = async (req, res) => {
       token,
       role: user.role,
       passwordChanged: user.passwordChanged || false,
-      depotName:user.depotName
+      depotName:user.depotName,
+  assignedDepots: user.assignedDepots || []
+
     });
 
   } catch {
+     console.error("LOGIN ERROR:", err);
     res.status(500).json({ msg: "Login failed" });
   }
 };

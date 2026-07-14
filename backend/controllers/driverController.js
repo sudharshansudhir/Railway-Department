@@ -1,6 +1,8 @@
 import User from "../models/User.js";
 import DriverProfile from "../models/DriverProfile.js";
 import DailyLog from "../models/DailyLog.js";
+import cloudinary from "../utils/cloudinary.js";
+import streamifier from "streamifier";
 
 // import CompleteEngine from "../models/Engins.js"
 /* ======================================================
@@ -9,6 +11,40 @@ import DailyLog from "../models/DailyLog.js";
 
 
 
+const uploadImageToCloudinary = (file) => {
+
+  return new Promise((resolve, reject) => {
+
+    if (!file) return resolve("");
+
+    const stream = cloudinary.uploader.upload_stream(
+
+      {
+        folder: "driver-breath-analyser",
+        resource_type: "image"
+      },
+
+      (error, result) => {
+
+        if (error) {
+
+          reject(error);
+
+        } else {
+
+          resolve(result.secure_url);
+
+        }
+
+      }
+
+    );
+
+    streamifier.createReadStream(file.buffer).pipe(stream);
+
+  });
+
+};
 
 /* VIEW OWN PROFILE */
 export const getDriverProfile = async (req, res) => {
@@ -150,10 +186,17 @@ export const updateLR = async (req, res) => {
 /* SIGN IN */
 export const driverSignIn = async (req, res) => {
   try {
-    const { fromStation, twNumber, breathAnalyserinitial } = req.body;
+
+    const {
+      fromStation,
+      twNumber,
+      breathAnalyserinitial
+    } = req.body;
 
     if (!fromStation || !twNumber) {
-      return res.status(400).json({ msg: "Missing sign-in data" });
+      return res.status(400).json({
+        msg: "Missing sign-in data"
+      });
     }
 
     const today = new Date();
@@ -166,23 +209,57 @@ export const driverSignIn = async (req, res) => {
     });
 
     if (existing) {
-      return res.status(400).json({ msg: "Already signed in" });
+      return res.status(400).json({
+        msg: "Already signed in"
+      });
     }
 
+    /* ===============================
+       Upload Image (Optional)
+    =============================== */
+
+    let signInImage = "";
+
+    if (req.file) {
+
+      signInImage = await uploadImageToCloudinary(req.file);
+
+    }
+
+    /* ===============================
+       Save Log
+    =============================== */
+
     await DailyLog.create({
+
       driverId: req.user.id,
+
       logDate: today,
+
       signInTime: new Date(),
+
       fromStation,
+
       twNumber,
-      breathAnalyserinitial
+
+      breathAnalyserinitial,
+
+      signInImage
+
     });
 
-    res.json({ msg: "Signed in successfully" });
+    res.json({
+      msg: "Signed in successfully"
+    });
 
   } catch (err) {
+
     console.error(err);
-    res.status(500).json({ msg: "Server error" });
+
+    res.status(500).json({
+      msg: "Server error"
+    });
+
   }
 };
 
@@ -190,51 +267,84 @@ export const driverSignIn = async (req, res) => {
 /* SIGN OUT */
 export const driverSignOut = async (req, res) => {
   try {
-    const { toStation, km, breathAnalyserDone } = req.body;
+
+    const {
+      toStation,
+      km,
+      breathAnalyserDone
+    } = req.body;
 
     if (!toStation || !km) {
-      return res.status(400).json({ msg: "Missing sign-out data" });
+      return res.status(400).json({
+        msg: "Missing sign-out data"
+      });
     }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     const log = await DailyLog.findOne({
       driverId: req.user.id,
-      // logDate: today,
       signOutTime: { $exists: false }
     });
 
     if (!log) {
-      return res.status(400).json({ msg: "No active duty found" });
+      return res.status(400).json({
+        msg: "No active duty found"
+      });
     }
 
     const signOutTime = new Date();
 
-    // 🔥 Calculate hours from signInTime → signOutTime
-    const diffMs = signOutTime - log.signInTime; // milliseconds
-    const hours = diffMs / (1000 * 60 * 60);     // convert to hours
+    const diffMs = signOutTime - log.signInTime;
+
+    const hours = diffMs / (1000 * 60 * 60);
+
+    /* ===============================
+       Upload Image (Optional)
+    =============================== */
+
+    let signOutImage = "";
+
+    if (req.file) {
+
+      signOutImage = await uploadImageToCloudinary(req.file);
+
+    }
+
+    /* ===============================
+       Save Details
+    =============================== */
 
     log.signOutTime = signOutTime;
+
     log.toStation = toStation;
+
     log.km = Number(km);
-    log.hours = Number(hours.toFixed(2)); // rounded to 2 decimals
+
+    log.hours = Number(hours.toFixed(2));
+
     log.breathAnalyserDone = breathAnalyserDone;
 
-    // Example mileage logic
-    // log.mileage = log.hours * 20 + log.km;
     log.mileage = Number(km) * 5.2;
+
+    log.signOutImage = signOutImage;
 
     await log.save();
 
     res.json({
+
       msg: "Signed out successfully",
+
       hours: log.hours
+
     });
 
   } catch (err) {
+
     console.error(err);
-    res.status(500).json({ msg: "Server error" });
+
+    res.status(500).json({
+      msg: "Server error"
+    });
+
   }
 };
 
