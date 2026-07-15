@@ -30,8 +30,11 @@ export const getIssues = async (req, res) => {
         $gte: fromDate
       },
 
-      "issue.isIssue": true
+      // "issue.isIssue": true
 
+  "issue.isIssue": true,
+
+  "issue.status": "Pending"
     }).populate(
       "driverId",
       "name pfNo depotName"

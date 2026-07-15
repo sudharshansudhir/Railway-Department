@@ -126,9 +126,9 @@ export default function AdminCircularStatus() {
                   <FileText size={28} />
                 </div>
                 <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">
-                    Circular Acknowledgement
-                  </h2>
+                 <h2 className="text-l lg:text-3xl font-bold text-slate-800 tracking-tight break-words">
+  Circular Acknowledgements
+</h2>
                   <p className="text-sm text-slate-500 mt-1 font-medium">
                     Monitor who has read and acknowledged circulars
                   </p>

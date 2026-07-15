@@ -51,27 +51,27 @@ export default function EngineDetails({
           </div>
         </div>
 
-        <div className="flex gap-3">
-          {canEdit && (
-            <button
-              onClick={onEdit}
-              className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm flex-1 md:flex-none"
-            >
-              <Pencil size={18}/>
-              Edit Details
-            </button>
-          )}
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+  {canEdit && (
+    <button
+      onClick={onEdit}
+      className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm w-full sm:w-auto"
+    >
+      <Pencil size={18} />
+      Edit Logs
+    </button>
+  )}
 
-          {canDelete && (
-            <button
-              onClick={onDelete}
-              className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm flex-1 md:flex-none"
-            >
-              <Trash2 size={18}/>
-              Delete
-            </button>
-          )}
-        </div>
+  {canDelete && (
+    <button
+      onClick={onDelete}
+      className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm w-full sm:w-auto"
+    >
+      <Trash2 size={18} />
+      Delete
+    </button>
+  )}
+</div>
       </div>
 
       <Section title="Tower Car Information">

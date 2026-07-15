@@ -545,40 +545,68 @@ export default function DriverDetails() {
   />
 
   {/* HEADER WITH COUNT + NAV */}
-  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
 
     <div className="text-sm text-gray-500">
       {tcardTotalCount > 0 && `(${tcardTotalCount} total records)`}
     </div>
 
     {tcardAvailableDates.length > 0 && (
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full lg:w-auto">
 
-        <button
-          onClick={goToPreviousDate}
-          disabled={tcardAvailableDates.indexOf(tcardSelectedDate) >= tcardAvailableDates.length - 1 || tcardLoading}
-          className="p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
-        >
-          <ChevronLeft size={18} />
-        </button>
+        <div className="flex items-center justify-center gap-2">
 
-        <div className="relative">
-          <CalendarDays size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500" />
+          <button
+            onClick={goToPreviousDate}
+            disabled={
+              tcardAvailableDates.indexOf(tcardSelectedDate) >=
+                tcardAvailableDates.length - 1 || tcardLoading
+            }
+            className="p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 flex-shrink-0"
+          >
+            <ChevronLeft size={18} />
+          </button>
+
+          <button
+            onClick={goToNextDate}
+            disabled={
+              tcardAvailableDates.indexOf(tcardSelectedDate) <= 0 ||
+              tcardLoading
+            }
+            className="p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 flex-shrink-0 sm:hidden"
+          >
+            <ChevronRight size={18} />
+          </button>
+
+        </div>
+
+        <div className="relative flex-1 w-full sm:w-auto">
+
+          <CalendarDays
+            size={18}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500"
+          />
+
           <input
             type="date"
             value={tcardSelectedDate}
             onChange={(e) => setTcardSelectedDate(e.target.value)}
-            className="pl-10 pr-3 py-2 border rounded-lg text-sm"
+            className="w-full sm:w-auto pl-10 pr-3 py-2 border rounded-lg text-sm"
           />
+
         </div>
 
         <button
           onClick={goToNextDate}
-          disabled={tcardAvailableDates.indexOf(tcardSelectedDate) <= 0 || tcardLoading}
-          className="p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
+          disabled={
+            tcardAvailableDates.indexOf(tcardSelectedDate) <= 0 ||
+            tcardLoading
+          }
+          className="hidden sm:block p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50 flex-shrink-0"
         >
           <ChevronRight size={18} />
         </button>
+
       </div>
     )}
   </div>
@@ -586,21 +614,38 @@ export default function DriverDetails() {
   {/* LOADING */}
   {tcardLoading && (
     <div className="flex items-center justify-center py-10">
-      <Loader2 className="animate-spin text-indigo-600" size={28} />
-      <span className="ml-2 text-gray-500">Loading checklist...</span>
+      <Loader2
+        className="animate-spin text-indigo-600"
+        size={28}
+      />
+      <span className="ml-2 text-gray-500">
+        Loading checklist...
+      </span>
     </div>
   )}
 
   {/* DATA */}
   {!tcardLoading && tcardData.length > 0 && (
     <div className="space-y-4">
-      {tcardData.map(card => (
-        <div key={card._id} className="border rounded-xl p-4 bg-slate-50">
+
+      {tcardData.map((card) => (
+
+        <div
+          key={card._id}
+          className="border rounded-xl p-4 bg-slate-50"
+        >
 
           {/* HEADER */}
-          <div className="flex justify-between mb-3 text-sm font-semibold">
-            <span>Date: {card.date?.substring(0, 10)}</span>
-            <span>T-Car No: {card.tCarNo}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 text-sm font-semibold">
+
+            <span className="break-words">
+              Date: {card.date?.substring(0, 10)}
+            </span>
+
+            <span className="break-words">
+              T-Car No: {card.tCarNo}
+            </span>
+
           </div>
 
           {/* ITEMS */}
@@ -608,88 +653,129 @@ export default function DriverDetails() {
 
             {card.items?.map((item, idx) => {
 
-              const isDieselItem = item.description === "Check Diesel level";
+              const isDieselItem =
+                item.description === "Check Diesel level";
+
               const isLowDiesel =
                 isDieselItem &&
                 item.dieselLevel !== null &&
                 item.dieselLevel < 500;
 
               return (
-                <div key={idx} className="flex items-start gap-2 text-sm p-2 bg-white rounded-lg">
+
+                <div
+                  key={idx}
+                  className="flex items-start gap-2 text-sm p-2 bg-white rounded-lg"
+                >
 
                   {/* CHECK ICON */}
-                  <span className={item.checked === true ? "text-emerald-500" : "text-red-500"}>
+                  <span
+                    className={
+                      item.checked === true
+                        ? "text-emerald-500 flex-shrink-0"
+                        : "text-red-500 flex-shrink-0"
+                    }
+                  >
                     {item.checked === true ? "✓" : "✗"}
                   </span>
 
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
 
                     {/* DESCRIPTION */}
-                    <p className={item.checked === true ? "text-emerald-500" : "text-red-500"}>
+                    <p
+                      className={`break-words ${
+                        item.checked === true
+                          ? "text-emerald-500"
+                          : "text-red-500"
+                      }`}
+                    >
                       {item.description}
                     </p>
 
                     {/* DIESEL */}
-                    {isDieselItem && item.dieselLevel !== null && (
-                      <div
-                        className={`mt-1 inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold border
-                        ${isLowDiesel
-                          ? "bg-red-50 text-red-700 border-red-300"
-                          : "bg-emerald-50 text-emerald-700 border-emerald-300"
-                        }`}
-                      >
-                        Diesel Level: {item.dieselLevel} L
-                        {isLowDiesel && " (Below Threshold)"}
-                      </div>
-                    )}
+                    {isDieselItem &&
+                      item.dieselLevel !== null && (
+                        <div
+                          className={`mt-1 inline-flex flex-wrap items-center px-3 py-1 rounded-lg text-xs font-semibold border
+                          ${
+                            isLowDiesel
+                              ? "bg-red-50 text-red-700 border-red-300"
+                              : "bg-emerald-50 text-emerald-700 border-emerald-300"
+                          }`}
+                        >
+                          Diesel Level: {item.dieselLevel} L
+                          {isLowDiesel &&
+                            " (Below Threshold)"}
+                        </div>
+                      )}
 
                     {/* REMARK + PRIORITY */}
                     {item.remarks && (
-                      <div className="mt-1 flex items-center gap-2 flex-wrap">
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
 
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 break-words">
                           Remarks: {item.remarks}
                         </p>
 
                         {item.priority && (
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold
-                            ${item.priority === "HIGH"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-amber-100 text-amber-700"
-                            }`}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap
+                              ${
+                                item.priority === "HIGH"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-amber-100 text-amber-700"
+                              }`}
                           >
-                            {item.priority === "HIGH" ? "High Priority" : "Less Priority"}
+                            {item.priority === "HIGH"
+                              ? "High Priority"
+                              : "Less Priority"}
                           </span>
                         )}
+
                       </div>
                     )}
 
                   </div>
+
                 </div>
+
               );
             })}
 
           </div>
+
         </div>
+
       ))}
+
     </div>
   )}
 
   {/* NO DATA FOR DATE */}
-  {!tcardLoading && tcardSelectedDate && tcardData.length === 0 && tcardAvailableDates.length > 0 && (
-    <div className="text-center py-8 bg-slate-50 rounded-xl">
-      <CalendarDays size={40} className="mx-auto text-gray-300 mb-3" />
-      <p className="text-gray-500 font-medium">No checklist found for selected date</p>
-    </div>
-  )}
+  {!tcardLoading &&
+    tcardSelectedDate &&
+    tcardData.length === 0 &&
+    tcardAvailableDates.length > 0 && (
+      <div className="text-center py-8 bg-slate-50 rounded-xl">
+        <CalendarDays
+          size={40}
+          className="mx-auto text-gray-300 mb-3"
+        />
+        <p className="text-gray-500 font-medium">
+          No checklist found for selected date
+        </p>
+      </div>
+    )}
 
   {/* NO T-CARDS */}
-  {!tcardLoading && tcardAvailableDates.length === 0 && (
-    <div className="text-center py-8 bg-slate-50 rounded-xl">
-      <p className="text-gray-500">No checklist submitted</p>
-    </div>
-  )}
+  {!tcardLoading &&
+    tcardAvailableDates.length === 0 && (
+      <div className="text-center py-8 bg-slate-50 rounded-xl">
+        <p className="text-gray-500">
+          No checklist submitted
+        </p>
+      </div>
+    )}
 </Card>
 
         </div>
@@ -732,9 +818,14 @@ function InfoCard({ label, value, icon }) {
 }
 
 function TableWrapper({ children }) {
-  return <div className="overflow-x-auto rounded-xl border">{children}</div>;
+  return (
+    <div className="overflow-x-auto rounded-xl border">
+      <table className="min-w-full">
+        {children}
+      </table>
+    </div>
+  );
 }
-
 function TableHead({ children, center }) {
   return (
     <th className={`px-4 py-3 border-b bg-slate-100 ${center && "text-center"}`}>

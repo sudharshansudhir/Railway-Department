@@ -305,7 +305,7 @@ const deleteEngine = async (engine) => {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-[#F8FAFC] px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto space-y-8">
         <div className="max-w-7xl mx-auto space-y-8">
 
           {/* ================= HEADER ================= */}
@@ -335,7 +335,7 @@ const deleteEngine = async (engine) => {
                   setFormData(emptyEngine);
                   setShowModal(true);
                 }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
               >
                 <Plus size={18} />
                 New Engine
@@ -410,7 +410,7 @@ const deleteEngine = async (engine) => {
 
   {loading ? (
 
-    <div className="p-10 text-center">
+  <div className="p-8 sm:p-10 text-center">
 
       Loading...
 
@@ -457,21 +457,21 @@ const deleteEngine = async (engine) => {
 
             }}
 
-            className="w-full px-6 py-5 flex items-center justify-between hover:bg-slate-50 transition"
+            className="w-full px-4 sm:px-6 py-5 flex items-center justify-between hover:bg-slate-50 transition"
 
           >
 
-            <div className="flex items-center gap-6">
+           <div className="flex items-center gap-3 sm:gap-6 min-w-0">
 
               <div>
 
-                <div className="font-semibold text-slate-800">
+               <div className="font-semibold text-slate-800 break-words">
 
                   {item.towerCarNumber}
 
                 </div>
 
-                <div className="text-sm text-slate-500">
+               <div className="text-sm text-slate-500 break-words">
 
                   {item.depot}
 
@@ -481,7 +481,7 @@ const deleteEngine = async (engine) => {
 
             </div>
 
-            <div className="text-2xl">
+          <div className="text-xl sm:text-2xl flex-shrink-0">
 
               {expandedEngine === item._id ? "▲" : "▼"}
 
@@ -491,7 +491,7 @@ const deleteEngine = async (engine) => {
 
           {expandedEngine === item._id && (
 
-            <div className="px-6 pb-6">
+           <div className="px-4 sm:px-6 pb-6">
 
               <EngineDetails
 
@@ -545,7 +545,7 @@ const deleteEngine = async (engine) => {
 </div>
           {loading && (
 
-            <div className="bg-white rounded-xl shadow p-12 text-center">
+           <div className="bg-white rounded-xl shadow p-8 sm:p-12 text-center">
 
               Loading Engine...
 

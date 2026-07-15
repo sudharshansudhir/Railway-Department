@@ -67,6 +67,8 @@ const [abnormalities, setAbnormalities] = useState([]);
     d.name.toLowerCase().includes(search.toLowerCase()) ||
     d.pfNo.includes(search)
   );
+/* ================= OVERDUE SUMMARY ================= */
+
 const totalOverdues = overdues.length;
 
 const trainingOverdues =
@@ -78,6 +80,18 @@ const lrOverdues =
   overdues.filter(
     o => o.category === "LR Overdue"
   ).length;
+
+/* ================= OVERDUE TABLE DATA ================= */
+
+const trainingOverdueRecords =
+  overdues.filter(
+    o => o.category === "Training Overdue"
+  );
+
+const lrOverdueRecords =
+  overdues.filter(
+    o => o.category === "LR Overdue"
+  );
 
   const issueTotal = issues.length;
 
@@ -118,8 +132,8 @@ const abnormalityPending =
 <div className="space-y-4">
 
   {/* First Row */}
-  <div className="flex flex-wrap gap-4">
-    <div className="flex-1 min-w-[220px]">
+  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div>
       <StatCard
         icon={<Users />}
         title="Drivers"
@@ -127,7 +141,7 @@ const abnormalityPending =
       />
     </div>
 
-    <div className="flex-1 min-w-[220px]">
+    <div>
       <StatCard
         icon={<ShieldAlert />}
         title="Overdues"
@@ -135,7 +149,7 @@ const abnormalityPending =
       />
     </div>
 
-    <div className="flex-1 min-w-[220px]">
+    <div>
       <StatCard
         icon={<ClipboardList />}
         title="Training"
@@ -143,7 +157,7 @@ const abnormalityPending =
       />
     </div>
 
-    <div className="flex-1 min-w-[220px]">
+    <div>
       <StatCard
         icon={<AlertTriangle />}
         title="LR Due"
@@ -153,8 +167,8 @@ const abnormalityPending =
   </div>
 
   {/* Second Row */}
-  <div className="flex flex-wrap gap-4">
-    <div className="flex-1 min-w-[220px]">
+  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div>
       <StatCard
         icon={<AlertTriangle />}
         title="High Issues"
@@ -162,7 +176,7 @@ const abnormalityPending =
       />
     </div>
 
-    <div className="flex-1 min-w-[220px]">
+    <div>
       <StatCard
         icon={<Clock />}
         title="Pending Issues"
@@ -170,7 +184,7 @@ const abnormalityPending =
       />
     </div>
 
-    <div className="flex-1 min-w-[220px]">
+    <div>
       <StatCard
         icon={<TriangleAlert />}
         title="Abnormalities"
@@ -178,7 +192,7 @@ const abnormalityPending =
       />
     </div>
 
-    <div className="flex-1 min-w-[220px]">
+    <div>
       <StatCard
         icon={<Clock />}
         title="Pending Abnormal"
@@ -190,154 +204,315 @@ const abnormalityPending =
 </div>
 
           {/* SEARCH */}
-          <div className="bg-white p-4 rounded-xl shadow flex items-center gap-3">
+          <div className="bg-white p-4 rounded-xl shadow flex items-center gap-3 w-full">
             <Search className="text-gray-400" />
             <input
               type="text"
               placeholder="Search by PF No or Name"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full focus:outline-none text-sm"
+              className="w-full focus:outline-none text-sm min-w-0"
             />
           </div>
         <IssueDashboard />
         <AbnormalityDashboard />
-<div className="bg-white rounded-xl shadow overflow-hidden">
+<div className="space-y-8">
 
-  <div className="px-5 py-4 border-b">
+  {/* ================= LR DUE ================= */}
 
-    <h3 className="text-lg font-bold text-red-600">
+  <div className="bg-white rounded-xl shadow overflow-hidden">
 
-      Overdue Drivers
+    <div className="px-5 py-4 border-b">
 
-    </h3>
+      <h3 className="text-lg font-bold text-red-600">
+
+        Overdue Records
+
+      </h3>
+
+    </div>
+
+    <div className="p-5">
+
+      <div className="flex items-center gap-2 mb-4">
+
+        <ClipboardList className="text-red-600" size={22} />
+
+        <h4 className="text-xl font-bold">
+
+          LR Due Records
+
+        </h4>
+
+      </div>
+
+      <Table
+
+        headers={[
+
+          "Driver",
+
+          "PF No",
+
+          "Category",
+
+          "Item",
+
+          "Due Date",
+
+          "Overdue",
+
+          "Action",
+
+        ]}
+
+        loading={loading}
+
+        emptyText="No LR Due Records"
+
+      >
+
+        {lrOverdueRecords.map((record, index) => (
+
+          <tr
+
+            key={`${record.driverId}-${index}`}
+
+            className="hover:bg-slate-50 border-t"
+
+          >
+
+            <td className="px-5 py-4 font-medium">
+
+              {record.driverName}
+
+            </td>
+
+            <td className="px-5 py-4">
+
+              {record.pfNo}
+
+            </td>
+
+            <td className="px-5 py-4">
+
+              <span
+
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
+
+                  record.category === "Training Overdue"
+
+                    ? "bg-red-100 text-red-700"
+
+                    : "bg-indigo-100 text-indigo-700"
+
+                }`}
+
+              >
+
+                {record.category}
+
+              </span>
+
+            </td>
+
+            <td className="px-5 py-4">
+
+              {record.item}
+
+            </td>
+
+            <td className="px-5 py-4">
+
+              {new Date(record.dueDate).toLocaleDateString()}
+
+            </td>
+
+            <td className="px-5 py-4">
+
+              <span className="text-red-600 font-semibold">
+
+                {record.overdueDays} Days
+
+              </span>
+
+            </td>
+
+            <td className="px-5 py-4">
+
+              <button
+
+                onClick={() =>
+
+                  navigate(`/manager/driver/${record.driverId}`)
+
+                }
+
+                className="inline-flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700"
+
+              >
+
+                <Eye size={15} />
+
+                View
+
+              </button>
+
+            </td>
+
+          </tr>
+
+        ))}
+
+      </Table>
+
+    </div>
 
   </div>
 
-  <table className="min-w-full text-sm">
 
-    <thead className="bg-slate-100">
 
-      <tr>
+  {/* ================= TRAINING DUE ================= */}
 
-        <th className="px-4 py-3 text-left">
-          Driver
-        </th>
+  <div className="bg-white rounded-xl shadow overflow-hidden">
 
-        <th className="px-4 py-3 text-left">
-          PF No
-        </th>
+    <div className="p-5">
 
-        <th className="px-4 py-3 text-left">
-          Category
-        </th>
+      <div className="flex items-center gap-2 mb-4">
 
-        <th className="px-4 py-3 text-left">
-          Item
-        </th>
+        <ClipboardList className="text-amber-600" size={22} />
 
-        <th className="px-4 py-3 text-left">
-          Due Date
-        </th>
+        <h4 className="text-xl font-bold">
 
-        <th className="px-4 py-3 text-left">
-          Overdue
-        </th>
+          Training Due Records
 
-        <th className="px-4 py-3 text-center">
-          Action
-        </th>
+        </h4>
 
-      </tr>
+      </div>
 
-    </thead>
+      <Table
 
-    <tbody>
+        headers={[
 
-      {overdues.length === 0 && (
+          "Driver",
 
-        <tr>
+          "PF No",
 
-          <td
-            colSpan={7}
-            className="py-6 text-center text-gray-500"
+          "Category",
+
+          "Item",
+
+          "Due Date",
+
+          "Overdue",
+
+          "Action",
+
+        ]}
+
+        loading={loading}
+
+        emptyText="No Training Due Records"
+
+      >
+
+        {trainingOverdueRecords.map((record, index) => (
+
+          <tr
+
+            key={`${record.driverId}-${index}`}
+
+            className="hover:bg-slate-50 border-t"
+
           >
 
-            No overdue records.
+            <td className="px-5 py-4 font-medium">
 
-          </td>
+              {record.driverName}
 
-        </tr>
+            </td>
 
-      )}
+            <td className="px-5 py-4">
 
-      {overdues.map(record => (
+              {record.pfNo}
 
-        <tr
-          key={`${record.driverId}-${record.category}-${record.item}`}
-          className="border-t hover:bg-slate-50"
-        >
+            </td>
 
-          <td className="px-4 py-3">
-            {record.driverName}
-          </td>
+            <td className="px-5 py-4">
 
-          <td className="px-4 py-3">
-            {record.pfNo}
-          </td>
+              <span
 
-          <td className="px-4 py-3">
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
 
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                record.category === "Training Overdue"
-                  ? "bg-red-100 text-red-700"
-                  : "bg-indigo-100 text-indigo-700"
-              }`}
-            >
+                  record.category === "Training Overdue"
 
-              {record.category}
+                    ? "bg-red-100 text-red-700"
 
-            </span>
+                    : "bg-indigo-100 text-indigo-700"
 
-          </td>
+                }`}
 
-          <td className="px-4 py-3">
-            {record.item}
-          </td>
+              >
 
-          <td className="px-4 py-3">
-            {new Date(record.dueDate).toLocaleDateString()}
-          </td>
+                {record.category}
 
-          <td className="px-4 py-3 text-red-600 font-semibold">
-            {record.overdueDays} Days
-          </td>
+              </span>
 
-          <td className="px-4 py-3 text-center">
+            </td>
 
-            <button
-              onClick={() =>
-                navigate(`/manager/driver/${record.driverId}`)
-              }
-              className="inline-flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700"
-            >
+            <td className="px-5 py-4">
 
-              <Eye size={14} />
+              {record.item}
 
-              View
+            </td>
 
-            </button>
+            <td className="px-5 py-4">
 
-          </td>
+              {new Date(record.dueDate).toLocaleDateString()}
 
-        </tr>
+            </td>
 
-      ))}
+            <td className="px-5 py-4">
 
-    </tbody>
+              <span className="text-red-600 font-semibold">
 
-  </table>
+                {record.overdueDays} Days
+
+              </span>
+
+            </td>
+
+            <td className="px-5 py-4">
+
+              <button
+
+                onClick={() =>
+
+                  navigate(`/manager/driver/${record.driverId}`)
+
+                }
+
+                className="inline-flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700"
+
+              >
+
+                <Eye size={15} />
+
+                View
+
+              </button>
+
+            </td>
+
+          </tr>
+
+        ))}
+
+      </Table>
+
+    </div>
+
+  </div>
 
 </div>
 
@@ -354,13 +529,14 @@ const abnormalityPending =
     </h3>
 
   </div>
-              <table className="min-w-full text-sm">
+  <div className="overflow-x-auto">
+             <table className="min-w-[850px] w-full text-sm">
                 <thead className="bg-slate-100 text-gray-700 sticky top-0">
                   <tr>
-                    <th className="px-4 py-3 text-left">PF No</th>
-                    <th className="px-4 py-3 text-left">Name</th>
-                    <th className="px-4 py-3 text-left">Depot</th>
-                    <th className="px-4 py-3 text-center">Action</th>
+                    <th className="px-3 sm:px-4 py-3 text-left whitespace-nowrap">PF No</th>
+                    <th className="px-3 sm:px-4 py-3 text-left whitespace-nowrap">Name</th>
+                    <th className="px-3 sm:px-4 py-3 text-left whitespace-nowrap">Depot</th>
+                    <th className="px-3 sm:px-4 py-3 text-center whitespace-nowrap">Action</th>
                   </tr>
                 </thead>
 
@@ -389,11 +565,11 @@ const abnormalityPending =
                       <td className="px-4 py-3 font-medium">
                         {d.pfNo}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
                         {d.name}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                      <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full whitespace-nowrap">
                           <Train size={14} />
                           {d.depotName}
                         </span>
@@ -401,7 +577,7 @@ const abnormalityPending =
                       <td className="px-4 py-3 text-center">
                         <button
                           onClick={() => viewUserDetails(d._id)}
-                          className="inline-flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition"
+                          className="inline-flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition whitespace-nowrap"
                         >
                           <Eye size={16} />
                           View
@@ -411,6 +587,7 @@ const abnormalityPending =
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
 
@@ -424,7 +601,7 @@ const abnormalityPending =
 }
 function StatCard({ icon, title, value }) {
   return (
-    <div className="bg-white rounded-xl shadow p-4 flex items-center gap-3">
+    <div className="bg-white rounded-xl shadow p-4 flex items-center gap-3 w-full">
 
       <div className="p-3 rounded-full bg-red-50 text-red-600">
         {icon}
@@ -436,9 +613,86 @@ function StatCard({ icon, title, value }) {
           {title}
         </p>
 
-        <p className="text-2xl font-bold">
+      <p className="text-xl sm:text-2xl font-bold">
           {value}
         </p>
+
+      </div>
+
+    </div>
+  );
+}
+
+function Table({ headers, children, loading, emptyText }) {
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+
+      <div className="overflow-x-auto">
+
+        <table className="min-w-[900px] w-full text-sm">
+
+          <thead className="bg-slate-100">
+
+            <tr>
+
+              {headers.map((header) => (
+
+                <th
+                  key={header}
+                  className="px-5 py-4 text-left whitespace-nowrap font-semibold"
+                >
+                  {header}
+                </th>
+
+              ))}
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {loading && (
+
+              <tr>
+
+                <td
+                  colSpan={headers.length}
+                  className="py-8 text-center text-gray-500"
+                >
+
+                  Loading...
+
+                </td>
+
+              </tr>
+
+            )}
+
+            {!loading &&
+              (!children ||
+                (Array.isArray(children) && children.length === 0)) && (
+
+                <tr>
+
+                  <td
+                    colSpan={headers.length}
+                    className="py-8 text-center text-gray-500"
+                  >
+
+                    {emptyText}
+
+                  </td>
+
+                </tr>
+
+              )}
+
+            {!loading && children}
+
+          </tbody>
+
+        </table>
 
       </div>
 

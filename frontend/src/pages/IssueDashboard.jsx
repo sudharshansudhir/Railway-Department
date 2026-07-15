@@ -35,6 +35,7 @@ export default function IssueDashboard({
       const res = await api.get("/issues");
 
       setIssues(res.data);
+      // console.log(res)
     } catch (err) {
       Swal.fire(
         "Error",
@@ -50,23 +51,44 @@ export default function IssueDashboard({
     loadIssues();
   }, []);
 
-//   const depots = [...new Set(issues.map((i) => i.depot))];
+  // const depots = [...new Set(issues.map((i) => i.depot))];
+
+  // const filtered = useMemo(() => {
+  //   return issues.filter((issue) => {
+  //     const searchMatch =
+  //       issue.driverName.toLowerCase().includes(search.toLowerCase()) ||
+  //       issue.pfNo.toLowerCase().includes(search.toLowerCase());
+
+  //     const statusMatch = status === "" || issue.status === status;
+
+  //   const depotMatch =
+  // selectedDepot === "" ||
+  // issue.depot === selectedDepot;
+
+  //     return searchMatch && statusMatch && depotMatch;
+  //   });
+  // }, [issues, search, status, selectedDepot]);
 
   const filtered = useMemo(() => {
-    return issues.filter((issue) => {
-      const searchMatch =
-        issue.driverName.toLowerCase().includes(search.toLowerCase()) ||
-        issue.pfNo.toLowerCase().includes(search.toLowerCase());
-
-      const statusMatch = status === "" || issue.status === status;
+  return issues.filter((issue) => {
+    const searchMatch =
+      issue.driverName
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      issue.pfNo
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
     const depotMatch =
-  selectedDepot === "" ||
-  issue.depot === selectedDepot;
+      selectedDepot === "" ||
+      issue.depot === selectedDepot;
 
-      return searchMatch && statusMatch && depotMatch;
-    });
-  }, [issues, search, status, selectedDepot]);
+    return searchMatch && depotMatch;
+  });
+}, [issues, search, selectedDepot]);
+
+//   console.log("Issues:", issues);
+// console.log("Filtered:", filtered);
 
   const total = issues.length;
 
@@ -82,7 +104,7 @@ export default function IssueDashboard({
 
       <div className="">
         <div className="max-w-7xl mx-auto space-y-6 p-1">
-          <div className="flex justify-between gap-3">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-center gap-3">
             <AlertTriangle className="text-red-600" size={30} />
 
@@ -93,8 +115,8 @@ export default function IssueDashboard({
             </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow p-4 flex flex-wrap gap-3">
-            <div className="relative">
+            <div className="bg-white rounded-xl shadow p-3 sm:p-4 flex w-full lg:w-auto">
+            <div className="relative w-full">
               <Search
                 size={18}
                 className="absolute left-3 top-3 text-gray-400"
@@ -104,7 +126,7 @@ export default function IssueDashboard({
                 placeholder="Search Driver"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="border w-80 rounded-lg pl-10 pr-4 py-2"
+                className="border w-full lg:w-80 rounded-lg pl-10 pr-4 py-2"
               />
             </div>
             
@@ -124,7 +146,7 @@ export default function IssueDashboard({
           
 
           <div className="bg-white rounded-xl shadow overflow-x-auto">
-            <table className="w-full">
+            <table className="min-w-[900px] w-full text-sm">
               <thead className="bg-slate-100">
                 <tr>
                   <TH>Driver</TH>
@@ -148,7 +170,7 @@ export default function IssueDashboard({
               <tbody>
                 {loading && (
                   <tr>
-                    <td colSpan={8} className="text-center py-10">
+                    <td colSpan={8} className="text-center py-10 whitespace-nowrap">
                       Loading...
                     </td>
                   </tr>
@@ -165,7 +187,9 @@ export default function IssueDashboard({
 
                       <TD>{issue.checklistType}</TD>
 
-                      <TD>{issue.remarks}</TD>
+                      <td className="px-3 sm:px-4 py-3 max-w-xs break-words">
+  {issue.remarks}
+</td>
 
                       <TD>
                         <span
@@ -231,22 +255,17 @@ ${
                                   );
                                 }
                               }}
-                              className="bg-green-600
-hover:bg-green-700
-text-white
-px-3
-py-1
-rounded-lg"
+                              className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg whitespace-nowrap"
                             >
                               Resolve
                             </button>
                           ) : (
-                            <button className="text-[#0b659a] hover:text-[#084d78] transition">
+                            <button className="text-[#0b659a] hover:text-[#084d78] transition p-1">
                               <Eye size={18} />
                             </button>
                           )
                         ) : (
-                          <button className="text-[#0b659a] hover:text-[#084d78] transition">
+                          <button className="text-[#0b659a] hover:text-[#084d78] transition p-1">
                             <Eye size={18} />
                           </button>
                         )}
@@ -256,7 +275,10 @@ rounded-lg"
 
                 {!loading && filtered.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-10 text-gray-500 font-medium">
+                    <td
+  colSpan={8}
+  className="text-center py-10 text-gray-500 font-medium whitespace-nowrap"
+>
                       No results
                     </td>
                   </tr>
@@ -287,9 +309,17 @@ function Card({ icon, title, value }) {
 }
 
 function TH({ children }) {
-  return <th className="px-4 py-3 text-left">{children}</th>;
+  return (
+    <th className="px-3 sm:px-4 py-3 text-left whitespace-nowrap">
+      {children}
+    </th>
+  );
 }
 
 function TD({ children }) {
-  return <td className="px-4 py-3">{children}</td>;
+  return (
+    <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
+      {children}
+    </td>
+  );
 }

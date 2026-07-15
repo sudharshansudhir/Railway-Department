@@ -5,13 +5,13 @@ import {
   getDriverProfile,
   updateBioData,
   updateTraining,
-  updateLR,
+  updateLR, 
   driverSignIn,
   driverSignOut,
   driverAlerts,
   checkActiveDuty,
   getDutyStatus
-} from "../controllers/driverController.js";
+} from "../controllers/driverController.js"; 
 import { saveTCard } from "../controllers/tcardController.js";
 
 const router = express.Router();

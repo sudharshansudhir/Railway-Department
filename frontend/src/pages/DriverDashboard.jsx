@@ -53,54 +53,196 @@ export default function DriverDashboard() {
       showCancelButton: true,
       confirmButtonText: "Submit Checklist",
       html: `
-        <select id="tcar" class="swal2-input" style="margin-bottom:12px">
-          <option value="">Select Tower Car</option>
-          ${towerCars.map(t => `<option value="${t}">${t}</option>`).join("")}
-        </select>
+<div style="text-align:left;">
 
-        <div style="font-size:12px;text-align:left;max-height:400px;overflow:auto;">
-          ${items.map((i, idx) => `
-            <div style="margin-bottom:14px;">
-              <label style="display:flex;gap:8px;align-items:flex-start;">
-                <input type="checkbox" id="chk${idx}" style="margin-top:4px"/>
-                <span style="font-weight:600">${i.description}</span>
-              </label>
+  <div style="
+    background:#F8FAFC;
+    border:1px solid #E2E8F0;
+    border-radius:14px;
+    padding:18px;
+    margin-bottom:18px;
+  ">
 
-              ${i.description === "Check Diesel level" ? `
-                <input
-                  type="number"
-                  id="diesel${idx}"
-                  class="swal2-input"
-                  placeholder="Enter Diesel Level (Litres)"
-                  min="0"
-                />
-              ` : ""}
+    <label style="
+      display:block;
+      font-size:14px;
+      font-weight:700;
+      color:#334155;
+      margin-bottom:8px;
+    ">
+      Tower Car
+    </label>
 
-              <input id="rem${idx}"
-                class="swal2-input"
-                placeholder="Remarks (optional)"
-                oninput="
-                  const val = this.value.trim();
-                  const priorityDiv = document.getElementById('priorityDiv${idx}');
-                  if(val){
-                    priorityDiv.style.display = 'block';
-                  } else {
-                    priorityDiv.style.display = 'none';
-                  }
-                "
-              />
+    <select
+      id="tcar"
+      class="swal2-input"
+      style="
+        width:100%;
+        margin:0;
+        border-radius:10px;
+        border:1px solid #CBD5E1;
+        background:white;
+      "
+    >
+      <option value="">Select Tower Car</option>
+      ${towerCars
+        .map(
+          t => `<option value="${t}">${t}</option>`
+        )
+        .join("")}
+    </select>
 
-              <div id="priorityDiv${idx}" style="display:none;margin-top:6px;">
-                <select id="priority${idx}" class="swal2-input">
-                  <option value="">Select Priority</option>
-                  <option value="HIGH">High Priority</option>
-                  <option value="LOW">Less Priority</option>
-                </select>
-              </div>
-            </div>
-          `).join("")}
+  </div>
+
+  <div style="
+      max-height:420px;
+      overflow-y:auto;
+      padding-right:6px;
+  ">
+
+    ${items
+      .map(
+        (i, idx) => `
+
+      <div style="
+        border:1px solid #E2E8F0;
+        border-radius:14px;
+        background:#FFFFFF;
+        padding:16px;
+        margin-bottom:14px;
+        box-shadow:0 1px 3px rgba(0,0,0,.05);
+      ">
+
+        <label style="
+          display:flex;
+          align-items:flex-start;
+          gap:10px;
+          cursor:pointer;
+        ">
+
+          <input
+            type="checkbox"
+            id="chk${idx}"
+            style="
+              margin-top:4px;
+              width:18px;
+              height:18px;
+            "
+          />
+
+          <span style="
+            font-size:14px;
+            font-weight:600;
+            color:#1E293B;
+            line-height:1.5;
+          ">
+            ${i.description}
+          </span>
+
+        </label>
+
+        ${
+          i.description === "Check Diesel level"
+            ? `
+        <div style="margin-top:12px;">
+
+          <input
+            type="number"
+            id="diesel${idx}"
+            class="swal2-input"
+            placeholder="Enter Diesel Level (Litres)"
+            min="0"
+            style="
+              width:100%;
+              margin:0;
+              border-radius:10px;
+    font-size:13px;
+              border:1px solid #CBD5E1;
+            "
+          />
+
         </div>
-      `,
+        `
+            : ""
+        }
+
+        <div style="margin-top:12px;">
+
+          <input
+  id="rem${idx}"
+  class="swal2-input"
+  placeholder="Remarks (optional)"
+  style="
+    width:100%;
+    margin:0;
+    border-radius:10px;
+    border:1px solid #CBD5E1;
+    font-size:13px;
+  "
+
+  oninput="
+    const val=this.value.trim();
+    const priorityDiv=document.getElementById('priorityDiv${idx}');
+
+    if(val){
+      priorityDiv.style.display='block';
+    }else{
+      priorityDiv.style.display='none';
+    }
+  "
+/>
+
+        </div>
+
+        <div
+          id="priorityDiv${idx}"
+          style="
+            display:none;
+            margin-top:12px;
+          "
+        >
+
+          <label style="
+            display:block;
+            margin-bottom:6px;
+            font-size:13px;
+            font-weight:600;
+            color:#475569;
+          ">
+            Priority
+          </label>
+
+          <select
+            id="priority${idx}"
+            class="swal2-input"
+            style="
+              width:100%;
+              margin:0;
+              border-radius:10px;
+              border:1px solid #CBD5E1;
+            "
+          >
+            <option value="">Select Priority</option>
+            <option value="HIGH">
+              🔴 High Priority
+            </option>
+            <option value="LOW">
+              🟡 Less Priority
+            </option>
+          </select>
+
+        </div>
+
+      </div>
+
+    `
+      )
+      .join("")}
+
+  </div>
+
+</div>
+`,
       preConfirm: () => {
         const tCarNo = document.getElementById("tcar").value;
         if (!tCarNo) {
