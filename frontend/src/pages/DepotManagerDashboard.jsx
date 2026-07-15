@@ -218,8 +218,8 @@ const scrollToSection = (
   />
 
   <StatCard
-    icon={<ClipboardList />}
-    title="Training Due"
+    icon={<AlertTriangle />}
+    title="PME/GRS/OC Due"
     value={trainingOverdues}
     onClick={() =>
       scrollToSection(
@@ -252,7 +252,7 @@ const scrollToSection = (
   />
 
   <StatCard
-    icon={<ShieldAlert />}
+    icon={<AlertTriangle />}
     title="TW Issues"
     value={issuePending}
     onClick={() =>
@@ -302,7 +302,7 @@ const scrollToSection = (
     >
       <div className="flex items-center gap-2">
 
-        <ShieldAlert className="text-orange-600" size={22} />
+        <AlertTriangle className="bg-red-50 text-red-600" size={22} />
 
         <span>TW Issues (Higher Priority)</span>
 
@@ -437,7 +437,7 @@ const scrollToSection = (
 
           "PF No",
 
-          "Category",
+          // "Category",
 
           "Item",
 
@@ -477,7 +477,7 @@ const scrollToSection = (
 
             </td>
 
-            <td className="px-5 py-4">
+            {/* <td className="px-5 py-4">
 
               <span
 
@@ -497,7 +497,7 @@ const scrollToSection = (
 
               </span>
 
-            </td>
+            </td> */}
 
             <td className="px-5 py-4">
 
@@ -567,7 +567,7 @@ const scrollToSection = (
 
         <h4 className="text-xl font-bold">
 
-          Training Due Records
+         PME/GRS/OC Records
 
         </h4>
 
@@ -581,7 +581,7 @@ const scrollToSection = (
 
           "PF No",
 
-          "Category",
+          // "Category",
 
           "Item",
 
@@ -595,7 +595,7 @@ const scrollToSection = (
 
         loading={loading}
 
-        emptyText="No Training Due Records"
+        emptyText="No PME/GRS/OC Records"
 
       >
 
@@ -621,7 +621,7 @@ const scrollToSection = (
 
             </td>
 
-            <td className="px-5 py-4">
+            {/* <td className="px-5 py-4">
 
               <span
 
@@ -641,7 +641,7 @@ const scrollToSection = (
 
               </span>
 
-            </td>
+            </td> */}
 
             <td className="px-5 py-4">
 

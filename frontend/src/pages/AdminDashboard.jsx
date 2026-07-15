@@ -304,7 +304,7 @@ try {
               )}
               <StatCard
                 icon={<ClipboardList />}
-                label="Training Due"
+                label="PME/GRS/OC Due"
                 value={trainingOverdues}
                 onClick={() => scrollToSection("section-overdues", setShowOverdues, showOverdues)}
               />
@@ -318,13 +318,14 @@ try {
                 icon={<AlertTriangle />}
                 label="Circular Pending"
                 value={circularPendings}
+                colorClass="bg-red-50 text-red-600"
                 onClick={() => navigate("/admin/circular-status")}
               />
               <StatCard
                 icon={<AlertTriangle />}
                 label="TW issues (higher priority)"
                 value={issueTotal}
-                colorClass="bg-amber-50 text-amber-600"
+                colorClass="bg-red-50 text-red-600"
                 onClick={() => scrollToSection("section-issues", setShowIssues, showIssues)}
               />
               <StatCard
@@ -370,7 +371,7 @@ try {
                 className="w-full flex items-center justify-between px-6 py-5 bg-white transition-colors duration-300 text-left"
               >
                 <div className="flex items-center gap-4">
-                  <div className="p-2.5 bg-amber-50 group-hover/card:bg-[#0b659a] rounded-xl text-amber-600 group-hover/card:text-white transition-colors duration-300">
+                  <div className="p-2.5 bg-amber-50 group-hover/card:bg-[#0b659a] rounded-xl bg-red-50 text-red-600 group-hover/card:text-white transition-colors duration-300">
                     <AlertTriangle size={20} />
                   </div>
                   <span className="text-lg font-bold text-slate-800 transition-colors duration-300">TW issues (higher priority)</span>
@@ -440,7 +441,7 @@ try {
           "Driver",
           "PF No",
           "Depot",
-          "Category",
+          // "Category",
           "Item",
           "Due Date",
           "Overdue",
@@ -466,9 +467,9 @@ try {
               <Badge>{record.depotName}</Badge>
             </td>
 
-            <td className="px-5 py-4 text-slate-600">
+            {/* <td className="px-5 py-4 text-slate-600">
               {record.category}
-            </td>
+            </td> */}
 
             <td className="px-5 py-4 text-slate-600">
               {record.item}
@@ -503,7 +504,7 @@ try {
       <div className="flex items-center gap-3 mb-4">
         <ClipboardList className="text-amber-600" size={22} />
         <h3 className="text-xl font-bold text-slate-800">
-          Training Due Records
+          PME/GRS/OC Records
         </h3>
       </div>
 
@@ -512,14 +513,14 @@ try {
           "Driver",
           "PF No",
           "Depot",
-          "Category",
+          // "Category",
           "Item",
           "Due Date",
           "Overdue",
           "Action",
         ]}
         loading={loadingOverdues}
-        emptyText="No Training Due records"
+        emptyText="No PME/GRS/OC records"
       >
         {trainingOverdueRecords.map((record, index) => (
           <tr
@@ -538,9 +539,9 @@ try {
               <Badge>{record.depotName}</Badge>
             </td>
 
-            <td className="px-5 py-4 text-slate-600">
+            {/* <td className="px-5 py-4 text-slate-600">
               {record.category}
-            </td>
+            </td> */}
 
             <td className="px-5 py-4 text-slate-600">
               {record.item}
