@@ -82,9 +82,26 @@ if (depot) {
 }
 
 const users = await User.find(filter)
-  .select("name pfNo depotName");
+  .select("name pfNo depotName lastAcknowledgedCircularId");
     const overdueRecords = [];
+const latestCircular = await Circular.findOne()
+  .sort({ createdAt: -1 })
+  .select("_id");
 
+  let pendingCircularCount = 0;
+
+if (latestCircular) {
+  for (const user of users) {
+    const acknowledged =
+      user.lastAcknowledgedCircularId &&
+      user.lastAcknowledgedCircularId.toString() ===
+        latestCircular._id.toString();
+
+    if (!acknowledged) {
+      pendingCircularCount++;
+    }
+  }
+}
     for (const user of users) {
 
       const profile = await DriverProfile.findOne({
@@ -342,12 +359,12 @@ export const getAdminUsers = async (req, res) => {
 
         if (!assigned.includes(depot)) {
           return res.json({
-            managers: [],
+            managers: [], 
             drivers: [],
             mini: []
           });
         }
-
+  
         depotFilter.depotName = depot;
 
       } else {
@@ -380,7 +397,7 @@ export const getAdminUsers = async (req, res) => {
     const drivers = await User.find({
       role: "DRIVER",
       ...depotFilter
-    }).select("name pfNo depotName");
+    }).select("name pfNo depotName lastAcknowledgedCircularId");
 
     // ==========================
     // ADEE

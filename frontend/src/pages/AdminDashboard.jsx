@@ -43,7 +43,7 @@ const [loadingOverdues, setLoadingOverdues] = useState(true);
 
   const [selectedManagerId, setSelectedManagerId] = useState(null);
   const [editUserId, setEditUserId] = useState(null);
-
+const [circularPendings, setCircularPendings] = useState(0);
   const navigate = useNavigate();
 
   /* ================= OVERDUE SUMMARY ================= */
@@ -116,6 +116,7 @@ const abnormalityResolved =
 
       setManagers(res.data.managers || []);
       setDrivers(res.data.drivers || []);
+      console.log("Drivers:", res.data.drivers);
       setMiniAdmins(res.data.mini || []); // ✅ NEW
 
     } catch {
@@ -183,9 +184,44 @@ const loadAbnormalities = async () => {
   const viewMiniAdminDetails = (userId) => { // ✅ NEW
     setSelectedManagerId(userId);
   };
+const loadCirack=async ()=>{
 
+try {
+
+  // Get latest circular
+  const circularRes = await api.get("/admin/circulars");
+
+  if (circularRes.data.length > 0) {
+
+    const latestCircularId = circularRes.data[0]._id;
+
+    // Get acknowledgement report
+    const ackRes = await api.get(
+      "/admin/circulars/acknowledgement-report",
+      {
+        params: {
+          circularId: latestCircularId,
+        },
+      }
+    );
+
+    setCircularPendings(ackRes.data.summary.pending);
+
+  } else {
+
+    setCircularPendings(0);
+
+  }
+
+} catch (err) {
+
+  console.error("Failed to load circular summary", err);
+
+}
+}
   useEffect(() => {
     loadDepots();
+  loadCirack();
   }, []);
 
   useEffect(() => {
@@ -281,8 +317,8 @@ const loadAbnormalities = async () => {
               <StatCard
                 icon={<AlertTriangle />}
                 label="Circular Pending"
-                value={circularPending}
-                onClick={() => scrollToSection("section-overdues", setShowOverdues, showOverdues)}
+                value={circularPendings}
+                onClick={() => navigate("/admin/circular-status")}
               />
               <StatCard
                 icon={<AlertTriangle />}

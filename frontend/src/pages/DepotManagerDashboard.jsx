@@ -25,6 +25,13 @@ export default function DepotManagerDashboard() {
 const [overdues, setOverdues] = useState([]);
 const [issues, setIssues] = useState([]);
 const [abnormalities, setAbnormalities] = useState([]);
+const [showIssues, setShowIssues] = useState(false);
+const [circularPendings, setCircularPendings] = useState(0);
+const [showAbnormalities, setShowAbnormalities] = useState(false);
+
+const [showOverdues, setShowOverdues] = useState(false);
+
+const [showCirculars, setShowCirculars] = useState(false);
   const navigate = useNavigate();
 
   /* ================= VIEW USER DETAILS ================= */
@@ -43,6 +50,7 @@ const [abnormalities, setAbnormalities] = useState([]);
 .then(([driverRes, overdueRes, issueRes, abnormalityRes]) => {
 
   setDrivers(driverRes.data);
+  console.log("Drivers:",driverRes.data);
 
   setOverdues(overdueRes.data);
 
@@ -68,6 +76,48 @@ const [abnormalities, setAbnormalities] = useState([]);
     d.pfNo.includes(search)
   );
 /* ================= OVERDUE SUMMARY ================= */
+
+const cirack=async()=>{
+  
+try {
+
+  // Get latest circular
+  const circularRes = await api.get("/admin/circulars");
+
+  if (circularRes.data.length > 0) {
+
+    const latestCircularId = circularRes.data[0]._id;
+
+    // Get acknowledgement report
+    const ackRes = await api.get(
+      "/admin/circulars/acknowledgement-report",
+      {
+        params: {
+          circularId: latestCircularId,
+        },
+      }
+    );
+
+    setCircularPendings(ackRes.data.summary.pending);
+    // print()
+
+  } else {
+
+    setCircularPendings(0);
+
+  }
+
+} catch (err) {
+
+  console.error("Failed to load circular summary", err);
+
+}
+}
+
+useEffect(()=>{
+  cirack();
+},[])
+
 
 const totalOverdues = overdues.length;
 
@@ -102,7 +152,34 @@ const abnormalityTotal = abnormalities.length;
 
 const abnormalityPending =
   abnormalities.filter(a => a.status === "Pending").length;
+const circularPending = drivers.filter(
+  d => !d.lastAcknowledgedCircularId
+).length;   
+// setCircularPending(res.data.circularPending);
 
+
+const scrollToSection = (
+  id,
+  toggleStateFn,
+  currentState
+) => {
+
+  if (toggleStateFn && !currentState) {
+    toggleStateFn(true);
+  }
+
+  setTimeout(() => {
+
+    document
+      .getElementById(id)
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+
+  }, 100);
+
+};
 
   return (
     <>
@@ -129,77 +206,76 @@ const abnormalityPending =
               </span>
             </div>
           </div>
-<div className="space-y-4">
+<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
 
-  {/* First Row */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-    <div>
-      <StatCard
-        icon={<Users />}
-        title="Drivers"
-        value={drivers.length}
-      />
-    </div>
+  <StatCard
+    icon={<Users />}
+    title="Drivers"
+    value={drivers.length}
+    onClick={() =>
+      scrollToSection("section-drivers")
+    }
+  />
 
-    <div>
-      <StatCard
-        icon={<ShieldAlert />}
-        title="Overdues"
-        value={totalOverdues}
-      />
-    </div>
+  <StatCard
+    icon={<ClipboardList />}
+    title="Training Due"
+    value={trainingOverdues}
+    onClick={() =>
+      scrollToSection(
+        "section-overdues",
+        setShowOverdues,
+        showOverdues
+      )
+    }
+  />
 
-    <div>
-      <StatCard
-        icon={<ClipboardList />}
-        title="Training"
-        value={trainingOverdues}
-      />
-    </div>
+  <StatCard
+    icon={<AlertTriangle />}
+    title="LR Due"
+    value={lrOverdues}
+    onClick={() =>
+      scrollToSection(
+        "section-overdues",
+        setShowOverdues,
+        showOverdues
+      )
+    }
+  />
 
-    <div>
-      <StatCard
-        icon={<AlertTriangle />}
-        title="LR Due"
-        value={lrOverdues}
-      />
-    </div>
-  </div>
+  <StatCard
+    icon={<AlertTriangle />}
+    title="Circular Pending"
+    value={circularPendings}
+    
+                onClick={() => navigate("/admin/circular-status")}
+  />
 
-  {/* Second Row */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-    <div>
-      <StatCard
-        icon={<AlertTriangle />}
-        title="High Issues"
-        value={issueTotal}
-      />
-    </div>
+  <StatCard
+    icon={<ShieldAlert />}
+    title="TW Issues"
+    value={issuePending}
+    onClick={() =>
+      scrollToSection(
+        "section-issues",
+        setShowIssues,
+        showIssues
+      )
+    }
+  />
 
-    <div>
-      <StatCard
-        icon={<Clock />}
-        title="Pending Issues"
-        value={issuePending}
-      />
-    </div>
-
-    <div>
-      <StatCard
-        icon={<TriangleAlert />}
-        title="Abnormalities"
-        value={abnormalityTotal}
-      />
-    </div>
-
-    <div>
-      <StatCard
-        icon={<Clock />}
-        title="Pending Abnormal"
-        value={abnormalityPending}
-      />
-    </div>
-  </div>
+  <StatCard
+    icon={<TriangleAlert />}
+    title="Track Abnormalities"
+    value={abnormalityPending}
+    onClick={() =>
+      scrollToSection(
+        "section-abnormalities",
+        setShowAbnormalities,
+        showAbnormalities
+      )
+    }
+  />
 
 </div>
 
@@ -214,11 +290,118 @@ const abnormalityPending =
               className="w-full focus:outline-none text-sm min-w-0"
             />
           </div>
-        <IssueDashboard />
-        <AbnormalityDashboard />
-<div className="space-y-8">
+        
 
-  {/* ================= LR DUE ================= */}
+
+        <div id="section-issues" className="scroll-mt-24">
+  <div className="bg-white rounded-xl shadow">
+
+    <button
+      onClick={() => setShowIssues(!showIssues)}
+      className="w-full flex justify-between items-center px-5 py-4 font-semibold text-left hover:bg-slate-50 transition"
+    >
+      <div className="flex items-center gap-2">
+
+        <ShieldAlert className="text-orange-600" size={22} />
+
+        <span>TW Issues (Higher Priority)</span>
+
+      </div>
+
+      {showIssues ? "▲" : "▼"}
+
+    </button>
+
+    {showIssues && (
+      <div className="border-t">
+        <IssueDashboard />
+      </div>
+    )}
+
+  </div>
+</div>
+
+
+     
+<div id="section-abnormalities" className="scroll-mt-24">
+
+  <div className="bg-white rounded-xl shadow">
+
+    <button
+      onClick={() =>
+        setShowAbnormalities(!showAbnormalities)
+      }
+      className="w-full flex justify-between items-center px-5 py-4 font-semibold text-left hover:bg-slate-50 transition"
+    >
+
+      <div className="flex items-center gap-2">
+
+        <TriangleAlert
+          className="text-red-600"
+          size={22}
+        />
+
+        <span>
+          Track Abnormalities
+        </span>
+
+      </div>
+
+      {showAbnormalities ? "▲" : "▼"}
+
+    </button>
+
+    {showAbnormalities && (
+
+      <div className="border-t">
+
+        <AbnormalityDashboard />
+
+      </div>
+
+    )}
+
+  </div>
+
+</div>
+
+
+<div
+  id="section-overdues"
+  className="scroll-mt-24"
+>
+
+  <div className="bg-white rounded-xl shadow">
+
+    <button
+      onClick={() =>
+        setShowOverdues(!showOverdues)
+      }
+      className="w-full flex justify-between items-center px-5 py-4 font-semibold text-left hover:bg-slate-50 transition"
+    >
+
+      <div className="flex items-center gap-2">
+
+        <ClipboardList
+          className="text-red-600"
+          size={22}
+        />
+
+        <span>
+          Overdue Records
+        </span>
+
+      </div>
+
+      {showOverdues ? "▲" : "▼"}
+
+    </button>
+
+    {showOverdues && (
+
+      <div className="border-t p-5">
+
+        {/* KEEP EVERYTHING INSIDE HERE */}
 
   <div className="bg-white rounded-xl shadow overflow-hidden">
 
@@ -513,12 +696,23 @@ const abnormalityPending =
     </div>
 
   </div>
+      </div>
+
+    )}
+
+  </div>
 
 </div>
 
 
+
+
+
           {/* TABLE */}
-          <div className="bg-white rounded-xl shadow overflow-hidden">
+          <div
+  id="section-drivers"
+  className="bg-white rounded-xl shadow overflow-hidden scroll-mt-24"
+>
             <div className="overflow-x-auto">
                <div className="px-5 py-4 border-b">
 
@@ -599,9 +793,14 @@ const abnormalityPending =
     </>
   );
 }
-function StatCard({ icon, title, value }) {
+function StatCard({ icon, title, value ,onClick}) {
   return (
-    <div className="bg-white rounded-xl shadow p-4 flex items-center gap-3 w-full">
+   <div
+  onClick={onClick}
+  className={`bg-white rounded-xl shadow p-4 flex items-center gap-3 w-full transition hover:shadow-md hover:-translate-y-1 ${
+    onClick ? "cursor-pointer" : ""
+  }`}
+>
 
       <div className="p-3 rounded-full bg-red-50 text-red-600">
         {icon}
