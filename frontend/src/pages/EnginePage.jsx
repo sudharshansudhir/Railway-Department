@@ -338,7 +338,7 @@ const deleteEngine = async (engine) => {
                 className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
               >
                 <Plus size={18} />
-                New Engine
+                New Tower wagons
               </button>
             )}
           </div>
@@ -399,7 +399,7 @@ const deleteEngine = async (engine) => {
   <div className="px-6 py-5 border-b border-slate-200">
 
     <h2 className="text-xl font-bold text-slate-800">
-      Available Engines
+      Available Tower Wagons
     </h2>
 
     <p className="text-sm text-slate-500 mt-1">
