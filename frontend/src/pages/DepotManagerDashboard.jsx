@@ -50,7 +50,6 @@ const [showCirculars, setShowCirculars] = useState(false);
 .then(([driverRes, overdueRes, issueRes, abnormalityRes]) => {
 
   setDrivers(driverRes.data);
-  console.log("Drivers:",driverRes.data);
 
   setOverdues(overdueRes.data);
 
@@ -185,11 +184,11 @@ const scrollToSection = (
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-slate-100 px-4 py-6">
+      <div className="min-h-screen bg-[#F8FAFC] px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-7xl mx-auto space-y-6">
 
           {/* HEADER */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">
                 SSE/TRD Dashboard
@@ -210,7 +209,7 @@ const scrollToSection = (
 
   <StatCard
     icon={<Users />}
-    title="Drivers"
+    label="Drivers"
     value={drivers.length}
     onClick={() =>
       scrollToSection("section-drivers")
@@ -219,7 +218,7 @@ const scrollToSection = (
 
   <StatCard
     icon={<AlertTriangle />}
-    title="PME/GRS/OC Due"
+    label="PME/GRS/OC Due"
     value={trainingOverdues}
     onClick={() =>
       scrollToSection(
@@ -228,11 +227,13 @@ const scrollToSection = (
         showOverdues
       )
     }
+
+    colorClass="bg-red-50 text-red-600"
   />
 
   <StatCard
     icon={<AlertTriangle />}
-    title="LR Due"
+    label="LR Due"
     value={lrOverdues}
     onClick={() =>
       scrollToSection(
@@ -241,11 +242,13 @@ const scrollToSection = (
         showOverdues
       )
     }
+    colorClass="bg-red-50 text-red-600"
   />
 
   <StatCard
     icon={<AlertTriangle />}
-    title="Circular Pending"
+    label="Circular Pending"
+    colorClass="bg-red-50 text-red-600"
     value={circularPendings}
     
                 onClick={() => navigate("/admin/circular-status")}
@@ -253,8 +256,9 @@ const scrollToSection = (
 
   <StatCard
     icon={<AlertTriangle />}
-    title="TW Issues"
+    label="TW Issues"
     value={issuePending}
+    colorClass="bg-red-50 text-red-600"
     onClick={() =>
       scrollToSection(
         "section-issues",
@@ -266,7 +270,8 @@ const scrollToSection = (
 
   <StatCard
     icon={<TriangleAlert />}
-    title="Track Abnormalities"
+    colorClass="bg-red-50 text-red-600"
+    label="Track Abnormalities"
     value={abnormalityPending}
     onClick={() =>
       scrollToSection(
@@ -280,7 +285,7 @@ const scrollToSection = (
 </div>
 
           {/* SEARCH */}
-          <div className="bg-white p-4 rounded-xl shadow flex items-center gap-3 w-full">
+          {/* <div className="bg-white p-4 rounded-xl shadow flex items-center gap-3 w-full">
             <Search className="text-gray-400" />
             <input
               type="text"
@@ -290,112 +295,131 @@ const scrollToSection = (
               className="w-full focus:outline-none text-sm min-w-0"
             />
           </div>
-        
+         */}
 
 
-        <div id="section-issues" className="scroll-mt-24">
-  <div className="bg-white rounded-xl shadow">
+<div
+  id="section-issues"
+  className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card"
+>
+  <button
+    onClick={() => setShowIssues(!showIssues)}
+    className="w-full flex items-center justify-between px-6 py-5 bg-white text-left"
+  >
+    <div className="flex items-center gap-4">
 
-    <button
-      onClick={() => setShowIssues(!showIssues)}
-      className="w-full flex justify-between items-center px-5 py-4 font-semibold text-left hover:bg-slate-50 transition"
+      <div className="p-2.5 bg-red-50 rounded-xl text-red-600 group-hover/card:bg-[#0b659a] group-hover/card:text-white transition-colors duration-300">
+        <AlertTriangle size={20} />
+      </div>
+
+      <span className="text-lg font-bold text-slate-800">
+        TW Issues (Higher Priority)
+      </span>
+
+    </div>
+
+    <span
+      className={`text-slate-400 transition-transform duration-300 ${
+        showIssues ? "rotate-180" : ""
+      }`}
     >
-      <div className="flex items-center gap-2">
+      ▼
+    </span>
 
-        <AlertTriangle className="bg-red-50 text-red-600" size={22} />
+  </button>
 
-        <span>TW Issues (Higher Priority)</span>
-
-      </div>
-
-      {showIssues ? "▲" : "▼"}
-
-    </button>
-
-    {showIssues && (
-      <div className="border-t">
-        <IssueDashboard />
-      </div>
-    )}
-
-  </div>
+  {showIssues && (
+    <div className="p-6 border-t border-slate-100 bg-slate-50/30">
+      <IssueDashboard />
+    </div>
+  )}
 </div>
 
-
      
-<div id="section-abnormalities" className="scroll-mt-24">
+<div
+  id="section-abnormalities"
+  className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card"
+>
 
-  <div className="bg-white rounded-xl shadow">
+  <button
+    onClick={() => setShowAbnormalities(!showAbnormalities)}
+    className="w-full flex items-center justify-between px-6 py-5 text-left"
+  >
 
-    <button
-      onClick={() =>
-        setShowAbnormalities(!showAbnormalities)
-      }
-      className="w-full flex justify-between items-center px-5 py-4 font-semibold text-left hover:bg-slate-50 transition"
+    <div className="flex items-center gap-4">
+
+      <div className="p-2.5 bg-red-50 rounded-xl text-red-600 group-hover/card:bg-[#0b659a] group-hover/card:text-white transition-colors duration-300">
+
+        <TriangleAlert size={20}/>
+
+      </div>
+
+      <span className="text-lg font-bold text-slate-800">
+
+        Track Abnormalities
+
+      </span>
+
+    </div>
+
+    <span
+      className={`text-slate-400 transition-transform duration-300 ${
+        showAbnormalities ? "rotate-180" : ""
+      }`}
     >
+      ▼
+    </span>
 
-      <div className="flex items-center gap-2">
+  </button>
 
-        <TriangleAlert
-          className="text-red-600"
-          size={22}
-        />
+  {showAbnormalities && (
 
-        <span>
-          Track Abnormalities
-        </span>
+    <div className="p-6 border-t border-slate-100 bg-slate-50/30">
 
-      </div>
+      <AbnormalityDashboard />
 
-      {showAbnormalities ? "▲" : "▼"}
+    </div>
 
-    </button>
-
-    {showAbnormalities && (
-
-      <div className="border-t">
-
-        <AbnormalityDashboard />
-
-      </div>
-
-    )}
-
-  </div>
+  )}
 
 </div>
 
 
 <div
   id="section-overdues"
-  className="scroll-mt-24"
+  className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-[#0b659a] group/card"
 >
 
-  <div className="bg-white rounded-xl shadow">
+  <button
+    onClick={() => setShowOverdues(!showOverdues)}
+    className="w-full flex items-center justify-between px-6 py-5 text-left"
+  >
 
-    <button
-      onClick={() =>
-        setShowOverdues(!showOverdues)
-      }
-      className="w-full flex justify-between items-center px-5 py-4 font-semibold text-left hover:bg-slate-50 transition"
-    >
+    <div className="flex items-center gap-4">
 
-      <div className="flex items-center gap-2">
+      <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600 group-hover/card:bg-[#0b659a] group-hover/card:text-white transition-colors duration-300">
 
-        <ClipboardList
-          className="text-red-600"
-          size={22}
-        />
-
-        <span>
-          Overdue Records
-        </span>
+        <ClipboardList size={20}/>
 
       </div>
 
-      {showOverdues ? "▲" : "▼"}
+      <span className="text-lg font-bold text-slate-800">
 
-    </button>
+        Overdue Records
+
+      </span>
+
+    </div>
+
+    <span
+      className={`text-slate-400 transition-transform duration-300 ${
+        showOverdues ? "rotate-180" : ""
+      }`}
+    >
+      ▼
+    </span>
+
+  </button>
 
     {showOverdues && (
 
@@ -403,7 +427,7 @@ const scrollToSection = (
 
         {/* KEEP EVERYTHING INSIDE HERE */}
 
-  <div className="bg-white rounded-xl shadow overflow-hidden">
+  <div>
 
     <div className="px-5 py-4 border-b">
 
@@ -417,17 +441,17 @@ const scrollToSection = (
 
     <div className="p-5">
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-3 mb-4">
 
-        <ClipboardList className="text-red-600" size={22} />
+  <ClipboardList className="text-red-600" size={22}/>
 
-        <h4 className="text-xl font-bold">
+  <h3 className="text-xl font-bold text-slate-800">
 
-          LR Due Records
+      LR Due Records
 
-        </h4>
+  </h3>
 
-      </div>
+</div>
 
       <Table
 
@@ -531,7 +555,7 @@ const scrollToSection = (
 
                 }
 
-                className="inline-flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border- [#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm "
 
               >
 
@@ -557,7 +581,7 @@ const scrollToSection = (
 
   {/* ================= TRAINING DUE ================= */}
 
-  <div className="bg-white rounded-xl shadow overflow-hidden">
+  <div>
 
     <div className="p-5">
 
@@ -565,11 +589,11 @@ const scrollToSection = (
 
         <ClipboardList className="text-amber-600" size={22} />
 
-        <h4 className="text-xl font-bold">
+       <h3 className="text-xl font-bold text-slate-800">
 
          PME/GRS/OC Records
 
-        </h4>
+        </h3>
 
       </div>
 
@@ -675,7 +699,7 @@ const scrollToSection = (
 
                 }
 
-                className="inline-flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border- [#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm "
 
               >
 
@@ -700,7 +724,6 @@ const scrollToSection = (
 
     )}
 
-  </div>
 
 </div>
 
@@ -709,9 +732,10 @@ const scrollToSection = (
 
 
           {/* TABLE */}
-          <div
-  id="section-drivers"
-  className="bg-white rounded-xl shadow overflow-hidden scroll-mt-24"
+ <Section
+    id="section-drivers"
+    title="Drivers"
+    icon={<Train />}
 >
             <div className="overflow-x-auto">
                <div className="px-5 py-4 border-b">
@@ -725,7 +749,7 @@ const scrollToSection = (
   </div>
   <div className="overflow-x-auto">
              <table className="min-w-[850px] w-full text-sm">
-                <thead className="bg-slate-100 text-gray-700 sticky top-0">
+                <thead className="bg-[#0b659a]/5 border-b border-[#0b659a]/10 text-[#0b659a] font-semibold">
                   <tr>
                     <th className="px-3 sm:px-4 py-3 text-left whitespace-nowrap">PF No</th>
                     <th className="px-3 sm:px-4 py-3 text-left whitespace-nowrap">Name</th>
@@ -753,9 +777,9 @@ const scrollToSection = (
 
                   {filteredDrivers.map(d => (
                     <tr
-                      key={d._id}
-                      className="border-t hover:bg-slate-50 transition"
-                    >
+    key={d._id}
+    className="hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0"
+>
                       <td className="px-4 py-3 font-medium">
                         {d.pfNo}
                       </td>
@@ -763,15 +787,14 @@ const scrollToSection = (
                         {d.name}
                       </td>
                       <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full whitespace-nowrap">
-                          <Train size={14} />
+                        <Badge>
                           {d.depotName}
-                        </span>
+                        </Badge>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <button
                           onClick={() => viewUserDetails(d._id)}
-                          className="inline-flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition whitespace-nowrap"
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border- [#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm "
                         >
                           <Eye size={16} />
                           View
@@ -783,7 +806,7 @@ const scrollToSection = (
               </table>
               </div>
             </div>
-          </div>
+          </Section>
 
         </div>
       </div>
@@ -793,108 +816,208 @@ const scrollToSection = (
     </>
   );
 }
-function StatCard({ icon, title, value ,onClick}) {
-  return (
-   <div
-  onClick={onClick}
-  className={`bg-white rounded-xl shadow p-4 flex items-center gap-3 w-full transition hover:shadow-md hover:-translate-y-1 ${
-    onClick ? "cursor-pointer" : ""
-  }`}
->
+function StatCard({ icon, label, value, colorClass, onClick }) {
+  const iconStyle = colorClass || "bg-slate-100 text-[#0b659a]";
+  const [displayValue, setDisplayValue] = useState(0);
 
-      <div className="p-3 rounded-full bg-red-50 text-red-600">
+  useEffect(() => {
+    let startTimestamp = null;
+    const duration = 1500; // 1.5 seconds
+    const targetValue = Number(value) || 0;
+
+    if (targetValue === 0) {
+      setDisplayValue(0);
+      return;
+    }
+
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      
+      // easeOutExpo for a very snappy start and slow finish
+      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      
+      setDisplayValue(Math.floor(easeProgress * targetValue));
+      
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        setDisplayValue(targetValue);
+      }
+    };
+    
+    window.requestAnimationFrame(step);
+  }, [value]);
+
+  return (
+    <div 
+      onClick={onClick}
+      className={`bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-[#0b659a] hover:-translate-y-1 group transition-all duration-300 flex items-center gap-5 ${onClick ? "cursor-pointer" : ""}`}
+    >
+      <div className={`p-4 ${iconStyle} group-hover:bg-[#0b659a] group-hover:text-white rounded-2xl flex-shrink-0 transition-colors duration-300`}>
         {icon}
       </div>
-
       <div>
-
-        <p className="text-xs text-gray-500">
-          {title}
-        </p>
-
-      <p className="text-xl sm:text-2xl font-bold">
-          {value}
-        </p>
-
+        <p className="text-sm font-semibold text-slate-500 tracking-wide mb-1 uppercase transition-colors duration-300">{label}</p>
+        <p className="text-3xl font-bold text-slate-800 transition-colors duration-300">{displayValue}</p>
       </div>
-
     </div>
+  );
+}
+
+
+function Badge({ children }) {
+  return (
+    <span
+      className="
+      px-3
+      py-1.5
+      text-xs
+      font-semibold
+      bg-[#0b659a]/10
+      text-[#0b659a]
+      border
+      border-[#0b659a]/20
+      rounded-lg
+      inline-flex
+      items-center
+      justify-center
+      whitespace-nowrap
+      "
+    >
+      {children}
+    </span>
   );
 }
 
 function Table({ headers, children, loading, emptyText }) {
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-
       <div className="overflow-x-auto">
-
-        <table className="min-w-[900px] w-full text-sm">
-
-          <thead className="bg-slate-100">
-
+        <table className="w-full text-sm text-left whitespace-nowrap">
+          <thead className="bg-[#0b659a]/5 border-b border-[#0b659a]/10 text-[#0b659a] font-semibold">
             <tr>
-
-              {headers.map((header) => (
-
-                <th
-                  key={header}
-                  className="px-5 py-4 text-left whitespace-nowrap font-semibold"
-                >
-                  {header}
-                </th>
-
+              {headers.map(h => (
+                <th key={h} className="px-5 py-4">{h}</th>
               ))}
-
             </tr>
-
           </thead>
-
-          <tbody>
-
+          <tbody className="divide-y divide-slate-100">
             {loading && (
-
               <tr>
-
-                <td
-                  colSpan={headers.length}
-                  className="py-8 text-center text-gray-500"
-                >
-
+                <td colSpan={headers.length} className="py-8 text-center text-slate-500 font-medium">
                   Loading...
-
                 </td>
-
               </tr>
-
             )}
-
-            {!loading &&
-              (!children ||
-                (Array.isArray(children) && children.length === 0)) && (
-
-                <tr>
-
-                  <td
-                    colSpan={headers.length}
-                    className="py-8 text-center text-gray-500"
-                  >
-
-                    {emptyText}
-
-                  </td>
-
-                </tr>
-
-              )}
-
+            {!loading && (!children || (Array.isArray(children) ? children.length === 0 : false)) && (
+              <tr>
+                <td colSpan={headers.length} className="py-8 text-center text-slate-500 font-medium">
+                  {emptyText}
+                </td>
+              </tr>
+            )}
             {!loading && children}
-
           </tbody>
-
         </table>
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, icon, children, id }) {
+  return (
+    <div
+      id={id}
+      className="
+      bg-white
+      rounded-2xl
+      border
+      border-slate-100
+      shadow-sm
+      overflow-hidden
+      mb-6
+      flex
+      flex-col
+      group/section
+      transition-all
+      duration-300
+      hover:shadow-md
+      hover:border-[#0b659a]
+      hover:-translate-y-1
+      "
+    >
+      <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
+
+        <div className="p-2.5 bg-slate-100 rounded-xl text-[#0b659a] group-hover/section:bg-[#0b659a] group-hover/section:text-white transition-colors duration-300">
+
+          {icon}
+
+        </div>
+
+        <h3 className="text-lg font-bold text-slate-800">
+
+          {title}
+
+        </h3>
+
+      </div>
+
+      <div className="p-6 bg-slate-50/30">
+
+        {children}
 
       </div>
 
     </div>
   );
 }
+
+// function StatCard({ icon, label, value, colorClass, onClick }) {
+//   const iconStyle = colorClass || "bg-slate-100 text-[#0b659a]";
+//   const [displayValue, setDisplayValue] = useState(0);
+
+//   useEffect(() => {
+//     let startTimestamp = null;
+//     const duration = 1500; // 1.5 seconds
+//     const targetValue = Number(value) || 0;
+
+//     if (targetValue === 0) {
+//       setDisplayValue(0);
+//       return;
+//     }
+
+//     const step = (timestamp) => {
+//       if (!startTimestamp) startTimestamp = timestamp;
+//       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      
+//       // easeOutExpo for a very snappy start and slow finish
+//       const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      
+//       setDisplayValue(Math.floor(easeProgress * targetValue));
+      
+//       if (progress < 1) {
+//         window.requestAnimationFrame(step);
+//       } else {
+//         setDisplayValue(targetValue);
+//       }
+//     };
+    
+//     window.requestAnimationFrame(step);
+//   }, [value]);
+
+//   return (
+//     <div 
+//       onClick={onClick}
+//       className={`bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-[#0b659a] hover:-translate-y-1 group transition-all duration-300 flex items-center gap-5 ${onClick ? "cursor-pointer" : ""}`}
+//     >
+//       <div className={`p-4 ${iconStyle} group-hover:bg-[#0b659a] group-hover:text-white rounded-2xl flex-shrink-0 transition-colors duration-300`}>
+//         {icon}
+//       </div>
+//       <div>
+//         <p className="text-sm font-semibold text-slate-500 tracking-wide mb-1 uppercase transition-colors duration-300">{label}</p>
+//         <p className="text-3xl font-bold text-slate-800 transition-colors duration-300">{displayValue}</p>
+//       </div>
+//     </div>
+//   );
+// }

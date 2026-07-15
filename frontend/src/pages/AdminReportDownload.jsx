@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
 import { Download, Calendar, Building2, Loader2 } from "lucide-react";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 
 export default function AdminReportDownload() {
   const [from, setFrom] = useState("");
@@ -76,9 +77,10 @@ export default function AdminReportDownload() {
 
       <div className="min-h-screen bg-slate-100 p-6">
         <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-md p-6">
+<BackButton/>
 
           {/* HEADER */}
-          <div className="mb-6">
+          <div className="my-6">
             <h2 className="text-xl font-bold text-gray-800">
               Admin Report Download
             </h2>

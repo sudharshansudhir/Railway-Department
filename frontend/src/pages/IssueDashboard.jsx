@@ -35,7 +35,6 @@ export default function IssueDashboard({
       const res = await api.get("/issues");
 
       setIssues(res.data);
-      // console.log(res)
     } catch (err) {
       Swal.fire(
         "Error",
@@ -87,8 +86,7 @@ export default function IssueDashboard({
   });
 }, [issues, search, selectedDepot]);
 
-//   console.log("Issues:", issues);
-// console.log("Filtered:", filtered);
+
 
   const total = issues.length;
 

@@ -112,11 +112,8 @@ const abnormalityResolved =
       const res = await api.get(
         `/admin/users${depot ? `?depot=${depot}` : ""}`
       );
-      // console.log(res)
-
       setManagers(res.data.managers || []);
       setDrivers(res.data.drivers || []);
-      console.log("Drivers:", res.data.drivers);
       setMiniAdmins(res.data.mini || []); // ✅ NEW
 
     } catch {
@@ -303,15 +300,17 @@ try {
                 />
               )}
               <StatCard
-                icon={<ClipboardList />}
+                icon={<AlertTriangle />}
                 label="PME/GRS/OC Due"
                 value={trainingOverdues}
+                colorClass="bg-red-50 text-red-600"
                 onClick={() => scrollToSection("section-overdues", setShowOverdues, showOverdues)}
               />
               <StatCard
-                icon={<Shield />}
+                icon={<AlertTriangle />}
                 label="LR Due"
                 value={lrOverdues}
+                colorClass="bg-red-50 text-red-600"
                 onClick={() => scrollToSection("section-overdues", setShowOverdues, showOverdues)}
               />
               <StatCard

@@ -10,6 +10,7 @@ import {
   Shield
 } from "lucide-react";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 
 export default function AdminRegister() {
   const [assignedDepots, setAssignedDepots] = useState([]);
@@ -95,7 +96,9 @@ export default function AdminRegister() {
       <Navbar />
 
       <div className="min-h-screen bg-slate-100 px-4 py-6">
+            
         <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
+      <BackButton/>
 
           <div className="text-center mb-6">
             <div className="flex justify-center mb-2">

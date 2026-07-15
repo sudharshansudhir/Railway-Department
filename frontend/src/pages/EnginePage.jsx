@@ -306,8 +306,9 @@ const deleteEngine = async (engine) => {
       <Navbar />
 
     <div className="max-w-7xl mx-auto space-y-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-
+      
+        <div className="max-w-7xl md:my-4 mx-auto space-y-8">
+<BackButton/>
           {/* ================= HEADER ================= */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
             {/* LEFT */}

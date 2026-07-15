@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 
 export default function DriverDetails() {
   const { driverId } = useParams();
@@ -120,6 +121,7 @@ export default function DriverDetails() {
 
       <div className="min-h-screen bg-slate-100 px-4 py-6">
         <div className="max-w-7xl mx-auto space-y-6">
+          <BackButton/>
 
           {/* ================= BASIC INFO ================= */}
           <Card>

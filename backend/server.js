@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === "development") {
 dotenv.config({ path: envFile, override: true });
 
 // Log which config is loaded
-console.log(`📄 Loaded config: ${envFile}`);
+
 
 const app = express();
 

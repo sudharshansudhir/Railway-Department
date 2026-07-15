@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
 import { UploadCloud, FileText } from "lucide-react";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 
 export default function AdminCircularUpload() {
   const [title, setTitle] = useState("");
@@ -41,10 +42,11 @@ export default function AdminCircularUpload() {
       <Navbar />
 
       <div className="min-h-screen bg-slate-100 p-6">
+ 
         <div className="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow-md">
-
+       <BackButton/>
           {/* HEADER */}
-          <div className="mb-6">
+          <div className="my-6">
             <h2 className="text-xl font-bold text-gray-800">
               Upload Official Circular
             </h2>

@@ -43,6 +43,7 @@ import {
   Loader2,
   Pencil
 } from "lucide-react";
+import BackButton from "../components/BackButton";
 
 export default function AdminUserDetail() {
   const { userId } = useParams();
@@ -179,13 +180,7 @@ export default function AdminUserDetail() {
 
           {/* Header with Back and Edit buttons */}
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => navigate("/admin")}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
-            >
-              <ArrowLeft size={20} />
-              Back to Dashboard
-            </button>
+            <BackButton/>
             <button
               onClick={() => setShowEditModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-medium"

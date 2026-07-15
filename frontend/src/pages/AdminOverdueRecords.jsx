@@ -33,7 +33,6 @@ export default function AdminOverdueRecords() {
       setLoading(true);
 
       const res = await api.get("/admin/overdue-records");
-        // console.log(res.data)
       setRecords(res.data);
     } catch {
       Swal.fire("Error", "Unable to fetch overdue records", "error");
@@ -49,7 +48,6 @@ export default function AdminOverdueRecords() {
   const depots = [...new Set(records.map((r) => r.depotName))];
 
 const filtered = useMemo(() => {
-//   console.log("Selected Category:", category);
 
   const result = records.filter((record) => {
     const searchMatch =
@@ -62,18 +60,9 @@ const filtered = useMemo(() => {
     const categoryMatch =
       category === "" || record.category === category;
 
-    // console.log(
-    //   record.driverName,
-    //   "|",
-    //   record.category, 
-    //   "| Match:",
-    //   categoryMatch
-    // );
-
     return searchMatch && depotMatch && categoryMatch;
   });
 
-//   console.log("Filtered Result:", result);
 
   return result;
 }, [records, search, depot, category]);

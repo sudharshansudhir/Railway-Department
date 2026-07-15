@@ -17,6 +17,7 @@ import {
   CalendarDays
 } from "lucide-react";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 
 export default function AdminCircularStatus() {
   const [circulars, setCirculars] = useState([]);
@@ -116,6 +117,7 @@ export default function AdminCircularStatus() {
 
       <div className="min-h-screen bg-[#F8FAFC] px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-7xl mx-auto space-y-8">
+          <BackButton/>
 
           {/* ================= HEADER ================= */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
