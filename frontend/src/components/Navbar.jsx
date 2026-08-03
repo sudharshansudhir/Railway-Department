@@ -13,7 +13,8 @@ import {
   Users,
   FileText,
   CheckSquare,
-  AlertTriangle
+  AlertTriangle,
+  Crown
 } from "lucide-react";
 
 import { Worker, Viewer, SpecialZoomLevel } from "@react-pdf-viewer/core";
@@ -53,7 +54,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
 }, [viewCircular]);
 
   useEffect(() => {
-    if (role === "SUPER_ADMIN") return;
+    if (role === "SUPER_ADMIN" || role === "MASTER_ADMIN") return;
 
     const checkNewCircular = async () => {
       try {
@@ -182,7 +183,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
         navigate(to);
         setOpen(false);
       }}
-      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 mx-1 text-sm font-semibold transition md:w-auto
+      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 mx-1 text-sm font-semibold transition xl:w-auto
         ${
           location.pathname === to
             ? "bg-[#0b659a] text-white"
@@ -233,6 +234,16 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
           <NavButton to="/circulars" icon={<FileText size={18} />} label="Circulars" />
         </>
       )}
+
+      {role === "MASTER_ADMIN" && (
+        <>
+          <NavButton to="/master-admin" icon={<Crown size={18} />} label="Master Admin" />
+          <NavButton to="/admin" icon={<Shield size={18} />} label="Super Admin Dashboard" />
+          <NavButton to="/admin/engine" icon={<Train size={18} />} label="TW Dashboard" />
+          <NavButton to="/admin/circular-status" icon={<CheckSquare size={18} />} label="Circular Status" />
+          <NavButton to="/admin/report-download" icon={<ClipboardList size={18} />} label="Reports" />
+        </>
+      )}
     </>
   );
 
@@ -244,20 +255,20 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
 
             <div className="flex items-center gap-2">
               <Train className="text-[#0b659a]" />
-              <span className="font-bold text-sm md:text-lg text-gray-800">
+              <span className="font-bold text-sm xl:text-lg text-gray-800">
                 Tower Wagon Driver Management system
               </span>
             </div>
 
             {/* Desktop Menu */}
-            <div className="hidden flex-1 items-center justify-center md:flex">
+            <div className="hidden flex-1 items-center justify-center xl:flex">
               <div className="flex items-center gap-1">
                 <RoleButtons />
               </div>
             </div>
 
             {/* Desktop Logout */}
-            <div className="hidden md:block">
+            <div className="hidden xl:block">
               <button
                 onClick={logout}
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#C8102E] transition hover:bg-red-50"
@@ -270,7 +281,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
             {/* Mobile Toggle */}
             <button
               onClick={() => setOpen(!open)}
-              className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-[#0b659a] hover:text-white transition"
+              className="xl:hidden p-2 rounded-lg text-gray-700 hover:bg-[#0b659a] hover:text-white transition"
             >
               {open ? <X /> : <Menu />}
             </button>
@@ -279,7 +290,7 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
 
         {/* Mobile Menu */}
         {open && (
-          <div className="border-t border-[#E5E7EB] bg-white px-4 py-3 shadow-lg md:hidden">
+          <div className="border-t border-[#E5E7EB] bg-white px-4 py-3 shadow-lg xl:hidden">
             <div className="space-y-1">
               <RoleButtons />
               <button

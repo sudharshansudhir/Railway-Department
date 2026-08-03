@@ -63,9 +63,10 @@ export default function Login() {
       if (res.data.role === "DRIVER") navigate("/driver");
       if (res.data.role === "DEPOT_MANAGER") navigate("/manager");
       if (res.data.role === "SUPER_ADMIN") navigate("/admin");
+      if (res.data.role === "MASTER_ADMIN") navigate("/master-admin");
       if (res.data.role === "ADEE") {
-  navigate("/adee");
-}
+        navigate("/adee");
+      }
     } catch (err) {
        console.error("LOGIN ERROR:", err);
       Swal.fire({

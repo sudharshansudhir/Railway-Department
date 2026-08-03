@@ -129,10 +129,10 @@ export const getCircularAcknowledgementReport = async (req, res) => {
     // SUPER ADMIN
     // ===========================
 
-    if (loggedUser.role === "SUPER_ADMIN") {
+    if (loggedUser.role === "SUPER_ADMIN" || loggedUser.role === "MASTER_ADMIN") {
 
       userFilter = {
-        role: { $ne: "SUPER_ADMIN" }
+        role: { $nin: ["SUPER_ADMIN", "MASTER_ADMIN"] }
       };
 
     }

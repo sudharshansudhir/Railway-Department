@@ -24,7 +24,8 @@ router.get(
   allowRoles(
     "SUPER_ADMIN",
     "ADEE",
-    "DEPOT_MANAGER"
+    "DEPOT_MANAGER",
+    "MASTER_ADMIN"
   ),
   getIssues
 );

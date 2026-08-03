@@ -381,7 +381,7 @@ try {
               </button>
               {showIssues && (
                 <div className="p-6 border-t border-slate-100 bg-slate-50/30">
-                  <IssueDashboard selectedDepot={depot} />
+                  <IssueDashboard depot={depot} />
                 </div>
               )}
             </div>
@@ -403,7 +403,7 @@ try {
               </button>
               {showAbnormalities && (
                 <div className="p-6 border-t border-slate-100 bg-slate-50/30">
-                  <AbnormalityDashboard selectedDepot={depot} />
+                  <AbnormalityDashboard depot={depot} />
                 </div>
               )}
             </div>

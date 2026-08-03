@@ -5,6 +5,7 @@ export const getIssues = async (req, res) => {
 
   try {
 
+    const { depot } = req.query;
     const loggedInUser = await User.findById(req.user.id);
 
     if (!loggedInUser) {
@@ -73,6 +74,10 @@ export const getIssues = async (req, res) => {
           continue;
         }
 
+      }
+
+      if (depot && driver.depotName !== depot) {
+        continue;
       }
 
       /* ==========================

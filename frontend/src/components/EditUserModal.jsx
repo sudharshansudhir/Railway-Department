@@ -416,6 +416,9 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                       >
                         <option value="DRIVER">Tower Wagon Driver (TWD)</option>
                         <option value="DEPOT_MANAGER">SSE/TRD (Depot Manager)</option>
+                        <option value="ADEE">ADEE</option>
+                        <option value="SUPER_ADMIN">Super Admin</option>
+                        <option value="MASTER_ADMIN">Master Admin</option>
                       </select>
                     </div>
                   </div>

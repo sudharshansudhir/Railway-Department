@@ -45,7 +45,8 @@ router.get(
   allowRoles(
     "DEPOT_MANAGER",
     "ADEE",
-    "SUPER_ADMIN"
+    "SUPER_ADMIN",
+    "MASTER_ADMIN"
   ),
   getAbnormalities
 );

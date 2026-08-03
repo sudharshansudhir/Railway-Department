@@ -28,7 +28,7 @@ if (!loggedInUser) {
    -> All depots
 */
 
-if (loggedInUser.role === "SUPER_ADMIN") {
+if (loggedInUser.role === "SUPER_ADMIN" || loggedInUser.role === "MASTER_ADMIN") {
   // no additional filter
 }
 
@@ -60,7 +60,7 @@ if (depot) {
 
   // SUPER ADMIN can filter any depot
 
-  if (loggedInUser.role === "SUPER_ADMIN") {
+  if (loggedInUser.role === "SUPER_ADMIN" || loggedInUser.role === "MASTER_ADMIN") {
 
     filter.depotName = depot;
 
@@ -226,15 +226,15 @@ export const adminRegisterUser = async (req, res) => {
       });
     }
 
-    // 🔥 Allow ADEE also
-    if (!["DRIVER", "DEPOT_MANAGER", "ADEE"].includes(role)) {
+    // 🔥 Allow ADEE and SUPER_ADMIN also
+    if (!["DRIVER", "DEPOT_MANAGER", "ADEE", "SUPER_ADMIN"].includes(role)) {
       return res.status(400).json({
         msg: "Invalid role selection"
       });
     }
 
-    // 🔥 Depot required only for DRIVER & DEPOT_MANAGER
-    if (["DRIVER", "DEPOT_MANAGER"].includes(role) && !depotName) {
+    // 🔥 Depot required only for DRIVER, DEPOT_MANAGER, and SUPER_ADMIN
+    if (["DRIVER", "DEPOT_MANAGER", "SUPER_ADMIN"].includes(role) && !depotName) {
       return res.status(400).json({
         msg: "Depot is required"
       });
@@ -838,7 +838,7 @@ export const updateUser = async (req, res) => {
 
     // Role change only allowed between DRIVER and DEPOT_MANAGER (not to SUPER_ADMIN)
     if (role && role !== user.role) {
-      if (role === "SUPER_ADMIN") {
+      if (role === "SUPER_ADMIN" || role === "MASTER_ADMIN") {
         return res.status(400).json({ msg: "Cannot promote to Super Admin" });
       }
       if (["DRIVER", "DEPOT_MANAGER"].includes(role)) {
@@ -905,7 +905,7 @@ export const deleteUser = async (req, res) => {
     }
 
     // Prevent deleting super admins
-    if (user.role === "SUPER_ADMIN") {
+    if (user.role === "SUPER_ADMIN" || user.role === "MASTER_ADMIN") {
       return res.status(400).json({ msg: "Cannot delete Super Admin accounts" });
     }
 
@@ -956,6 +956,29 @@ export const resetUserPassword = async (req, res) => {
 
   } catch (err) {
     console.error("resetUserPassword error:", err);
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+/**
+ * Get all SUPER_ADMIN users
+ *
+ * @route GET /admin/super-admins
+ */
+export const getSuperAdmins = async (req, res) => {
+  try {
+    const superAdmins = await User.find({ role: "SUPER_ADMIN" }).select("-password");
+    // Format them slightly to match the frontend expectations if needed
+    const formatted = superAdmins.map(sa => ({
+      id: sa._id,
+      pfNo: sa.pfNo,
+      name: sa.name,
+      districtName: sa.depotName, // Map depotName to districtName for the frontend
+      registeredAt: sa.createdAt ? sa.createdAt.toISOString().split("T")[0] : new Date().toISOString().split("T")[0]
+    }));
+    res.json(formatted);
+  } catch (err) {
+    console.error("getSuperAdmins error:", err);
     res.status(500).json({ msg: err.message });
   }
 };

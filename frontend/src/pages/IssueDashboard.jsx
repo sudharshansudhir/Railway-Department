@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export default function IssueDashboard({
-  selectedDepot = ""
+  depot = ""
 }) {
   const role = localStorage.getItem("role");
 
@@ -32,7 +32,8 @@ export default function IssueDashboard({
     try {
       setLoading(true);
 
-      const res = await api.get("/issues");
+      const url = depot ? `/issues?depot=${depot}` : "/issues";
+      const res = await api.get(url);
 
       setIssues(res.data);
     } catch (err) {
@@ -48,7 +49,7 @@ export default function IssueDashboard({
 
   useEffect(() => {
     loadIssues();
-  }, []);
+  }, [depot]);
 
   // const depots = [...new Set(issues.map((i) => i.depot))];
 
@@ -78,13 +79,9 @@ export default function IssueDashboard({
         .toLowerCase()
         .includes(search.toLowerCase());
 
-    const depotMatch =
-      selectedDepot === "" ||
-      issue.depot === selectedDepot;
-
-    return searchMatch && depotMatch;
+    return searchMatch;
   });
-}, [issues, search, selectedDepot]);
+}, [issues, search]);
 
 
 

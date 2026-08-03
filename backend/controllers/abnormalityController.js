@@ -130,31 +130,17 @@ export const getAbnormalities = async (req, res) => {
     ========================================= */
 
     if (req.user.role === "DEPOT_MANAGER") {
-
       filter.depotName = req.user.depotName;
-
-    }
-
-    else if (req.user.role === "ADEE") {
-
-      filter.depotName = {
-
-        $in: req.user.assignedDepots || []
-
-      };
-
-    }
-
-    else if (
-
-      req.user.role === "SUPER_ADMIN" &&
-
-      req.query.depot
-
-    ) {
-
+    } else if (req.user.role === "ADEE") {
+      if (req.query.depot && (req.user.assignedDepots || []).includes(req.query.depot)) {
+        filter.depotName = req.query.depot;
+      } else {
+        filter.depotName = {
+          $in: req.user.assignedDepots || []
+        };
+      }
+    } else if ((req.user.role === "SUPER_ADMIN" || req.user.role === "MASTER_ADMIN") && req.query.depot) {
       filter.depotName = req.query.depot;
-
     }
 
     const reports = await Abnormality.find(filter)

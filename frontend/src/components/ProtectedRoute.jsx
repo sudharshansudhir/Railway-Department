@@ -8,11 +8,11 @@ export default function ProtectedRoute({ children, role }) {
     return <Navigate to="/login" />;
   }
 
-  // 🔥 Allow ADEE to access SUPER_ADMIN routes
+  // 🔥 Allow ADEE & MASTER_ADMIN to access SUPER_ADMIN routes
   if (
     role &&
     role !== userRole &&
-    !(role === "SUPER_ADMIN" && userRole === "ADEE")
+    !(role === "SUPER_ADMIN" && (userRole === "ADEE" || userRole === "MASTER_ADMIN"))
   ) {
     return <Navigate to="/" />;
   }

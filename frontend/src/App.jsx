@@ -23,6 +23,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRegister from "./pages/AdminRegister";
 import AdminOverdueRecords from "./pages/AdminOverdueRecords";
 import EnginePage from "./pages/EnginePage";
+import MasterAdminDashboard from "./pages/MasterAdminDashboard";
 export default function App() {
   return (
     <Routes>
@@ -157,6 +158,16 @@ export default function App() {
     </ProtectedRoute>
   }
 />
+
+      {/* ================= MASTER ADMIN ================= */}
+      <Route
+        path="/master-admin"
+        element={
+          <ProtectedRoute role="MASTER_ADMIN">
+            <MasterAdminDashboard />
+          </ProtectedRoute>
+        }
+      />
 
       {/* ================= SUPER ADMIN ================= */}
       <Route
