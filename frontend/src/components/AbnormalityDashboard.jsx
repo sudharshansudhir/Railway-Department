@@ -26,7 +26,8 @@ export default function AbnormalityDashboard({ depot = "" }) {
   const [status, setStatus] = useState("Pending");
 
   const [actionTaken, setActionTaken] = useState({});
-
+const isReadOnly =
+  localStorage.getItem("isImpersonating") === "true";
   const loadReports = async () => {
     try {
       setLoading(true);
@@ -246,7 +247,8 @@ export default function AbnormalityDashboard({ depot = "" }) {
                           <div className="border-t pt-4">
                             <h4 className="font-semibold mb-2">Action Taken</h4>
 
-                            {role === "DEPOT_MANAGER" ? (
+                            {role === "DEPOT_MANAGER" &&
+!isReadOnly ? (
                               report.status === "Pending" ? (
                                 <>
                                   <textarea

@@ -31,9 +31,13 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
   const [open, setOpen] = useState(false);
 
   const role = localStorage.getItem("role");
+  const isMasterView =
+  localStorage.getItem("isImpersonating") === "true";
 
   const [viewCircular, setViewCircular] = useState(null);
   const [ackLoading, setAckLoading] = useState(false);
+  // const isMasterView =
+  // localStorage.getItem("isImpersonating") === "true";
   useEffect(() => {
   if (!viewCircular) return;
 
@@ -53,7 +57,10 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
 }, [viewCircular]);
 
   useEffect(() => {
-    if (role === "SUPER_ADMIN") return;
+   const isMasterView =
+  localStorage.getItem("isImpersonating") === "true";
+
+if (role === "SUPER_ADMIN" || isMasterView) return;
 
     const checkNewCircular = async () => {
       try {
@@ -257,15 +264,41 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
             </div>
 
             {/* Desktop Logout */}
-            <div className="hidden md:block">
-              <button
-                onClick={logout}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#C8102E] transition hover:bg-red-50"
-              >
-                <LogOut size={18} />
-                Logout
-              </button>
-            </div>
+          {/* Desktop Right Button */}
+<div className="hidden md:block">
+
+  {isMasterView ? (
+    <button
+      onClick={() => {
+        localStorage.setItem(
+          "token",
+          localStorage.getItem("masterToken")
+        );
+
+        localStorage.setItem(
+          "role",
+          "MASTER_ADMIN"
+        );
+
+        localStorage.removeItem("isImpersonating");
+
+        navigate("/master");
+      }}
+      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg"
+    >
+      Back to Master Dashboard
+    </button>
+  ) : (
+    <button
+      onClick={logout}
+      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#C8102E] transition hover:bg-red-50"
+    >
+      <LogOut size={18} />
+      Logout
+    </button>
+  )}
+
+</div>
 
             {/* Mobile Toggle */}
             <button
@@ -282,15 +315,39 @@ const [secondsLeft, setSecondsLeft] = useState(WAIT_TIME);
           <div className="border-t border-[#E5E7EB] bg-white px-4 py-3 shadow-lg md:hidden">
             <div className="space-y-1">
               <RoleButtons />
-              <button
-                onClick={logout}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-[#C8102E] transition hover:bg-red-50"
-              >
-                <span className="inline-flex shrink-0 items-center justify-center">
-                  <LogOut size={18} />
-                </span>
-                Logout
-              </button>
+              {isMasterView ? (
+  <button
+    onClick={() => {
+      localStorage.setItem(
+        "token",
+        localStorage.getItem("masterToken")
+      );
+
+      localStorage.setItem(
+        "role",
+        "MASTER_ADMIN"
+      );
+
+      localStorage.removeItem("isImpersonating");
+
+      navigate("/master");
+      setOpen(false);
+    }}
+    className="w-full rounded-lg bg-indigo-600 text-white py-2.5"
+  >
+    Back to Master Dashboard
+  </button>
+) : (
+  <button
+    onClick={logout}
+    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-[#C8102E] transition hover:bg-red-50"
+  >
+    <span className="inline-flex shrink-0 items-center justify-center">
+      <LogOut size={18} />
+    </span>
+    Logout
+  </button>
+)}
             </div>
           </div>
         )}

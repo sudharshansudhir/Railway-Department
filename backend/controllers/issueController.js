@@ -143,6 +143,11 @@ export const getIssues = async (req, res) => {
 };
 
 export const resolveIssue = async (req, res) => {
+  if (req.headers["x-master-view"] === "true") {
+  return res.status(403).json({
+    msg: "Read Only Mode"
+  });
+}
 
   try {
 

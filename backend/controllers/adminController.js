@@ -9,6 +9,25 @@ import DriverProfile from "../models/DriverProfile.js";
 /* ======================================================
    REGISTER USER (SUPER ADMIN ONLY)
 ====================================================== */
+
+
+/* =====================================================
+   DIVISION FILTER HELPER
+===================================================== */
+
+const getDivisionFilter = (req) => {
+
+  // Master Admin should not be restricted
+  if (req.user.role === "MASTER_ADMIN") {
+    return {};
+  }
+
+  // Super Admin / ADEE / Depot Manager
+  return {
+    division: req.user.division
+  };
+
+};
 export const getOverdueRecords = async (req, res) => {
   try {
 
@@ -20,9 +39,14 @@ if (!loggedInUser) {
   return res.status(404).json({ msg: "User not found" });
 }
 
- const filter = {
+const filter = {
   role: "DRIVER"
 };
+
+// Restrict everyone except Master Admin
+if (loggedInUser.role !== "MASTER_ADMIN") {
+  filter.division = loggedInUser.division;
+}
 
 /* SUPER ADMIN
    -> All depots
@@ -216,8 +240,20 @@ if (latestCircular) {
 };
 
 export const adminRegisterUser = async (req, res) => {
+  if (req.headers["x-master-view"] === "true") {
+  return res.status(403).json({
+    msg: "Read Only Mode"
+  });
+}
   try {
-    const { name, pfNo, role, depotName, assignedDepots } = req.body;
+ const {
+  name,
+  pfNo,
+  role,
+  depotName,
+  assignedDepots,
+  division
+} = req.body;
 
     /* ---------- VALIDATION ---------- */
     if (!name || !pfNo || !role) {
@@ -225,13 +261,41 @@ export const adminRegisterUser = async (req, res) => {
         msg: "All fields are required"
       });
     }
+    /* ---------- MASTER ADMIN DIVISION ---------- */
+
+if (
+  req.user.role === "MASTER_ADMIN" &&
+  !division
+) {
+  return res.status(400).json({
+    msg: "Division is required"
+  });
+}
 
     // 🔥 Allow ADEE also
-    if (!["DRIVER", "DEPOT_MANAGER", "ADEE"].includes(role)) {
-      return res.status(400).json({
-        msg: "Invalid role selection"
-      });
+if (req.user.role === "MASTER_ADMIN") {
+
+    if (role !== "SUPER_ADMIN") {
+        return res.status(403).json({
+            msg: "Master Admin can only create Super Admin"
+        });
     }
+
+} else if (req.user.role === "SUPER_ADMIN") {
+
+    if (!["ADEE", "DEPOT_MANAGER", "DRIVER"].includes(role)) {
+        return res.status(403).json({
+            msg: "Super Admin can only create ADEE, Depot Manager and Driver"
+        });
+    }
+
+} else {
+
+    return res.status(403).json({
+        msg: "Not Authorized"
+    });
+
+}
 
     // 🔥 Depot required only for DRIVER & DEPOT_MANAGER
     if (["DRIVER", "DEPOT_MANAGER"].includes(role) && !depotName) {
@@ -251,25 +315,133 @@ export const adminRegisterUser = async (req, res) => {
 
     /* ---------- CHECK EXISTING ---------- */
     const exists = await User.findOne({ pfNo });
-    if (exists) {
+    /* ---------- ONE SUPER ADMIN PER DIVISION ---------- */
+
+        if (exists) {
       return res.status(400).json({
         msg: "User with this PF No already exists"
       });
     }
 
+if (
+  req.user.role === "MASTER_ADMIN"
+) {
+
+  const divisionExists = await User.findOne({
+
+    role: "SUPER_ADMIN",
+
+    division
+
+  });
+
+  if (divisionExists) {
+
+    return res.status(400).json({
+
+      msg: "Super Admin already exists for this division"
+
+    });
+
+  }
+
+}
+
+    /* ===========================================
+SUPER ADMIN CAN CREATE USERS
+ONLY INSIDE ASSIGNED DEPOTS
+=========================================== */
+
+if (
+  req.user.role === "SUPER_ADMIN"
+) {
+
+  const allowedDepots =
+    req.user.assignedDepots || [];
+
+  // DRIVER / MANAGER
+
+  if (
+    ["DRIVER", "DEPOT_MANAGER"].includes(role)
+  ) {
+
+    if (
+      !allowedDepots.includes(depotName)
+    ) {
+
+      return res.status(403).json({
+
+        msg:"Depot not assigned to Super Admin"
+
+      });
+
+    }
+
+  }
+
+  // ADEE
+
+  if (role === "ADEE") {
+
+    const invalidDepots =
+      assignedDepots.filter(
+
+        depot =>
+        !allowedDepots.includes(depot)
+
+      );
+
+    if (invalidDepots.length > 0) {
+
+      return res.status(403).json({
+
+        msg:
+        "ADEE contains unauthorized depots"
+
+      });
+
+    }
+
+  }
+
+}
+
     /* ---------- PASSWORD = PF NO ---------- */
     const hashedPassword = await bcrypt.hash(pfNo, 10);
 
     /* ---------- CREATE USER ---------- */
-    const user = await User.create({
-      name,
-      pfNo,
-      password: hashedPassword,
-      role,
-      depotName: role === "ADEE" ? null : depotName,
-      assignedDepots: role === "ADEE" ? assignedDepots : [],
-      passwordChanged: false
-    });
+const user = await User.create({
+
+  name,
+
+  pfNo,
+
+  password: hashedPassword,
+
+  role,
+
+  division:
+    req.user.role === "MASTER_ADMIN"
+      ? division
+      : req.user.division,
+
+  depotName:
+    role === "ADEE"
+      ? null
+      : depotName,
+
+assignedDepots:
+  role === "ADEE"
+    ? assignedDepots
+    : role === "SUPER_ADMIN"
+      ? assignedDepots
+      : [],
+  createdBy: req.user.id,
+  lastAcknowledgedCircularId: null,
+
+  passwordChanged: false
+
+});
 
     /* ---------- CREATE EMPTY DRIVER PROFILE ---------- */
     if (role === "DRIVER") {
@@ -293,20 +465,37 @@ export const adminRegisterUser = async (req, res) => {
 ====================================================== */
 
 export const downloadAdminReport = async (req, res) => {
+
   const { from, to, depot } = req.query;
 
   const start = new Date(from);
   const end = new Date(to);
   end.setHours(23, 59, 59, 999);
 
-  let filter = {};
+let filter = {};
 
-  if (req.user.role === "ADEE") {
-    filter.depotName = { $in: req.user.assignedDepots };
-  } else if (depot) {
+// Every role except Master Admin
+// should stay inside its division
+
+if (req.user.role !== "MASTER_ADMIN") {
+    filter.division = req.user.division;
+}
+
+if (req.user.role === "ADEE") {
+
+    filter.depotName = {
+        $in: req.user.assignedDepots
+    };
+
+}
+else if (
+    req.user.role === "SUPER_ADMIN" &&
+    depot
+) {
+
     filter.depotName = depot;
-  }
 
+}
   const drivers = await User.find({ role: "DRIVER", ...filter });
 
   const rows = [];
@@ -349,7 +538,12 @@ export const getAdminUsers = async (req, res) => {
     // DRIVER / MANAGER FILTER
     // ==========================
 
-    let depotFilter = {};
+   let depotFilter = {};
+
+// Restrict by division for all except Master Admin
+if (req.user.role !== "MASTER_ADMIN") {
+  depotFilter.division = req.user.division;
+}
 
     if (req.user.role === "ADEE") {
 
@@ -385,27 +579,30 @@ export const getAdminUsers = async (req, res) => {
     // DEPOT MANAGERS
     // ==========================
 
-    const managers = await User.find({
-      role: "DEPOT_MANAGER",
-      ...depotFilter
-    }).select("name pfNo depotName");
+const managers = await User.find({
+    role: "DEPOT_MANAGER",
+    ...depotFilter
+}).select("name pfNo depotName");
 
     // ==========================
     // DRIVERS
     // ==========================
 
-    const drivers = await User.find({
-      role: "DRIVER",
-      ...depotFilter
-    }).select("name pfNo depotName lastAcknowledgedCircularId");
+const drivers = await User.find({
+    role: "DRIVER",
+    ...depotFilter
+}).select("name pfNo depotName lastAcknowledgedCircularId");
 
-    // ==========================
+    // ==========================adee
     // ADEE
     // ==========================
+let adeeFilter = {
+    role: "ADEE"
+};
 
-    let adeeFilter = {
-      role: "ADEE"
-    };
+if (req.user.role !== "MASTER_ADMIN") {
+    adeeFilter.division = req.user.division;
+}
 
     if (depot) {
 
@@ -446,13 +643,30 @@ export const getAdminReport = async (req, res) => {
   const end = new Date(to);
   end.setHours(23, 59, 59, 999);
 
-  let filter = {};
+let filter = {};
 
-  if (req.user.role === "ADEE") {
-    filter.depotName = { $in: req.user.assignedDepots };
-  } else if (depot) {
+// Every role except Master Admin
+// should stay inside its division
+
+if (req.user.role !== "MASTER_ADMIN") {
+    filter.division = req.user.division;
+}
+
+if (req.user.role === "ADEE") {
+
+    filter.depotName = {
+        $in: req.user.assignedDepots
+    };
+
+}
+else if (
+    req.user.role === "SUPER_ADMIN" &&
+    depot
+) {
+
     filter.depotName = depot;
-  }
+
+}
 
   const drivers = await User.find({ role: "DRIVER", ...filter });
 
@@ -482,18 +696,39 @@ export const getAdminReport = async (req, res) => {
 
 export const getDistinctDepots = async (req, res) => {
   try {
+
+    // MASTER ADMIN -> All depots
+    if (req.user.role === "MASTER_ADMIN") {
+
+      const depots = await User.distinct("depotName", {
+        depotName: { $ne: null }
+      });
+
+      return res.json(depots.sort());
+    }
+
+    // SUPER ADMIN -> Only assigned depots
+    if (req.user.role === "SUPER_ADMIN") {
+      return res.json(req.user.assignedDepots || []);
+    }
+
+    // ADEE -> Only assigned depots
     if (req.user.role === "ADEE") {
       return res.json(req.user.assignedDepots || []);
     }
 
-    const depots = await User.distinct("depotName", {
-      depotName: { $ne: null }
-    });
+    // Others -> Own depot
+    if (req.user.depotName) {
+      return res.json([req.user.depotName]);
+    }
 
-    res.json(depots.sort());
+    return res.json([]);
 
   } catch (err) {
-    res.status(500).json({ msg: "Failed to load depots" });
+    console.error(err);
+    res.status(500).json({
+      msg: "Failed to load depots"
+    });
   }
 };
 
@@ -506,10 +741,17 @@ export const getUserDetails = async (req, res) => {
     const { userId } = req.params;
 
     // Fetch basic user info
-    const user = await User.findById(userId)
-      .select("-password")
-      .lean();
+const user = await User.findOne({
 
+    _id: userId,
+
+    ...(req.user.role !== "MASTER_ADMIN"
+        ? { division: req.user.division }
+        : {})
+
+})
+.select("-password")
+.lean();
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
     }
@@ -809,6 +1051,11 @@ export const getUserTCards = async (req, res) => {
  * @route PUT /admin/users/:userId
  */
 export const updateUser = async (req, res) => {
+  if (req.headers["x-master-view"] === "true") {
+  return res.status(403).json({
+    msg: "Read Only Mode"
+  });
+}
   try {
     const { userId } = req.params;
     const {
@@ -827,7 +1074,15 @@ export const updateUser = async (req, res) => {
     } = req.body;
 
     // Find user
-    const user = await User.findById(userId);
+const user = await User.findOne({
+
+    _id: userId,
+
+    ...(req.user.role !== "MASTER_ADMIN"
+        ? { division: req.user.division }
+        : {})
+
+});
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
     }
@@ -896,10 +1151,23 @@ export const updateUser = async (req, res) => {
  * @route DELETE /admin/users/:userId
  */
 export const deleteUser = async (req, res) => {
+  if (req.headers["x-master-view"] === "true") {
+  return res.status(403).json({
+    msg: "Read Only Mode"
+  });
+}
   try {
     const { userId } = req.params;
 
-    const user = await User.findById(userId);
+    const user = await User.findOne({
+
+    _id: userId,
+
+    ...(req.user.role !== "MASTER_ADMIN"
+        ? { division: req.user.division }
+        : {})
+
+});
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
     }
@@ -934,10 +1202,23 @@ export const deleteUser = async (req, res) => {
  * @route POST /admin/users/:userId/reset-password
  */
 export const resetUserPassword = async (req, res) => {
+  if (req.headers["x-master-view"] === "true") {
+  return res.status(403).json({
+    msg: "Read Only Mode"
+  });
+}
   try {
     const { userId } = req.params;
 
-    const user = await User.findById(userId);
+    const user = await User.findOne({
+
+    _id: userId,
+
+    ...(req.user.role !== "MASTER_ADMIN"
+        ? { division: req.user.division }
+        : {})
+
+});
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
     }

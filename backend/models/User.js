@@ -6,12 +6,18 @@ const userSchema = new mongoose.Schema({
   pfNo: { type: String, unique: true, index: true }, // Primary identifier
   password: { type: String, required: true },
 
-  role: {
-    type: String,
-    enum: ["DRIVER", "DEPOT_MANAGER", "SUPER_ADMIN","ADEE"],
-    required: true,
-    index: true
-  },
+role: {
+  type: String,
+  enum: [
+    "MASTER_ADMIN",
+    "SUPER_ADMIN",
+    "ADEE",
+    "DEPOT_MANAGER",
+    "DRIVER"
+  ],
+  required: true,
+  index: true
+},
 
   depotName: { type: String, index: true }, // for depot-based filtering
 
@@ -40,6 +46,18 @@ const userSchema = new mongoose.Schema({
     type: String
   }
 ],
+
+division: {
+  type: String,
+  default: null,
+  index: true
+},
+
+createdBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null
+},
 
 
 }, { timestamps: true });

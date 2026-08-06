@@ -171,6 +171,8 @@ export default function AdminUserDetail() {
 
   const isDriver = user.role === "DRIVER";
   const isManager = user.role === "DEPOT_MANAGER";
+  const isReadOnly =
+  localStorage.getItem("isImpersonating") === "true";
 
   return (
     <>
@@ -181,13 +183,13 @@ export default function AdminUserDetail() {
           {/* Header with Back and Edit buttons */}
           <div className="flex items-center justify-between">
             <BackButton/>
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-medium"
-            >
-              <Pencil size={18} />
-              Edit User
-            </button>
+            {!isReadOnly && (
+  <button
+    onClick={() => setShowEditModal(true)}
+  >
+    Edit User
+  </button>
+)}
           </div>
 
           {/* Header Card */}
@@ -706,7 +708,7 @@ export default function AdminUserDetail() {
       </div>
 
       {/* Edit User Modal */}
-      {showEditModal && (
+      {!isReadOnly && showEditModal && (
         <EditUserModal
           userId={userId}
           onClose={() => setShowEditModal(false)}

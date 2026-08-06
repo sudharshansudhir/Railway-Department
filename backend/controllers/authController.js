@@ -78,21 +78,32 @@ export const login = async (req, res) => {
 
    const token = jwt.sign(
   {
-    id: user._id,
-    role: user.role,
-    depotName: user.depotName,
-    assignedDepots: user.assignedDepots || []
-  },
+ id:user._id,
+
+ role:user.role,
+
+ division:user.division,
+
+ depotName:user.depotName,
+
+ assignedDepots:user.assignedDepots||[]
+},
   process.env.JWT_SECRET,
   { expiresIn: "1d" }
 );
 
     res.json({
-      token,
-      role: user.role,
-      passwordChanged: user.passwordChanged || false,
-      depotName:user.depotName,
-  assignedDepots: user.assignedDepots || []
+token,
+
+role:user.role,
+
+division:user.division,
+
+passwordChanged:user.passwordChanged,
+
+depotName:user.depotName,
+
+assignedDepots:user.assignedDepots||[]
 
     });
 

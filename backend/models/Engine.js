@@ -162,7 +162,11 @@ const CompleteEngineSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
-
+division:{
+type:String,
+required:true,
+index:true
+},
     towerCar: TowerCarSchema,
 
     brakePower: BrakePowerSchema,

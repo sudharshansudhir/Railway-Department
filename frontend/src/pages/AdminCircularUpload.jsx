@@ -11,8 +11,16 @@ export default function AdminCircularUpload() {
   const [pdf, setPdf] = useState(null);
   const [loading, setLoading] = useState(false);
   const [circularDate, setCircularDate] = useState("");
-
+const isReadOnly =
+  localStorage.getItem("isImpersonating") === "true";
   const upload = async () => {
+      if (isReadOnly) {
+    return Swal.fire(
+      "Read Only",
+      "Master Admin cannot upload circulars.",
+      "warning"
+    );
+  }
   if (!title || !pdf || !circularDate) {
     Swal.fire("Missing Data", "Title, Date and PDF required", "warning");
     return;
@@ -61,6 +69,7 @@ export default function AdminCircularUpload() {
               Circular Title
             </label>
             <input
+            disabled={isReadOnly}
               type="text"
               placeholder="e.g. Safety Guidelines – Jan 2026"
               value={title}
@@ -75,6 +84,7 @@ export default function AdminCircularUpload() {
     Circular Date
   </label>
   <input
+  disabled={isReadOnly}
     type="date"
     value={circularDate}
     onChange={e => setCircularDate(e.target.value)}
@@ -104,6 +114,7 @@ export default function AdminCircularUpload() {
               </span>
 
               <input
+              disabled={isReadOnly}
                 type="file"
                 accept="application/pdf"
                 hidden
@@ -123,13 +134,17 @@ export default function AdminCircularUpload() {
           {/* ACTION BUTTON */}
           <button
             onClick={upload}
-            disabled={loading}
+            disabled={loading || isReadOnly}
             className="w-full flex items-center justify-center gap-2
                        bg-indigo-600 text-white py-2.5 rounded-lg
                        font-medium hover:bg-indigo-700
                        disabled:opacity-60 transition"
           >
-            {loading ? "Uploading..." : "Upload Circular"}
+            {isReadOnly
+  ? "Read Only"
+  : loading
+  ? "Uploading..."
+  : "Upload Circular"}
           </button>
 
         </div>

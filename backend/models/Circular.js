@@ -23,8 +23,13 @@ const circularSchema = new mongoose.Schema(
       type: Date,
       required: true,
       index: true
-    }
+    },
+    division:{
+    type:String,
+    required:true
+},
   },
+  
   { timestamps: true }
 );
 

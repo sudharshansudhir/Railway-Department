@@ -30,6 +30,10 @@ export default function Login() {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
+      localStorage.setItem(
+  "division",
+  res.data.division || ""
+);
       localStorage.setItem("passwordChanged", res.data.passwordChanged ? "true" : "false");
       localStorage.setItem("depotName", res.data.depotName || "");
       localStorage.setItem(
@@ -60,12 +64,16 @@ export default function Login() {
         showConfirmButton: false,
       });
 
-      if (res.data.role === "DRIVER") navigate("/driver");
-      if (res.data.role === "DEPOT_MANAGER") navigate("/manager");
-      if (res.data.role === "SUPER_ADMIN") navigate("/admin");
-      if (res.data.role === "ADEE") {
-  navigate("/adee");
-}
+
+if (res.data.role === "DRIVER") navigate("/driver");
+
+else if (res.data.role === "DEPOT_MANAGER") navigate("/manager");
+
+else if (res.data.role === "SUPER_ADMIN") navigate("/admin");
+
+else if (res.data.role === "ADEE") navigate("/adee");
+
+else if (res.data.role === "MASTER_ADMIN") navigate("/master");
     } catch (err) {
        console.error("LOGIN ERROR:", err);
       Swal.fire({

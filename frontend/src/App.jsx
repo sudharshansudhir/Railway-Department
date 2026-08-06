@@ -1,7 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import ChangePassword from "./pages/ChangePassword";
-
+import MasterDashboard from "./pages/MasterDashboard";
+import MasterRegister from "./pages/MasterRegister";
 import DriverDashboard from "./pages/DriverDashboard";
 import DailyActivity from "./pages/DailyActivity";
 import DriverProfile from "./pages/DriverProfile";
@@ -16,7 +17,7 @@ import AdminCircularUpload from "./pages/AdminCircularUpload";
 import AdminCircularStatus from "./pages/AdminCircularStatus";
 import AdminReportDownload from "./pages/AdminReportDownload";
 import AdminUserDetail from "./pages/AdminUserDetail";
-
+import EditSuperAdmin from "./pages/EditSuperAdmin";
 import CircularList from "./pages/CircularList";
 
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -29,10 +30,34 @@ export default function App() {
 
       {/* ================= LOGIN ================= */}
       <Route path="/" element={<Login />} />
+<Route
+path="/master"
+element={
+<ProtectedRoute role="MASTER_ADMIN">
+<MasterDashboard/>
+</ProtectedRoute>
+}
+/>
+
+<Route
+  path="/master/register"
+  element={
+    <ProtectedRoute role="MASTER_ADMIN">
+      <MasterRegister />
+    </ProtectedRoute>
+  }
+/>
 
       {/* ================= CHANGE PASSWORD (First Login) ================= */}
       <Route path="/change-password" element={<ChangePassword />} />
-
+<Route
+  path="/master/edit"
+  element={
+    <ProtectedRoute role="MASTER_ADMIN">
+      <EditSuperAdmin />
+    </ProtectedRoute>
+  }
+/>
       {/* ================= DRIVER ================= */}
       <Route
         path="/driver"

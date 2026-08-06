@@ -27,6 +27,8 @@ export default function IssueDashboard({
   const [status, setStatus] = useState("Pending");
 
 //   const [depot, setDepot] = useState("");
+const isReadOnly =
+  localStorage.getItem("isImpersonating") === "true";
 
   const loadIssues = async () => {
     try {
@@ -210,7 +212,7 @@ ${
                       </TD>
 
                       <TD>
-                        {role === "DEPOT_MANAGER" ? (
+                        {role === "DEPOT_MANAGER" && !isReadOnly ? (
                           issue.status === "Pending" ? (
                             <button
                               onClick={async () => {

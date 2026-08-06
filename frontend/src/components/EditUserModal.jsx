@@ -58,6 +58,8 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
   });
 
   const isDriver = formData.role === "DRIVER";
+  const isReadOnly =
+  localStorage.getItem("isImpersonating") === "true";
 
   // Fetch user data
   useEffect(() => {
@@ -147,6 +149,13 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
 
   // Save changes
   const handleSave = async () => {
+    if (isReadOnly) {
+  return Swal.fire({
+    icon: "warning",
+    title: "Read Only Mode",
+    text: "Master Admin cannot modify user details."
+  });
+}
     try {
       setSaving(true);
 
@@ -420,7 +429,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                     </div>
                   </div>
 
-                  {/* Danger Zone */}
+                 {!isReadOnly && (
                   <div className="mt-8 pt-6 border-t border-red-200 bg-red-50 -mx-6 -mb-6 px-6 pb-6">
                     <h4 className="text-sm font-semibold text-red-700 mb-4 flex items-center gap-2">
                       <AlertTriangle size={16} />
@@ -442,7 +451,7 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
                         Delete User
                       </button>
                     </div>
-                  </div>
+                  </div>)}
                 </div>
               )}
 
@@ -573,8 +582,14 @@ export default function EditUserModal({ userId, onClose, onSuccess }) {
               </button>
               <button
                 onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[#0b659a] rounded-lg hover:bg-[#084d78] disabled:bg-[#0b659a]/60 transition"
+                 disabled={saving || isReadOnly}
+                // disabled={saving}
+                className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white rounded-lg transition
+${
+  saving || isReadOnly
+    ? "bg-gray-400 cursor-not-allowed"
+    : "bg-[#0b659a] hover:bg-[#084d78]"
+}`}
               >
                 {saving ? (
                   <>

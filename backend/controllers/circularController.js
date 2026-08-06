@@ -3,6 +3,11 @@ import Circular from "../models/Circular.js";
 import User from "../models/User.js";
 
 export const uploadCircular = async (req, res) => {
+  if (req.headers["x-master-view"] === "true") {
+  return res.status(403).json({
+    msg: "Read Only Mode"
+  });
+}
   try {
     if (!req.file || !req.body.title || !req.body.circularDate) {
       return res.status(400).json({ message: "Title, Date and PDF required" });
@@ -18,13 +23,14 @@ export const uploadCircular = async (req, res) => {
       unique_filename: true,
     });
 
-    const circular = await Circular.create({
-      title: req.body.title,
-      pdfUrl: result.secure_url,
-      publicId: result.public_id,
-      originalFilename: req.file.originalname,
-      circularDate: new Date(req.body.circularDate) // ✅ SAVE DATE
-    });
+const circular = await Circular.create({
+    title: req.body.title,
+    pdfUrl: result.secure_url,
+    publicId: result.public_id,
+    originalFilename: req.file.originalname,
+    circularDate: new Date(req.body.circularDate),
+    division: req.user.division
+});
 
     res.status(201).json(circular);
   } catch (err) {
@@ -44,7 +50,11 @@ export const getCirculars = async (req, res) => {
 
     const { date } = req.query;
 
-    let filter = {};
+let filter = {};
+
+if (req.user.role !== "MASTER_ADMIN") {
+  filter.division = req.user.division;
+}
 
     // ✅ Filter by specific date if provided
     if (date) {
@@ -86,7 +96,15 @@ export const acknowledgeCircular = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const circular = await Circular.findById(id);
+const circular=await Circular.findOne({
+
+_id:id,
+
+...(req.user.role!=="MASTER_ADMIN"
+?{division:req.user.division}
+:{})
+
+});
     if (!circular) {
       return res.status(404).json({ msg: "Circular not found" });
     }
@@ -129,56 +147,70 @@ export const getCircularAcknowledgementReport = async (req, res) => {
     // SUPER ADMIN
     // ===========================
 
-    if (loggedUser.role === "SUPER_ADMIN") {
+if(loggedUser.role==="SUPER_ADMIN"){
 
-      userFilter = {
-        role: { $ne: "SUPER_ADMIN" }
-      };
+userFilter={
 
-    }
+division:loggedUser.division,
 
+role:{
+
+$in:[
+
+"DRIVER",
+
+"DEPOT_MANAGER",
+
+"ADEE"
+
+]
+
+}
+
+};
+
+}
     // ===========================
     // ADEE
     // ===========================
 
-    else if (loggedUser.role === "ADEE") {
+else if (loggedUser.role === "ADEE") {
 
-      userFilter = {
-        $or: [
+  userFilter = {
+    $or: [
 
-          // Drivers in allocated depots
-          {
-            role: "DRIVER",
-            depotName: {
-              $in: loggedUser.assignedDepots || []
-            }
-          },
+      {
+        division: loggedUser.division,
+        role: "DRIVER",
+        depotName: {
+          $in: loggedUser.assignedDepots || []
+        }
+      },
 
-          // Depot Managers in allocated depots
-          {
-            role: "DEPOT_MANAGER",
-            depotName: {
-              $in: loggedUser.assignedDepots || []
-            }
-          }
+      {
+        division: loggedUser.division,
+        role: "DEPOT_MANAGER",
+        depotName: {
+          $in: loggedUser.assignedDepots || []
+        }
+      }
 
-        ]
-      };
+    ]
+  };
 
-    }
-
+}
     // ===========================
     // DEPOT MANAGER
     // ===========================
+else if (loggedUser.role === "DEPOT_MANAGER") {
 
-    else if (loggedUser.role === "DEPOT_MANAGER") {
+  userFilter = {
+    division: loggedUser.division,
+    role: "DRIVER",
+    depotName: loggedUser.depotName
+  };
 
-      userFilter = {
-        role: "DRIVER",
-        depotName: loggedUser.depotName
-      };
-
-    }
+}
 
     else {
 

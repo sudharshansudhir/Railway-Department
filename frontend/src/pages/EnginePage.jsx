@@ -61,6 +61,8 @@ const [expandedEngine, setExpandedEngine] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
   const [isEdit, setIsEdit] = useState(false);
+const isReadOnly =
+  localStorage.getItem("isImpersonating") === "true";
 
   const emptyEngine = {
     depot: "",
@@ -134,15 +136,20 @@ const [expandedEngine, setExpandedEngine] = useState(null);
 
   const [formData, setFormData] = useState(emptyEngine);
 
-  const canEdit =
+const canEdit =
+  !isReadOnly &&
+  (
     role === "SUPER_ADMIN" ||
-    role === "DEPOT_MANAGER";
+    role === "DEPOT_MANAGER"
+  );
+const canDelete =
+  role === "SUPER_ADMIN" &&
+  !isReadOnly;
 
-  const canDelete =
-    role === "SUPER_ADMIN";
 
-  const canCreate =
-    role === "SUPER_ADMIN";
+const canCreate =
+  role === "SUPER_ADMIN" &&
+  !isReadOnly;
 
   useEffect(() => {
 
@@ -498,26 +505,20 @@ const deleteEngine = async (engine) => {
 
                 engine={item}
 
-                canEdit={
-
-                  role === "SUPER_ADMIN" ||
-
-                  (
-
-                    role === "DEPOT_MANAGER" &&
-
-                    item.depot === depotName
-
-                  )
-
-                }
-
-                canDelete={
-
-                  role === "SUPER_ADMIN"
-
-                }
-
+               canEdit={
+  !isReadOnly &&
+  (
+    role === "SUPER_ADMIN" ||
+    (
+      role === "DEPOT_MANAGER" &&
+      item.depot === depotName
+    )
+  )
+}
+canDelete={
+  role === "SUPER_ADMIN" &&
+  !isReadOnly
+}
              onEdit={() => {
 
   setIsEdit(true);

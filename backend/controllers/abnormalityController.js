@@ -64,19 +64,21 @@ export const submitAbnormality = async (req, res) => {
 
     const user = await User.findById(req.user.id);
 
-    const report = await Abnormality.create({
+const report = await Abnormality.create({
 
-      driverId: req.user.id,
+  driverId: req.user.id,
 
-      depotName: user.depotName,
+  division: user.division,
 
-      towerCarNo,
+  depotName: user.depotName,
 
-      abnormalities,
+  towerCarNo,
 
-      status: "Pending"
+  abnormalities,
 
-    });
+  status: "Pending"
+
+});
 
     res.json({
 
@@ -115,15 +117,12 @@ export const getAbnormalities = async (req, res) => {
 
     last30Days.setDate(today.getDate() - 30);
 
-    let filter = {
-
-      createdAt: {
-
-        $gte: last30Days
-
-      }
-
-    };
+let filter = {
+  division: req.user.division,
+  createdAt: {
+    $gte: last30Days
+  }
+};
 
     /* =========================================
        DEPOT FILTERING BASED ON ROLE
@@ -233,9 +232,10 @@ export const getAbnormalities = async (req, res) => {
 export const getDriverAbnormalities = async (req, res) => {
   try {
 
-    const data = await Abnormality.find({
-      driverId: req.user.id
-    }).sort({
+const data = await Abnormality.find({
+  driverId: req.user.id,
+  division: req.user.division
+}).sort({
       createdAt: -1
     });
 
@@ -281,6 +281,11 @@ export const resolveAbnormality = async (req, res) => {
     }
 
     const report = await Abnormality.findById(id);
+    if (report.division !== req.user.division) {
+  return res.status(403).json({
+    msg: "Access denied"
+  });
+}
 
     if (!report) {
 

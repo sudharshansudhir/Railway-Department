@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+// import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
   Shield,
@@ -238,7 +239,8 @@ try {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
-
+const isReadOnly =
+  localStorage.getItem("isImpersonating") === "true";
   return (
     <>
       <Navbar />
@@ -266,16 +268,49 @@ try {
               </div>
             </div>
 
-            {/* RIGHT */}
-            {!isADEE && (
-              <button
-                onClick={() => navigate("/admin/register")}
-                className="bg-[#0b659a] hover:bg-[#0f82c5] text-white rounded-xl px-5 py-2.5 flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
-              >
-                <UserPlus size={18} />
-                Add User
-              </button>
-            )}
+          {/* RIGHT */}
+<div className="flex items-center gap-3">
+
+  {/* Exit Master View */}
+  {localStorage.getItem("isImpersonating") === "true" && (
+    <button
+      onClick={() => {
+
+        localStorage.setItem(
+          "token",
+          localStorage.getItem("masterToken")
+        );
+
+        localStorage.setItem(
+          "role",
+          "MASTER_ADMIN"
+        );
+
+        localStorage.removeItem("masterToken");
+        localStorage.removeItem("isImpersonating");
+        localStorage.removeItem("division");
+
+        navigate("/master");
+
+      }}
+      className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-5 py-2.5 flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+    >
+      Exit Master View
+    </button>
+  )}
+
+  {/* Add User */}
+  {!isADEE &&  !isReadOnly &&(
+    <button
+      onClick={() => navigate("/admin/register")}
+      className="bg-[#0b659a] hover:bg-[#0f82c5] text-white rounded-xl px-5 py-2.5 flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+    >
+      <UserPlus size={18} />
+      Add User
+    </button>
+  )}
+
+</div>
           </div>
             {/* ================= STAT CARDS GRID ================= */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -597,13 +632,13 @@ try {
                         <Eye size={14} />
                         View
                       </button>
-                      <button
-                        onClick={() => setEditUserId(m._id)}
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
-                      >
-                        <Pencil size={14} />
-                        Edit
-                      </button>
+                     {!isReadOnly && (
+  <button
+    onClick={() => setEditUserId(m._id)}
+  >
+    Edit
+  </button>
+)}
                     </div>
                   </td>
                 </tr>
@@ -631,13 +666,13 @@ try {
                         <Eye size={14} />
                         View
                       </button>
-                      <button
-                        onClick={() => setEditUserId(m._id)}
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
-                      >
-                        <Pencil size={14} />
-                        Edit
-                      </button>
+                     {!isReadOnly && (
+  <button
+    onClick={() => setEditUserId(m._id)}
+  >
+    Edit
+  </button>
+)}
                     </div>
                   </td>
                 </tr>
@@ -664,13 +699,13 @@ try {
                         <Eye size={14} />
                         View
                       </button>
-                      <button
-                        onClick={() => setEditUserId(d._id)}
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium bg-white border border-slate-200 text-[#0b659a] rounded-lg hover:bg-[#0b659a] hover:text-white hover:border-[#0b659a] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 shadow-sm"
-                      >
-                        <Pencil size={14} />
-                        Edit
-                      </button>
+                     {!isReadOnly && (
+  <button
+    onClick={() => setEditUserId(m._id)}
+  >
+    Edit
+  </button>
+)}
                     </div>
                   </td>
                 </tr>

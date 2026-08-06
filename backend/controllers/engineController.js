@@ -3,6 +3,11 @@ import CompleteEngine from "../models/Engine.js";
 
 
 export const createEngine = async (req, res) => {
+  if (req.headers["x-master-view"] === "true") {
+  return res.status(403).json({
+    msg: "Read Only Mode"
+  });
+}
   try {
 
     if (req.user.role !== "SUPER_ADMIN") {
@@ -42,7 +47,7 @@ export const createEngine = async (req, res) => {
     }
 
     const newEngine = await CompleteEngine.create({
-
+division:req.user.division,
       depot,
 
       towerCarNumber,
@@ -88,7 +93,11 @@ export const getEnginesByDepot = async (req, res) => {
   try {
     const { depot } = req.query;
 
-    let filter = {};
+let filter={
+
+division:req.user.division
+
+}
 
     /* ======================================
        DEFAULT VIEW BASED ON ROLE
@@ -96,35 +105,51 @@ export const getEnginesByDepot = async (req, res) => {
 
     if (!depot) {
 
-      if (req.user.role === "SUPER_ADMIN") {
+if(req.user.role==="SUPER_ADMIN"){
 
-        // Super Admin sees all depots
-        filter = {};
+filter={
 
-      } else if (req.user.role === "ADEE") {
+division:req.user.division
+
+};
+
+} else if (req.user.role === "ADEE") {
 
         // ADEE sees only his assigned depots by default
-        filter = {
-          depot: {
-            $in: req.user.assignedDepots || []
-          }
-        };
+        filter={
+
+division:req.user.division,
+
+depot:{
+
+$in:req.user.assignedDepots
+
+}
+
+}
 
       } else {
 
         // Driver & Depot Manager
-        filter = {
-          depot: req.user.depotName
-        };
+filter={
 
+division:req.user.division,
+
+depot:req.user.depotName
+
+}
       }
 
     } else {
 
       // User selected a depot from dropdown
-      filter = {
-        depot
-      };
+filter={
+
+division:req.user.division,
+
+depot
+
+}
 
     }
 
@@ -150,8 +175,19 @@ export const getEnginesByDepot = async (req, res) => {
 
 export const getAvailableDepots = async (req, res) => {
   try {
+const depots=
 
-    const depots = await CompleteEngine.distinct("depot");
+await CompleteEngine.distinct(
+
+"depot",
+
+{
+
+division:req.user.division
+
+}
+
+);
 
     depots.sort();
 
@@ -174,7 +210,15 @@ export const getEngineById = async (req, res) => {
 
     const { id } = req.params;
 
-    const engine = await CompleteEngine.findById(id);
+const engine=
+
+await CompleteEngine.findOne({
+
+_id:id,
+
+division:req.user.division
+
+});
 
     if (!engine) {
       return res.status(404).json({
@@ -196,11 +240,22 @@ export const getEngineById = async (req, res) => {
 };
 
 export const updateEngine = async (req, res) => {
+  if (req.headers["x-master-view"] === "true") {
+  return res.status(403).json({
+    msg: "Read Only Mode"
+  });
+}
   try {
 
     const { id } = req.params;
 
-    const engine = await CompleteEngine.findById(id);
+    const engine = await CompleteEngine.findOne({
+
+_id:id,
+
+division:req.user.division
+
+})
 
     if (!engine) {
       return res.status(404).json({
@@ -260,6 +315,11 @@ export const updateEngine = async (req, res) => {
 
 
 export const deleteEngine = async (req, res) => {
+  if (req.headers["x-master-view"] === "true") {
+  return res.status(403).json({
+    msg: "Read Only Mode"
+  });
+}
   try {
 
     const { id } = req.params;
@@ -271,7 +331,13 @@ export const deleteEngine = async (req, res) => {
       });
     }
 
-    const engine = await CompleteEngine.findById(id);
+    const engine = await CompleteEngine.findOne({
+
+_id:id,
+
+division:req.user.division
+
+})
 
     if (!engine) {
       return res.status(404).json({

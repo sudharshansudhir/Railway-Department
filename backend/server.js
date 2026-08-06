@@ -8,6 +8,7 @@ import depotRoutes from "./routes/depotRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import issueRoutes from "./routes/issueRoutes.js";
 import abnormalityRoutes from "./routes/abnormalityRoutes.js";
+import masterAdminRoutes from "./routes/masterAdminRoutes.js";
 import circularRoutes from "./routes/adminCircularRoutes.js";
 import { connectDB } from "./config/db.js";
 
@@ -58,6 +59,7 @@ app.use("/admin", circularRoutes);
 app.use("/engine", engineRoutes);
 app.use("/abnormalities", abnormalityRoutes);
 app.use("/issues", issueRoutes);
+app.use("/master", masterAdminRoutes);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, async() => {

@@ -52,9 +52,15 @@ const abnormalitySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User"
     },
+    division: {
+  type: String,
+  required: true,
+  index: true
+},
 
     resolvedAt: Date
   },
+  
   {
     timestamps: true
   }

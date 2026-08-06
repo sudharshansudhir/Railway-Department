@@ -15,6 +15,11 @@ import BackButton from "../components/BackButton";
 export default function AdminRegister() {
   const [assignedDepots, setAssignedDepots] = useState([]);
   const [depots, setDepots] = useState([]); // 🔥 dynamic depots
+  const role = localStorage.getItem("role");
+
+const assignedDepotList = JSON.parse(
+  localStorage.getItem("assignedDepots") || "[]"
+);
   const [form, setForm] = useState({
     name: "",
     pfNo: "",
@@ -25,18 +30,44 @@ export default function AdminRegister() {
   const [loading, setLoading] = useState(false);
 
   /* ================= LOAD DEPOTS FROM BACKEND ================= */
-  useEffect(() => {
-    const fetchDepots = async () => {
-      try {
-        const res = await api.get("/admin/depots");
-        setDepots(res.data || []);
-      } catch (err) {
-        console.error("Failed to load depots", err);
-      }
-    };
+/* ================= LOAD DEPOTS ================= */
 
-    fetchDepots();
-  }, []);
+useEffect(() => {
+
+  // Super Admin should only see assigned depots
+
+  if (role === "SUPER_ADMIN") {
+console.log("ROLE :", role);
+console.log("Assigned Depots :", assignedDepotList);
+    setDepots(assignedDepotList);
+
+    return;
+
+  }
+
+  // ADEE / Master Admin (future) loads from backend
+
+  const fetchDepots = async () => {
+
+    try {
+
+      const res = await api.get("/admin/depots");
+
+      setDepots(res.data || []);
+
+    }
+
+    catch (err) {
+
+      console.error(err);
+
+    }
+
+  };
+
+  fetchDepots();
+
+}, []);
 
   const submit = async () => {
     if (!form.name || !form.pfNo) {
@@ -107,10 +138,10 @@ export default function AdminRegister() {
               </div>
             </div>
             <h2 className="text-xl font-bold text-gray-800">
-              Register Driver / Manager
+              Register User
             </h2>
             <p className="text-sm text-gray-500">
-              Super Admin Access Only
+               Create Drivers, Depot Managers and ADEE
             </p>
           </div>
 
@@ -146,6 +177,11 @@ export default function AdminRegister() {
             {["DRIVER", "DEPOT_MANAGER"].includes(form.role) && (
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  <p className="text-xs text-green-700 mb-2">
+
+Only your assigned depots are shown.
+
+</p>
                   Depot Name
                 </label>
                 <div className="relative">
