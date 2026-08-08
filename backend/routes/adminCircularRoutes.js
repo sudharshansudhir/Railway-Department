@@ -1,5 +1,6 @@
 import express from "express";
 import upload from "../middleware/multer.js";
+
 import {
   uploadCircular,
   getCirculars,
@@ -7,23 +8,60 @@ import {
   acknowledgeCircular,
   getCircularAcknowledgementReport,
 } from "../controllers/circularController.js";
+
 import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/circulars", upload.single("pdf"), uploadCircular);
-router.get("/circulars", getCirculars);
+/* =========================================
+   UPLOAD CIRCULAR
+========================================= */
+
+router.post(
+  "/circulars",
+  verifyToken,
+  upload.single("pdf"),
+  uploadCircular
+);
+
+/* =========================================
+   GET CIRCULARS
+========================================= */
+
+router.get(
+  "/circulars",
+  verifyToken,
+  getCirculars
+);
+
+/* =========================================
+   ACKNOWLEDGE
+========================================= */
+
 router.post(
   "/circulars/:id/acknowledge",
   verifyToken,
   acknowledgeCircular
 );
 
+/* =========================================
+   ACKNOWLEDGEMENT REPORT
+========================================= */
+
 router.get(
   "/circulars/acknowledgement-report",
   verifyToken,
   getCircularAcknowledgementReport
 );
-router.get("/circulars/:id/pdf", getCircularPDF);
+
+/* =========================================
+   VIEW / DOWNLOAD PDF
+========================================= */
+
+router.get(
+  "/circulars/:id/pdf",
+  verifyToken,
+  getCircularPDF
+);
 
 export default router;
